@@ -551,6 +551,152 @@ nav.top {
   box-shadow: 0 0 0 3px var(--role-ghost);
 }
 
+.login-input.is-invalid {
+  border-color: var(--red) !important;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.15) !important;
+}
+
+.login-input.is-valid {
+  border-color: var(--green) !important;
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.12) !important;
+}
+
+.login-input-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.login-input-wrap .login-input {
+  padding-right: 2.6rem;
+}
+
+.login-input-wrap.has-toggle .login-input {
+  padding-right: 5.5rem;
+}
+
+.login-input-icon {
+  position: absolute;
+  top: 50%;
+  right: .85rem;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.login-input-icon.error {
+  color: var(--red);
+}
+
+.login-input-icon.valid {
+  color: var(--green);
+}
+
+.login-input-wrap.has-toggle .login-input-icon {
+  right: 3.6rem;
+}
+
+.login-error-msg {
+  display: flex;
+  align-items: center;
+  gap: .35rem;
+  color: var(--red);
+  font-size: .75rem;
+  line-height: 1.35;
+  margin-top: .3rem;
+}
+
+.password-constraints-box {
+  margin-top: .5rem;
+  padding: .65rem .85rem;
+  background: var(--bg-bone);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  display: grid;
+  gap: .45rem;
+}
+
+[data-theme="dark"] .password-constraints-box {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: var(--line);
+}
+
+.password-constraints-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.password-constraints-title {
+  font-size: .7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--text-muted);
+}
+
+.password-strength-label {
+  font-size: .7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+.password-strength-label.weak { color: var(--red); }
+.password-strength-label.fair { color: #D97706; }
+.password-strength-label.strong { color: var(--green); }
+
+.password-strength-bars {
+  display: flex;
+  gap: 4px;
+  height: 4px;
+  margin: .1rem 0 .3rem;
+}
+
+.strength-bar {
+  flex: 1;
+  height: 100%;
+  border-radius: 2px;
+  background: var(--line-strong);
+  transition: background .2s ease;
+}
+
+.strength-bar.weak { background: var(--red); }
+.strength-bar.fair { background: #F59E0B; }
+.strength-bar.strong { background: var(--green); }
+
+.password-constraints-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: .35rem .6rem;
+}
+
+@media (max-width: 520px) {
+  .password-constraints-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.constraint-badge {
+  display: flex;
+  align-items: center;
+  gap: .35rem;
+  font-size: .73rem;
+  color: var(--text-faint);
+  transition: color .15s ease;
+}
+
+.constraint-badge.met {
+  color: var(--green);
+  font-weight: 500;
+}
+
+.constraint-badge.unmet {
+  color: var(--text-faint);
+}
+
 .login-show-password {
   position: absolute;
   top: 50%;
@@ -561,6 +707,13 @@ nav.top {
   color: var(--text-muted);
   font-size: .74rem;
   cursor: pointer;
+  padding: .3rem .45rem;
+  border-radius: 3px;
+  transition: color .15s ease;
+}
+
+.login-show-password:hover {
+  color: var(--text);
 }
 
 .login-form-row {

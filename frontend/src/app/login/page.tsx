@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
+import { Check, AlertCircle, Loader2 } from "lucide-react";
 
 export default function LoginPage() {
   const [role, setRole] = useState<"investor" | "architect">("investor");
@@ -12,6 +13,14 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
+
+  // Field touch & validation states
+  const [emailTouched, setEmailTouched] = useState(false);
+  const [passwordTouched, setPasswordTouched] = useState(false);
+  const [confirmPasswordTouched, setConfirmPasswordTouched] = useState(false);
+  const [hasSubmitted, setHasSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const [status, setStatus] = useState<{ text: string; type: "error" | "info" | "" }>({
     text: "",
     type: "",
@@ -36,12 +45,72 @@ export default function LoginPage() {
     setStatus({ text: "", type: "" });
     setPassword("");
     setConfirmPassword("");
+    setEmailTouched(false);
+    setPasswordTouched(false);
+    setConfirmPasswordTouched(false);
+    setHasSubmitted(false);
   };
+
+  // Password constraint rules
+  const passwordConstraints = useMemo(() => {
+    const minLength = password.length >= 8;
+    const hasUpper = /[A-Z]/.test(password);
+    const hasNumber = /[0-9]/.test(password);
+    const hasSpecial = /[^A-Za-z0-9]/.test(password);
+
+    const metCount = [minLength, hasUpper, hasNumber, hasSpecial].filter(Boolean).length;
+    let strength: "weak" | "fair" | "strong" = "weak";
+    if (metCount >= 4) strength = "strong";
+    else if (metCount >= 2) strength = "fair";
+
+    return {
+      minLength,
+      hasUpper,
+      hasNumber,
+      hasSpecial,
+      metCount,
+      strength,
+      isAllMet: minLength && hasUpper && hasNumber && hasSpecial,
+    };
+  }, [password]);
+
+  // Real-time Email validation check
+  const isEmailValid = useMemo(() => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+    return emailRegex.test(email.trim());
+  }, [email]);
+
+  // Email error computation
+  const emailError = useMemo(() => {
+    if (!emailTouched && !hasSubmitted) return "";
+    if (!email.trim()) return "Email address is required.";
+    if (!isEmailValid) return "Please enter a valid email address (e.g. name@firm.com).";
+    return "";
+  }, [email, isEmailValid, emailTouched, hasSubmitted]);
+
+  // Password error computation
+  const passwordError = useMemo(() => {
+    if (!passwordTouched && !hasSubmitted) return "";
+    if (!password) return "Password is required.";
+    if (mode === "signup" && !passwordConstraints.isAllMet) {
+      return "Password must satisfy all security requirements.";
+    }
+    return "";
+  }, [password, mode, passwordConstraints.isAllMet, passwordTouched, hasSubmitted]);
+
+  // Confirm password error computation
+  const confirmPasswordError = useMemo(() => {
+    if (mode !== "signup") return "";
+    if (!confirmPasswordTouched && !hasSubmitted) return "";
+    if (!confirmPassword) return "Please confirm your password.";
+    if (confirmPassword !== password) return "Passwords do not match.";
+    return "";
+  }, [mode, confirmPassword, password, confirmPasswordTouched, hasSubmitted]);
 
   const handleGoogleAuth = () => {
     const clientId = "428998304160-djaan3bkeje5s2chfu30lcg4ipgpnbn5.apps.googleusercontent.com";
     const redirectUri = window.location.origin + "/login";
-    
+
     setStatus({
       text: `Opening Google sign-in for ${roleLabel}...`,
       type: "info",
@@ -62,9 +131,9 @@ export default function LoginPage() {
 
   const handleLinkedInAuth = () => {
     const clientId = "77xjn2z32v0xr3";
-    let redirectUri = window.location.origin;
+    let redirectUri = window.location.origin + "/login";
     if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
-      redirectUri = "http://localhost:4173";
+      redirectUri = "http://localhost:3000/login";
     }
 
     const state = "linkedin_" + Math.random().toString(36).substring(2, 15);
@@ -82,44 +151,65 @@ export default function LoginPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setHasSubmitted(true);
 
-    if (!email.trim() || !password) {
+    // Validate email
+    if (!email.trim() || !isEmailValid) {
       setStatus({
-        text: `Enter both your email address and password to ${
-          mode === "signup" ? "create your account" : "sign in"
-        }.`,
+        text: "Please enter a valid email address.",
+        type: "error",
+      });
+      return;
+    }
+
+    // Validate password
+    if (!password) {
+      setStatus({
+        text: "Please enter your password.",
         type: "error",
       });
       return;
     }
 
     if (mode === "signup") {
-      if (password.length < 8) {
+      if (!passwordConstraints.isAllMet) {
         setStatus({
-          text: "Choose a password with at least 8 characters.",
+          text: "Please meet all password requirements before continuing.",
           type: "error",
         });
         return;
       }
+
       if (password !== confirmPassword) {
         setStatus({
-          text: "Your passwords do not match. Please try again.",
+          text: "Your passwords do not match. Please verify.",
           type: "error",
         });
         return;
       }
-
-      setStatus({
-        text: `Account created successfully for ${email}. Setting up your ${roleLabel} workspace...`,
-        type: "info",
-      });
-      return;
     }
 
+    // Pure frontend simulation (ready for backend API handoff)
+    setIsSubmitting(true);
     setStatus({
-      text: `Signing in as ${roleLabel} (${email}). Welcome back!`,
+      text: mode === "signup" ? "Validating registration details..." : "Verifying credentials...",
       type: "info",
     });
+
+    setTimeout(() => {
+      setIsSubmitting(false);
+      if (mode === "signup") {
+        setStatus({
+          text: `Account created successfully for ${email}. ${roleLabel} workspace initialized.`,
+          type: "info",
+        });
+      } else {
+        setStatus({
+          text: `Welcome back! Signed in as ${roleLabel} (${email}).`,
+          type: "info",
+        });
+      }
+    }, 700);
   };
 
   return (
@@ -138,15 +228,15 @@ export default function LoginPage() {
               <p className="login-copy" id="loginIntroCopy">
                 {mode === "signup"
                   ? role === "architect"
-                    ? "Create an Architect / Creator account, then tell us about the experience behind the opportunities you plan to bring."
-                    : "Create an Investor / Buyer account, then tell us how you assess and support opportunities."
+                    ? "Apply to publish your SaaS assets, verify your revenue, and connect with serious strategic buyers."
+                    : "Create your investor profile to unlock verified financial teasers, cap-table audits, and clean-room transfers."
                   : role === "architect"
-                  ? "Sign in as an architect to create opportunities, manage submissions, and keep your intellectual property protected."
+                  ? "Sign in as an architect to manage your listings, respond to buyer interest, and monitor verification reviews."
                   : "Sign in as an investor to review verified opportunities, manage your requests, and keep your deal activity private."}
               </p>
             </div>
 
-            <div className="login-trust" aria-label="vvEntra account safeguards">
+            <div className="login-trust-list">
               <div className="login-trust-item">
                 <span className="login-trust-icon">✓</span>
                 <span>Every member is reviewed before their access is activated.</span>
@@ -257,39 +347,94 @@ export default function LoginPage() {
 
             {/* Email & Password Form */}
             <form id="loginForm" onSubmit={handleSubmit} noValidate>
+              {/* EMAIL FIELD */}
               <div className="login-field">
                 <label className="login-label" htmlFor="loginEmail">
                   Email address
                 </label>
-                <input
-                  className="login-input"
-                  id="loginEmail"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  placeholder="you@company.com"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
+                <div className="login-input-wrap">
+                  <input
+                    className={`login-input ${
+                      emailError
+                        ? "is-invalid"
+                        : email && isEmailValid
+                        ? "is-valid"
+                        : ""
+                    }`}
+                    id="loginEmail"
+                    name="email"
+                    type="email"
+                    autoComplete="email"
+                    placeholder="you@company.com"
+                    required
+                    value={email}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      if (!emailTouched) setEmailTouched(true);
+                    }}
+                    onBlur={() => setEmailTouched(true)}
+                  />
+
+                  {/* Visual Status Sign on Email */}
+                  {emailError ? (
+                    <span className="login-input-icon error" title={emailError}>
+                      <AlertCircle size={17} />
+                    </span>
+                  ) : email && isEmailValid ? (
+                    <span className="login-input-icon valid" title="Valid email format">
+                      <Check size={17} />
+                    </span>
+                  ) : null}
+                </div>
+
+                {/* Email error message */}
+                {emailError && (
+                  <div className="login-error-msg" id="loginEmailError">
+                    <AlertCircle size={13} />
+                    <span>{emailError}</span>
+                  </div>
+                )}
               </div>
 
+              {/* PASSWORD FIELD */}
               <div className="login-field">
                 <label className="login-label" htmlFor="loginPassword">
                   Password
                 </label>
-                <div className="login-input-wrap">
+                <div className="login-input-wrap has-toggle">
                   <input
-                    className="login-input"
+                    className={`login-input ${
+                      passwordError
+                        ? "is-invalid"
+                        : mode === "signup" && passwordConstraints.isAllMet
+                        ? "is-valid"
+                        : ""
+                    }`}
                     id="loginPassword"
                     name="password"
                     type={showPassword ? "text" : "password"}
                     autoComplete={mode === "signup" ? "new-password" : "current-password"}
-                    placeholder={mode === "signup" ? "Create a password" : "Enter your password"}
+                    placeholder={mode === "signup" ? "Create a strong password" : "Enter your password"}
                     required
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      if (!passwordTouched) setPasswordTouched(true);
+                    }}
+                    onBlur={() => setPasswordTouched(true)}
                   />
+
+                  {/* Visual Status Sign on Password */}
+                  {passwordError ? (
+                    <span className="login-input-icon error" title={passwordError}>
+                      <AlertCircle size={17} />
+                    </span>
+                  ) : mode === "signup" && passwordConstraints.isAllMet ? (
+                    <span className="login-input-icon valid" title="Password requirements satisfied">
+                      <Check size={17} />
+                    </span>
+                  ) : null}
+
                   <button
                     className="login-show-password"
                     id="loginPasswordToggle"
@@ -300,27 +445,157 @@ export default function LoginPage() {
                     {showPassword ? "Hide" : "Show"}
                   </button>
                 </div>
+
+                {/* Password error message */}
+                {passwordError && (
+                  <div className="login-error-msg" id="loginPasswordError">
+                    <AlertCircle size={13} />
+                    <span>{passwordError}</span>
+                  </div>
+                )}
+
+                {/* PASSWORD CONSTRAINTS (SIGNUP MODE) */}
+                {mode === "signup" && (
+                  <div className="password-constraints-box" id="passwordConstraints">
+                    <div className="password-constraints-header">
+                      <span className="password-constraints-title">Password requirements</span>
+                      {password && (
+                        <span className={`password-strength-label ${passwordConstraints.strength}`}>
+                          {passwordConstraints.strength.charAt(0).toUpperCase() + passwordConstraints.strength.slice(1)}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Strength meter bar */}
+                    {password && (
+                      <div className="password-strength-bars">
+                        <div
+                          className={`strength-bar ${
+                            passwordConstraints.metCount >= 1 ? passwordConstraints.strength : ""
+                          }`}
+                        />
+                        <div
+                          className={`strength-bar ${
+                            passwordConstraints.metCount >= 2 ? passwordConstraints.strength : ""
+                          }`}
+                        />
+                        <div
+                          className={`strength-bar ${
+                            passwordConstraints.metCount >= 4 ? "strong" : ""
+                          }`}
+                        />
+                      </div>
+                    )}
+
+                    {/* Constraint criteria checklist */}
+                    <div className="password-constraints-grid">
+                      <div
+                        className={`constraint-badge ${
+                          passwordConstraints.minLength ? "met" : "unmet"
+                        }`}
+                      >
+                        {passwordConstraints.minLength ? (
+                          <Check className="constraint-icon" />
+                        ) : (
+                          <span className="constraint-icon">•</span>
+                        )}
+                        <span>8+ characters minimum</span>
+                      </div>
+
+                      <div
+                        className={`constraint-badge ${
+                          passwordConstraints.hasUpper ? "met" : "unmet"
+                        }`}
+                      >
+                        {passwordConstraints.hasUpper ? (
+                          <Check className="constraint-icon" />
+                        ) : (
+                          <span className="constraint-icon">•</span>
+                        )}
+                        <span>At least 1 uppercase (A-Z)</span>
+                      </div>
+
+                      <div
+                        className={`constraint-badge ${
+                          passwordConstraints.hasNumber ? "met" : "unmet"
+                        }`}
+                      >
+                        {passwordConstraints.hasNumber ? (
+                          <Check className="constraint-icon" />
+                        ) : (
+                          <span className="constraint-icon">•</span>
+                        )}
+                        <span>At least 1 number (0-9)</span>
+                      </div>
+
+                      <div
+                        className={`constraint-badge ${
+                          passwordConstraints.hasSpecial ? "met" : "unmet"
+                        }`}
+                      >
+                        {passwordConstraints.hasSpecial ? (
+                          <Check className="constraint-icon" />
+                        ) : (
+                          <span className="constraint-icon">•</span>
+                        )}
+                        <span>At least 1 special (!@#$)</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
 
+              {/* CONFIRM PASSWORD (SIGNUP MODE) */}
               {mode === "signup" && (
                 <div className="login-field login-confirm-field" id="loginConfirmField">
                   <label className="login-label" htmlFor="loginPasswordConfirm">
                     Confirm password
                   </label>
-                  <input
-                    className="login-input"
-                    id="loginPasswordConfirm"
-                    name="passwordConfirm"
-                    type="password"
-                    autoComplete="new-password"
-                    placeholder="Enter your password again"
-                    required
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                  />
+                  <div className="login-input-wrap">
+                    <input
+                      className={`login-input ${
+                        confirmPasswordError
+                          ? "is-invalid"
+                          : confirmPassword && confirmPassword === password
+                          ? "is-valid"
+                          : ""
+                      }`}
+                      id="loginPasswordConfirm"
+                      name="passwordConfirm"
+                      type="password"
+                      autoComplete="new-password"
+                      placeholder="Enter your password again"
+                      required
+                      value={confirmPassword}
+                      onChange={(e) => {
+                        setConfirmPassword(e.target.value);
+                        if (!confirmPasswordTouched) setConfirmPasswordTouched(true);
+                      }}
+                      onBlur={() => setConfirmPasswordTouched(true)}
+                    />
+
+                    {/* Status sign for confirm password */}
+                    {confirmPasswordError ? (
+                      <span className="login-input-icon error" title={confirmPasswordError}>
+                        <AlertCircle size={17} />
+                      </span>
+                    ) : confirmPassword && confirmPassword === password ? (
+                      <span className="login-input-icon valid" title="Passwords match">
+                        <Check size={17} />
+                      </span>
+                    ) : null}
+                  </div>
+
+                  {confirmPasswordError && (
+                    <div className="login-error-msg" id="loginConfirmError">
+                      <AlertCircle size={13} />
+                      <span>{confirmPasswordError}</span>
+                    </div>
+                  )}
                 </div>
               )}
 
+              {/* REMEMBER ME / FORGOT PASSWORD */}
               {mode === "signin" && (
                 <div className="login-form-row">
                   <label className="login-check">
@@ -341,12 +616,25 @@ export default function LoginPage() {
                 </div>
               )}
 
-              <button className="login-submit" type="submit" id="loginSubmitBtn">
-                {mode === "signup"
+              {/* SUBMIT BUTTON */}
+              <button
+                className="login-submit"
+                type="submit"
+                id="loginSubmitBtn"
+                disabled={isSubmitting}
+                style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem" }}
+              >
+                {isSubmitting && <Loader2 size={18} className="animate-spin" />}
+                {isSubmitting
+                  ? mode === "signup"
+                    ? "Creating Account..."
+                    : "Signing In..."
+                  : mode === "signup"
                   ? `Create ${roleLabel} account`
                   : `Sign in as ${roleLabel}`}
               </button>
 
+              {/* STATUS FEEDBACK */}
               {status.text && (
                 <p
                   className={`login-status ${status.type}`}
