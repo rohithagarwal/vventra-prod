@@ -49,3 +49,8 @@ __pycache__/
 venv/
 .venv/
 env/
+
+# Auto-generated agents and docs
+AGENTS.md
+*.md
+

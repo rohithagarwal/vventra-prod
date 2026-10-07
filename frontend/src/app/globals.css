@@ -1,26 +1,721 @@
+/* ============ GOOGLE FONTS ============ */
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
 @import "tailwindcss";
 
+/* ============ THEME TOKENS ============ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Brand accents */
+  --orange-light: #F4A982;
+  --orange: #E2571B;
+  --orange-deep: #B8421A;
+  --green: #16A34A;
+  --green-deep: #15803D;
+  --green-light: #4ADE80;
+  --red: #DC2626;
+
+  --orange-ghost: rgba(226, 87, 27, 0.10);
+  --orange-faint: rgba(226, 87, 27, 0.40);
+  --green-ghost: rgba(22, 163, 74, 0.11);
+  --green-faint: rgba(22, 163, 74, 0.40);
+
+  --container: 1320px;
+  --gutter: clamp(1.25rem, 4vw, 3rem);
+  --display-xl: clamp(2.5rem, 6.5vw, 5.5rem);
+  --display-lg: clamp(2rem, 4.5vw, 3.75rem);
+  --display-md: clamp(1.5rem, 2.8vw, 2.4rem);
+  --ease: cubic-bezier(.2, .8, .2, 1);
+  --ease-out: cubic-bezier(.16, 1, .3, 1);
+
+  /* Role colour family (Default: Investor / Buyer) */
+  --role: var(--orange);
+  --role-deep: var(--orange-deep);
+  --role-light: var(--orange-light);
+  --role-ghost: var(--orange-ghost);
+  --role-faint: var(--orange-faint);
+
+  /* Light mode defaults */
+  --bg: #FAFAF7;
+  --bg-paper: #FFFFFF;
+  --bg-bone: #F4F0E8;
+  --bg-tint: #FDF4EE;
+
+  --text: #0A0908;
+  --text-muted: rgba(10, 9, 8, 0.70);
+  --text-faint: rgba(10, 9, 8, 0.48);
+  --text-ghost: rgba(10, 9, 8, 0.28);
+
+  --line: rgba(10, 9, 8, 0.10);
+  --line-strong: rgba(10, 9, 8, 0.22);
+
+  --nav-bg: rgba(250, 250, 247, 0.86);
+  --grain-opacity: 0.035;
+  --grain-blend: multiply;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* Architect Mode Override */
+[data-role="architect"],
+.login-page[data-login-role="architect"] {
+  --role: var(--green);
+  --role-deep: var(--green-deep);
+  --role-light: var(--green-light);
+  --role-ghost: var(--green-ghost);
+  --role-faint: var(--green-faint);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* Dark Theme */
+[data-theme="dark"] {
+  --bg: #0B0908;
+  --bg-paper: #141110;
+  --bg-bone: #1A1614;
+  --bg-tint: #1F1612;
+
+  --text: #F2EDE4;
+  --text-muted: rgba(242, 237, 228, 0.72);
+  --text-faint: rgba(242, 237, 228, 0.48);
+  --text-ghost: rgba(242, 237, 228, 0.28);
+
+  --line: rgba(242, 237, 228, 0.10);
+  --line-strong: rgba(242, 237, 228, 0.22);
+
+  --nav-bg: rgba(11, 9, 8, 0.82);
+  --grain-opacity: 0.06;
+  --grain-blend: overlay;
 }
 
+/* Typography Base */
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-weight: 300;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  transition: background-color .35s var(--ease), color .35s var(--ease), border-color .35s var(--ease);
+}
+
+/* Texture Overlay */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 200;
+  opacity: var(--grain-opacity);
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  mix-blend-mode: var(--grain-blend);
+}
+
+.container {
+  max-width: var(--container);
+  margin: 0 auto;
+  padding-inline: var(--gutter);
+}
+
+.display {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-weight: 400;
+  line-height: .98;
+  letter-spacing: -.015em;
+  color: var(--text);
+}
+.display em {
+  font-style: italic;
+  color: var(--role);
+  font-weight: 400;
+}
+
+/* ============================================== */
+/* NAVBAR STYLING (Matching Demo Site) */
+/* ============================================== */
+nav.top {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  background: var(--nav-bg);
+  border-bottom: 1px solid var(--line);
+}
+
+.nav-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 0;
+  max-width: var(--container);
+  margin: 0 auto;
+  padding-inline: var(--gutter);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+}
+
+.brand-logo-img {
+  height: 28px;
+  width: auto;
+  display: block;
+}
+
+.nav-links {
+  display: flex;
+  gap: 1.75rem;
+  align-items: center;
+}
+
+.nav-links a {
+  font-size: .85rem;
+  color: var(--text-muted);
+  transition: color .2s var(--ease);
+  text-decoration: none;
+}
+
+.nav-links a:hover,
+.nav-links a.active {
+  color: var(--role);
+}
+
+.nav-cta {
+  display: flex;
+  gap: .65rem;
+  align-items: center;
+}
+
+.theme-toggle {
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 100px;
+  border: 1px solid var(--line-strong);
+  background: transparent;
+  transition: all .25s var(--ease);
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.theme-toggle:hover {
+  border-color: var(--role);
+  color: var(--role);
+  transform: rotate(15deg);
+}
+
+.theme-toggle svg {
+  width: 17px;
+  height: 17px;
+}
+
+.nav-role-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+  padding: .38rem .85rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 100px;
+  background: var(--bg-paper);
+  color: var(--text-muted);
+  font-size: .75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: .2s var(--ease);
+}
+
+.nav-role-pill:hover {
+  border-color: var(--role);
+  color: var(--text);
+}
+
+.nav-role-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--role);
+  box-shadow: 0 0 0 3px var(--role-ghost);
+}
+
+.nav-auth-btn {
+  padding: .45rem 1.15rem;
+  border: 1px solid var(--role);
+  border-radius: 4px;
+  background: var(--role);
+  color: #fff;
+  font-size: .82rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: .2s var(--ease);
+}
+
+.nav-auth-btn:hover {
+  background: var(--role-deep);
+  transform: translateY(-1px);
+}
+
+/* ============================================== */
+/* LOGIN PAGE STYLING (Exact Match to Demo Site) */
+/* ============================================== */
+.login-page {
+  --role: #E2571B;
+  --role-deep: #B8421A;
+  --role-ghost: rgba(226,87,27,.10);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(5rem, 8vw, 7rem) 0 clamp(2rem, 5vw, 4rem);
+  background: radial-gradient(circle at 88% 7%, var(--role-ghost), transparent 28%), var(--bg);
+  transition: background .28s var(--ease);
+}
+
+.login-page[data-login-role="architect"] {
+  --role: #16A34A;
+  --role-deep: #15803D;
+  --role-ghost: rgba(22,163,74,.11);
+}
+
+.login-shell {
+  width: min(100% - (var(--gutter) * 2), 1060px);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, .9fr) minmax(360px, 1.1fr);
+  border: 1px solid var(--line);
+  background: var(--bg-paper);
+  box-shadow: 0 24px 80px rgba(0,0,0,.08);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.login-intro {
+  padding: clamp(2rem, 5vw, 4.5rem);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 590px;
+  border-right: 1px solid var(--line);
+  background: linear-gradient(150deg, var(--bg-tint), transparent 55%);
+}
+
+.login-kicker {
+  display: flex;
+  align-items: center;
+  gap: .65rem;
+  color: var(--role);
+  font: 500 .7rem 'JetBrains Mono', monospace;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.login-kicker::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--role);
+  box-shadow: 0 0 0 5px var(--role-ghost);
+}
+
+.login-intro h1 {
+  max-width: 380px;
+  margin: 1.25rem 0 1rem;
+  color: var(--text);
+  font-family: 'Instrument Serif', serif;
+  font-size: clamp(2.6rem, 5vw, 4.4rem);
+  font-weight: 400;
+  line-height: .98;
+}
+
+.login-intro h1 em {
+  color: var(--role);
+  font-style: italic;
+}
+
+.login-copy {
+  max-width: 350px;
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 1rem;
+  line-height: 1.65;
+}
+
+.login-trust {
+  display: grid;
+  gap: .9rem;
+  margin-top: 2.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--line);
+}
+
+.login-trust-item {
+  display: flex;
+  align-items: flex-start;
+  gap: .7rem;
+  color: var(--text-muted);
+  font-size: .82rem;
+  line-height: 1.45;
+}
+
+.login-trust-icon {
+  flex: 0 0 auto;
+  width: 21px;
+  height: 21px;
+  display: grid;
+  place-items: center;
+  color: var(--green);
+  border: 1px solid rgba(22,163,74,.24);
+  border-radius: 50%;
+  background: rgba(22,163,74,.08);
+  font-size: .75rem;
+  font-weight: 700;
+}
+
+.login-card {
+  padding: clamp(2rem, 5vw, 4.5rem);
+}
+
+.login-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.login-card-title {
+  margin: 0;
+  color: var(--text);
+  font-family: 'Instrument Serif', serif;
+  font-size: 2.05rem;
+  font-weight: 400;
+}
+
+.login-card-subtitle {
+  margin: .45rem 0 0;
+  color: var(--text-muted);
+  font-size: .88rem;
+  line-height: 1.5;
+}
+
+.login-role-toggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: .45rem;
+  padding: .35rem;
+  border: 1px solid var(--line);
+  background: var(--bg-bone);
+  border-radius: 6px;
+}
+
+.login-role-btn {
+  min-height: 86px;
+  padding: .85rem .8rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: .28rem;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  text-align: left;
+  transition: .2s var(--ease);
+}
+
+.login-role-btn:hover {
+  color: var(--text);
+  background: var(--bg-paper);
+}
+
+.login-role-btn.active {
+  border-color: var(--role);
+  background: var(--bg-paper);
+  color: var(--text);
+  box-shadow: 0 4px 14px rgba(0,0,0,.06);
+}
+
+.login-role-name {
+  font-size: .86rem;
+  font-weight: 600;
+}
+
+.login-role-note {
+  font-size: .7rem;
+  color: var(--text-faint);
+  line-height: 1.35;
+}
+
+/* Social Buttons Grid */
+.login-social-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: .65rem;
+  margin-top: 1.35rem;
+}
+
+.login-google-btn,
+.login-linkedin-btn {
+  width: 100%;
+  min-height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .72rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 4px;
+  background: var(--bg-paper);
+  color: var(--text);
+  font-size: .9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: .2s var(--ease);
+}
+
+.login-google-btn:hover {
+  border-color: var(--role);
+  background: var(--bg-tint);
+}
+
+.login-linkedin-btn:hover {
+  border-color: #0A66C2;
+  background: rgba(10, 102, 194, 0.05);
+}
+
+.login-google-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.login-linkedin-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.login-divider {
+  display: flex;
+  align-items: center;
+  gap: .8rem;
+  margin: 1.45rem 0;
+  color: var(--text-faint);
+  font: .64rem 'JetBrains Mono', monospace;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+.login-divider::before,
+.login-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
+
+.login-field {
+  display: grid;
+  gap: .45rem;
+  margin-bottom: 1rem;
+}
+
+.login-label {
+  color: var(--text-muted);
+  font-size: .79rem;
+  font-weight: 600;
+}
+
+.login-input-wrap {
+  position: relative;
+}
+
+.login-input {
+  width: 100%;
+  min-height: 50px;
+  padding: .8rem .95rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 4px;
+  outline: none;
+  background: var(--bg-paper);
+  color: var(--text);
+  font: .9rem 'Geist', sans-serif;
+  transition: .2s var(--ease);
+  box-sizing: border-box;
+}
+
+.login-input:focus {
+  border-color: var(--role);
+  box-shadow: 0 0 0 3px var(--role-ghost);
+}
+
+.login-show-password {
+  position: absolute;
+  top: 50%;
+  right: .65rem;
+  transform: translateY(-50%);
+  border: 0;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: .74rem;
+  cursor: pointer;
+}
+
+.login-form-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: -.05rem 0 1.35rem;
+}
+
+.login-check {
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+  color: var(--text-muted);
+  font-size: .77rem;
+  cursor: pointer;
+}
+
+.login-check input {
+  accent-color: var(--role);
+}
+
+.login-help-link {
+  color: var(--role);
+  font-size: .77rem;
+  text-decoration: none;
+}
+
+.login-submit {
+  width: 100%;
+  min-height: 52px;
+  border: 0;
+  border-radius: 4px;
+  background: var(--role);
+  color: #fff;
+  font-size: .9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: .2s var(--ease);
+}
+
+.login-submit:hover {
+  background: var(--role-deep);
+  transform: translateY(-1px);
+}
+
+.login-status {
+  min-height: 20px;
+  margin: 1rem 0 0;
+  color: var(--text-muted);
+  font-size: .78rem;
+  line-height: 1.45;
+}
+
+.login-status.error {
+  color: var(--red);
+}
+
+.login-status.info {
+  color: var(--green);
+}
+
+.login-footer {
+  margin: 1.8rem 0 0;
+  color: var(--text-muted);
+  font-size: .82rem;
+  text-align: center;
+}
+
+.login-footer button {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--role);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.login-confirm-field {
+  display: grid;
+}
+
+/* ============================================== */
+/* FOOTER STYLING */
+/* ============================================== */
+footer {
+  border-top: 1px solid var(--line);
+  padding: 3rem 0 2rem;
+  background: var(--bg);
+  margin-top: auto;
+}
+
+.footer-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.footer-links {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.footer-links a {
+  font-size: .85rem;
+  color: var(--text-faint);
+  transition: color .2s var(--ease);
+  text-decoration: none;
+}
+
+.footer-links a:hover {
+  color: var(--text);
+}
+
+.footer-meta {
+  display: flex;
+  flex-direction: column;
+  gap: .4rem;
+  text-align: right;
+  font-size: .75rem;
+  color: var(--text-faint);
+}
+
+.footer-meta em {
+  color: var(--role);
+  font-style: italic;
+  font-family: 'Instrument Serif', serif;
+  font-size: .9rem;
+}
+
+@media (max-width: 760px) {
+  .login-shell {
+    grid-template-columns: 1fr;
+  }
+  .login-intro {
+    min-height: auto;
+    padding-bottom: 2rem;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .login-trust {
+    display: none;
+  }
+  .login-card {
+    padding-top: 2.5rem;
+  }
+  .footer-meta {
+    text-align: left;
+  }
+  .nav-links {
+    display: none;
+  }
 }
