@@ -257,6 +257,31 @@ nav.top {
   transform: translateY(-1px);
 }
 
+.nav-account-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  padding: .4rem .85rem;
+  border-radius: 20px;
+  font-size: .8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all .2s var(--ease);
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+.nav-account-pill.guest {
+  border: 1px solid var(--line-strong);
+  background: var(--bg-tint);
+  color: var(--text-muted);
+}
+
+.nav-account-pill.guest:hover {
+  border-color: var(--orange-faint);
+  color: var(--text);
+}
+
 /* ============================================== */
 /* LOGIN PAGE STYLING (Exact Match to Demo Site) */
 /* ============================================== */
