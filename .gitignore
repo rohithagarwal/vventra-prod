@@ -53,4 +53,5 @@ env/
 # Auto-generated agents and docs
 AGENTS.md
 *.md
+!FRONTEND_TECH_STACK.md
 
