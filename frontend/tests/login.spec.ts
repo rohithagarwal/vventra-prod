@@ -74,8 +74,8 @@ test.describe('Login & Registration Portal', () => {
   });
 
   test('validates password constraints checklist and confirmation in signup mode', async ({ page }) => {
-    // Switch to create account mode
-    await page.locator('#loginFooter button').click();
+    // Navigate directly to /signup
+    await page.goto('http://localhost:3000/signup');
     await expect(page.locator('#passwordConstraints')).toBeVisible();
 
     const passwordInput = page.locator('#loginPassword');
@@ -103,5 +103,15 @@ test.describe('Login & Registration Portal', () => {
     await expect(confirmInput).toHaveClass(/is-valid/);
     await expect(page.locator('#loginConfirmError')).toBeHidden();
   });
+
+  test('navigates directly to /signup and renders in Create Account mode', async ({ page }) => {
+    await page.goto('http://localhost:3000/signup');
+    await expect(page.locator('#loginTitle')).toContainText('Create your Investor / Buyer account');
+    await expect(page.locator('#loginConfirmField')).toBeVisible();
+    await expect(page.locator('#passwordConstraints')).toBeVisible();
+    await expect(page.locator('#loginSubmitBtn')).toContainText('Create Investor / Buyer account');
+    await expect(page.locator('#loginLinkedinBtn')).toBeVisible();
+  });
 });
+
 
