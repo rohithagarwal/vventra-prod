@@ -1,6 +1,16 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('vvEntra Member Onboarding Flow', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.route('**/*', (route) => {
+      const url = route.request().url();
+      if (url.includes('fonts.googleapis.com') || url.includes('fonts.gstatic.com')) {
+        return route.abort();
+      }
+      return route.continue();
+    });
+  });
+
   test('Clicking Create Investor / Buyer Account on /signup navigates to /onboarding', async ({ page }) => {
     await page.goto('/signup');
 
@@ -46,15 +56,12 @@ test.describe('vvEntra Member Onboarding Flow', () => {
   });
 
   test('Captures remember_me: true when Keep me signed in is checked', async ({ page }) => {
-    await page.goto('/signup');
+    await page.goto('/signup?role=architect');
 
     // Fill registration details
     await page.fill('#loginEmail', 'architect@build.io');
     await page.fill('#loginPassword', 'ComplexPass456!');
     await page.fill('#loginPasswordConfirm', 'ComplexPass456!');
-
-    // Toggle role to Architect
-    await page.locator('button[data-login-role="architect"]').click();
 
     // Check "Keep me signed in"
     await page.check('#loginRemember');

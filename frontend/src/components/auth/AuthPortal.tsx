@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { Check, AlertCircle, Loader2 } from "lucide-react";
@@ -13,6 +13,7 @@ interface AuthPortalProps {
 
 export function AuthPortal({ initialMode = "signin" }: AuthPortalProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [role, setRole] = useState<"investor" | "architect">("investor");
   const [mode, setMode] = useState<"signin" | "signup">(initialMode);
   const [showPassword, setShowPassword] = useState(false);
@@ -34,9 +35,14 @@ export function AuthPortal({ initialMode = "signin" }: AuthPortalProps) {
   });
 
   useEffect(() => {
+    const roleParam = searchParams.get("role");
+    if (roleParam === "architect" || roleParam === "investor") {
+      setRole(roleParam);
+      return;
+    }
     const savedRole = (localStorage.getItem("vve-role") as "investor" | "architect") || "investor";
     setRole(savedRole);
-  }, []);
+  }, [searchParams]);
 
   useEffect(() => {
     setMode(initialMode);

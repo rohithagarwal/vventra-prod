@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Suspense } from "react";
 import { AuthPortal } from "@/components/auth/AuthPortal";
 
 export const metadata = {
@@ -7,5 +7,9 @@ export const metadata = {
 };
 
 export default function RegisterPage() {
-  return <AuthPortal initialMode="signup" />;
+  return (
+    <Suspense fallback={<div className="page login-page" />}>
+      <AuthPortal initialMode="signup" />
+    </Suspense>
+  );
 }
