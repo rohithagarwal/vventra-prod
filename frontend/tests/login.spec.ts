@@ -2,7 +2,14 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Login & Registration Portal', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('http://localhost:3000/login');
+    await page.route('**/*', (route) => {
+      const url = route.request().url();
+      if (url.includes('fonts.googleapis.com') || url.includes('fonts.gstatic.com')) {
+        return route.abort();
+      }
+      return route.continue();
+    });
+    await page.goto('/login');
   });
 
   test('renders the exact demo page elements', async ({ page }) => {
@@ -75,7 +82,7 @@ test.describe('Login & Registration Portal', () => {
 
   test('validates password constraints checklist and confirmation in signup mode', async ({ page }) => {
     // Navigate directly to /signup
-    await page.goto('http://localhost:3000/signup');
+    await page.goto('/signup');
     await expect(page.locator('#passwordConstraints')).toBeVisible();
 
     const passwordInput = page.locator('#loginPassword');
@@ -105,7 +112,7 @@ test.describe('Login & Registration Portal', () => {
   });
 
   test('navigates directly to /signup and renders in Create Account mode', async ({ page }) => {
-    await page.goto('http://localhost:3000/signup');
+    await page.goto('/signup');
     await expect(page.locator('#loginTitle')).toContainText('Create your Investor / Buyer account');
     await expect(page.locator('#loginConfirmField')).toBeVisible();
     await expect(page.locator('#passwordConstraints')).toBeVisible();
