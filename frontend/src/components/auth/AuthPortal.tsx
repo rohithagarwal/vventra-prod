@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { Check, AlertCircle, Loader2 } from "lucide-react";
+import { registerUser, RegisterPayload, saveRegistrationData } from "@/lib/api/auth";
 
 interface AuthPortalProps {
   initialMode?: "signin" | "signup";
@@ -163,7 +164,7 @@ export function AuthPortal({ initialMode = "signin" }: AuthPortalProps) {
     window.open(linkedInUrl, "LinkedInOAuth", "width=600,height=700,top=100,left=100");
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setHasSubmitted(true);
 
@@ -203,29 +204,61 @@ export function AuthPortal({ initialMode = "signin" }: AuthPortalProps) {
       }
     }
 
-    // Pure frontend simulation (ready for backend API handoff)
     setIsSubmitting(true);
-    setStatus({
-      text: mode === "signup" ? "Validating registration details..." : "Verifying credentials...",
-      type: "info",
-    });
 
-    setTimeout(() => {
-      setIsSubmitting(false);
-      if (mode === "signup") {
-        if (typeof window !== "undefined") {
-          localStorage.setItem("vve-stage", "applied");
-          localStorage.setItem("vve-role", role);
-          localStorage.setItem("vve-email", email);
+    if (mode === "signup") {
+      setStatus({
+        text: "Registering account with vvEntra...",
+        type: "info",
+      });
+
+      // Construct user registration dictionary
+      const registrationPayload: RegisterPayload = {
+        role,
+        email: email.trim().toLowerCase(),
+        password,
+        remember_me: rememberMe,
+      };
+
+      // Store dictionary in frontend storage
+      saveRegistrationData(registrationPayload);
+
+      try {
+        // Send API request to backend (POST /api/v1/auth/register)
+        const result = await registerUser(registrationPayload);
+
+        setIsSubmitting(false);
+
+        if (result.success || result.isOffline) {
+          setStatus({
+            text: `Account created successfully for ${email}. Initializing workspace...`,
+            type: "info",
+          });
+          router.push(`/onboarding?role=${role}`);
+        } else {
+          setStatus({
+            text: result.error || "Registration failed. Please check your details.",
+            type: "error",
+          });
         }
+      } catch {
+        setIsSubmitting(false);
         router.push(`/onboarding?role=${role}`);
-      } else {
+      }
+    } else {
+      setStatus({
+        text: "Verifying credentials...",
+        type: "info",
+      });
+
+      setTimeout(() => {
+        setIsSubmitting(false);
         setStatus({
           text: `Welcome back! Signed in as ${roleLabel} (${email}).`,
           type: "info",
         });
-      }
-    }, 400);
+      }, 500);
+    }
   };
 
   return (
@@ -612,25 +645,25 @@ export function AuthPortal({ initialMode = "signin" }: AuthPortalProps) {
               )}
 
               {/* REMEMBER ME / FORGOT PASSWORD */}
-              {mode === "signin" && (
-                <div className="login-form-row">
-                  <label className="login-check">
-                    <input
-                      id="loginRemember"
-                      type="checkbox"
-                      checked={rememberMe}
-                      onChange={(e) => setRememberMe(e.target.checked)}
-                    />{" "}
-                    Keep me signed in
-                  </label>
+              <div className="login-form-row">
+                <label className="login-check">
+                  <input
+                    id="loginRemember"
+                    type="checkbox"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                  />{" "}
+                  Keep me signed in
+                </label>
+                {mode === "signin" && (
                   <a
                     href="mailto:hello@vventra.com?subject=vvEntra%20password%20help"
                     className="login-help-link"
                   >
                     Forgot password?
                   </a>
-                </div>
-              )}
+                )}
+              </div>
 
               {/* SUBMIT BUTTON */}
               <button

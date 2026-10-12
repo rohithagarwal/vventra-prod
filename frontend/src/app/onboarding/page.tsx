@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
+import { getStoredRegistrationData } from "@/lib/api/auth";
 
 function OnboardingContent() {
   const router = useRouter();
@@ -25,12 +26,18 @@ function OnboardingContent() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    // Check URL search params first, fallback to localStorage
+    // Check URL search params first, fallback to storedRegistration / localStorage
     const roleParam = searchParams.get("role");
+    const storedRegistration = getStoredRegistrationData();
+
     if (roleParam === "architect" || roleParam === "investor") {
       setRole(roleParam);
       document.documentElement.setAttribute("data-role", roleParam);
       localStorage.setItem("vve-role", roleParam);
+    } else if (storedRegistration?.role) {
+      setRole(storedRegistration.role);
+      document.documentElement.setAttribute("data-role", storedRegistration.role);
+      localStorage.setItem("vve-role", storedRegistration.role);
     } else {
       const savedRole = localStorage.getItem("vve-role") as "investor" | "architect";
       if (savedRole === "architect" || savedRole === "investor") {

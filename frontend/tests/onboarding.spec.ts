@@ -24,11 +24,61 @@ test.describe('vvEntra Member Onboarding Flow', () => {
     await expect(verifyPill).toBeVisible();
     await expect(verifyPill).toHaveText('Verify identity');
 
+    // Verify the exact dictionary stored in localStorage
+    const storedData = await page.evaluate(() => {
+      const raw = localStorage.getItem('vve-registration-data');
+      return raw ? JSON.parse(raw) : null;
+    });
+
+    expect(storedData).toEqual({
+      role: 'investor',
+      email: 'investor@firm.com',
+      password: 'SecurePass123!',
+      remember_me: false,
+    });
+
     // Wait for styling and fonts to render, then take screenshot
     await page.waitForTimeout(500);
     await page.screenshot({
       path: 'C:\\Users\\rohit\\.gemini\\antigravity\\brain\\805df1dc-3c11-45cd-8996-1ea9aea20024\\onboarding_step1_preview.png',
       fullPage: true,
+    });
+  });
+
+  test('Captures remember_me: true when Keep me signed in is checked', async ({ page }) => {
+    await page.goto('/signup');
+
+    // Fill registration details
+    await page.fill('#loginEmail', 'architect@build.io');
+    await page.fill('#loginPassword', 'ComplexPass456!');
+    await page.fill('#loginPasswordConfirm', 'ComplexPass456!');
+
+    // Toggle role to Architect
+    await page.locator('button[data-login-role="architect"]').click();
+
+    // Check "Keep me signed in"
+    await page.check('#loginRemember');
+
+    // Submit
+    const submitBtn = page.locator('#loginSubmitBtn');
+    await expect(submitBtn).toContainText('Create Architect / Creator account');
+    await submitBtn.click();
+
+    // Verify navigation to onboarding with architect role
+    await page.waitForURL('**/onboarding?role=architect');
+    await expect(page.locator('#onboardingKicker')).toHaveText('Architect account setup');
+
+    // Verify dictionary has remember_me: true and role: architect
+    const storedData = await page.evaluate(() => {
+      const raw = localStorage.getItem('vve-registration-data');
+      return raw ? JSON.parse(raw) : null;
+    });
+
+    expect(storedData).toEqual({
+      role: 'architect',
+      email: 'architect@build.io',
+      password: 'ComplexPass456!',
+      remember_me: true,
     });
   });
 
