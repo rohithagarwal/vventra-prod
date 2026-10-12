@@ -213,17 +213,19 @@ export function AuthPortal({ initialMode = "signin" }: AuthPortalProps) {
     setTimeout(() => {
       setIsSubmitting(false);
       if (mode === "signup") {
-        setStatus({
-          text: `Account created successfully for ${email}. ${roleLabel} workspace initialized.`,
-          type: "info",
-        });
+        if (typeof window !== "undefined") {
+          localStorage.setItem("vve-stage", "applied");
+          localStorage.setItem("vve-role", role);
+          localStorage.setItem("vve-email", email);
+        }
+        router.push(`/onboarding?role=${role}`);
       } else {
         setStatus({
           text: `Welcome back! Signed in as ${roleLabel} (${email}).`,
           type: "info",
         });
       }
-    }, 700);
+    }, 400);
   };
 
   return (

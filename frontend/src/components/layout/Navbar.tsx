@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 
 export function Navbar({
   currentRole = "investor",
@@ -11,8 +12,10 @@ export function Navbar({
   currentRole?: "investor" | "architect";
   onRoleChange?: (role: "investor" | "architect") => void;
 }) {
+  const pathname = usePathname();
   const [theme, setTheme] = useState<"light" | "dark">("light");
   const [role, setRole] = useState<"investor" | "architect">(currentRole);
+  const [stage, setStage] = useState<string>("guest");
 
   useEffect(() => {
     const savedTheme = (localStorage.getItem("vve-theme") as "light" | "dark") || "light";
@@ -22,6 +25,9 @@ export function Navbar({
     const savedRole = (localStorage.getItem("vve-role") as "investor" | "architect") || currentRole;
     setRole(savedRole);
     document.documentElement.setAttribute("data-role", savedRole);
+
+    const savedStage = localStorage.getItem("vve-stage") || "guest";
+    setStage(savedStage);
   }, [currentRole]);
 
   const toggleTheme = () => {
@@ -95,6 +101,7 @@ export function Navbar({
             <Link href="/#dashboard" data-route="dashboard">Dashboard</Link>
             <Link href="/#trust" data-route="trust">Trust</Link>
             <Link href="/#playbook" data-route="playbook">Playbook</Link>
+            <Link href="/#architecture" data-route="architecture">Architecture</Link>
             <Link href="/#faq" data-route="faq">FAQ</Link>
             <Link href="/#pricing" data-route="pricing">Pricing</Link>
             <Link href="/#opportunities" data-route="browse">Opportunities</Link>
@@ -112,6 +119,20 @@ export function Navbar({
               <span className="nav-role-dot" />
               <span>{role === "architect" ? "Architect Workspace" : "Investor Mode"}</span>
             </button>
+
+            {pathname === "/onboarding" || stage === "applied" ? (
+              <Link href="/onboarding" className="nav-account-pill applied">
+                Verify identity
+              </Link>
+            ) : stage === "verified" ? (
+              <Link href="/#dashboard" className="nav-account-pill verified">
+                Verified
+              </Link>
+            ) : (
+              <Link href="/login" data-route="login" className="nav-account-pill guest">
+                Log in
+              </Link>
+            )}
 
             <button
               type="button"
@@ -131,10 +152,6 @@ export function Navbar({
                 </svg>
               )}
             </button>
-
-            <Link href="/login" data-route="login" className="nav-account-pill guest">
-              Log in
-            </Link>
           </div>
         </div>
       </nav>
