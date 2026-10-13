@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 export function Navbar({
   currentRole = "investor",
@@ -13,22 +13,43 @@ export function Navbar({
   onRoleChange?: (role: "investor" | "architect") => void;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
   const [theme, setTheme] = useState<"light" | "dark">("light");
   const [role, setRole] = useState<"investor" | "architect">(currentRole);
   const [stage, setStage] = useState<string>("guest");
 
   useEffect(() => {
-    const savedTheme = (localStorage.getItem("vve-theme") as "light" | "dark") || "light";
-    setTheme(savedTheme);
-    document.documentElement.setAttribute("data-theme", savedTheme);
+    const syncState = () => {
+      const savedTheme = (localStorage.getItem("vve-theme") as "light" | "dark") || "light";
+      setTheme(savedTheme);
+      document.documentElement.setAttribute("data-theme", savedTheme);
 
-    const savedRole = (localStorage.getItem("vve-role") as "investor" | "architect") || currentRole;
-    setRole(savedRole);
-    document.documentElement.setAttribute("data-role", savedRole);
+      const savedRole = (localStorage.getItem("vve-role") as "investor" | "architect") || currentRole;
+      setRole(savedRole);
+      document.documentElement.setAttribute("data-role", savedRole);
 
-    const savedStage = localStorage.getItem("vve-stage") || "guest";
-    setStage(savedStage);
+      const savedStage = localStorage.getItem("vve-stage") || "guest";
+      setStage(savedStage);
+    };
+
+    syncState();
+    window.addEventListener("storage", syncState);
+    return () => window.removeEventListener("storage", syncState);
   }, [currentRole]);
+
+  const handleLogout = () => {
+    localStorage.removeItem("vve-stage");
+    localStorage.removeItem("vve-registration-data");
+    localStorage.removeItem("vve-profile");
+    localStorage.removeItem("vve-vlinkedin");
+    localStorage.removeItem("vve-vbank");
+    localStorage.removeItem("vve-vvideo");
+    setStage("guest");
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new Event("storage"));
+    }
+    router.push("/login");
+  };
 
   const toggleTheme = () => {
     const nextTheme = theme === "light" ? "dark" : "light";
@@ -120,18 +141,55 @@ export function Navbar({
               <span>{role === "architect" ? "Architect Workspace" : "Investor Mode"}</span>
             </button>
 
-            {pathname === "/onboarding" || pathname === "/verify" || stage === "applied" ? (
+            {/* Status Pill (when user is in applied/onboarding or verified stage) */}
+            {(stage === "applied" || pathname === "/onboarding" || pathname === "/verify") && (
               <Link href="/verify" className="nav-account-pill applied">
                 Verify identity
               </Link>
-            ) : stage === "verified" ? (
+            )}
+
+            {stage === "verified" && (
               <Link href="/#dashboard" className="nav-account-pill verified">
                 Verified
               </Link>
-            ) : (
-              <Link href="/login" data-route="login" className="nav-account-pill guest">
-                Log in
-              </Link>
+            )}
+
+            {/* Dedicated Log in button (Always available for guest or switching accounts) */}
+            <Link
+              href="/login"
+              data-route="login"
+              id="navLoginBtn"
+              className={`nav-account-pill guest ${pathname === "/login" || pathname === "/signup" ? "active" : ""}`}
+              title="Go to Login Portal"
+            >
+              Log in
+            </Link>
+
+            {/* Dedicated Log out button (Always available after getting logged in / session exists) */}
+            {(stage === "applied" || stage === "verified") && (
+              <button
+                type="button"
+                id="navLogoutBtn"
+                onClick={handleLogout}
+                className="nav-account-pill logout"
+                title="Log out and reset session"
+              >
+                <svg
+                  width="13"
+                  height="13"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                  <polyline points="16 17 21 12 16 7" />
+                  <line x1="21" y1="12" x2="9" y2="12" />
+                </svg>
+                <span>Log out</span>
+              </button>
             )}
 
             <button

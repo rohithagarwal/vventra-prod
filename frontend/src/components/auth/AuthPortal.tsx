@@ -21,6 +21,7 @@ export function AuthPortal({ initialMode = "signin" }: AuthPortalProps) {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
+  const [savedStage, setSavedStage] = useState<string>("guest");
 
   // Field touch & validation states
   const [emailTouched, setEmailTouched] = useState(false);
@@ -33,6 +34,16 @@ export function AuthPortal({ initialMode = "signin" }: AuthPortalProps) {
     text: "",
     type: "",
   });
+
+  useEffect(() => {
+    const syncStage = () => {
+      const s = localStorage.getItem("vve-stage") || "guest";
+      setSavedStage(s);
+    };
+    syncStage();
+    window.addEventListener("storage", syncStage);
+    return () => window.removeEventListener("storage", syncStage);
+  }, []);
 
   useEffect(() => {
     const roleParam = searchParams.get("role");
@@ -259,10 +270,15 @@ export function AuthPortal({ initialMode = "signin" }: AuthPortalProps) {
 
       setTimeout(() => {
         setIsSubmitting(false);
+        localStorage.setItem("vve-stage", "applied");
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(new Event("storage"));
+        }
         setStatus({
           text: `Welcome back! Signed in as ${roleLabel} (${email}).`,
           type: "info",
         });
+        router.push(`/onboarding?role=${role}`);
       }, 500);
     }
   };
@@ -321,6 +337,54 @@ export function AuthPortal({ initialMode = "signin" }: AuthPortalProps) {
                 </p>
               </div>
             </div>
+
+            {/* Active Session Notice with 1-click logout button */}
+            {savedStage && savedStage !== "guest" && (
+              <div
+                id="loginSessionBanner"
+                style={{
+                  margin: "1rem 0 0.5rem",
+                  padding: "0.65rem 0.9rem",
+                  borderRadius: "6px",
+                  background: "rgba(226, 87, 27, 0.08)",
+                  border: "1px solid rgba(226, 87, 27, 0.22)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  fontSize: "0.8rem",
+                  color: "var(--text)",
+                }}
+              >
+                <span>Active session: <strong>{savedStage === "verified" ? "Verified" : "Applied"}</strong></span>
+                <button
+                  type="button"
+                  id="loginResetBtn"
+                  onClick={() => {
+                    localStorage.removeItem("vve-stage");
+                    localStorage.removeItem("vve-registration-data");
+                    localStorage.removeItem("vve-profile");
+                    localStorage.removeItem("vve-vlinkedin");
+                    localStorage.removeItem("vve-vbank");
+                    localStorage.removeItem("vve-vvideo");
+                    setSavedStage("guest");
+                    if (typeof window !== "undefined") {
+                      window.dispatchEvent(new Event("storage"));
+                    }
+                    setStatus({ text: "Session cleared. You can now log in fresh.", type: "info" });
+                  }}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    color: "var(--orange)",
+                    fontWeight: 600,
+                    cursor: "pointer",
+                    textDecoration: "underline",
+                  }}
+                >
+                  Log out &amp; Reset
+                </button>
+              </div>
+            )}
 
             {/* Role Switcher Tabs */}
             <div className="login-role-toggle" role="tablist" aria-label="Choose account type">

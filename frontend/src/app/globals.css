@@ -321,6 +321,18 @@ nav.top {
   display: inline-block;
 }
 
+.nav-account-pill.logout {
+  border: 1px solid var(--line-strong);
+  background: var(--bg-tint);
+  color: var(--text-muted);
+}
+
+.nav-account-pill.logout:hover {
+  border-color: rgba(239, 68, 68, 0.45);
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
 /* ============================================== */
 /* LOGIN PAGE STYLING (Exact Match to Demo Site) */
 /* ============================================== */

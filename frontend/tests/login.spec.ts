@@ -119,6 +119,53 @@ test.describe('Login & Registration Portal', () => {
     await expect(page.locator('#loginSubmitBtn')).toContainText('Create Investor / Buyer account');
     await expect(page.locator('#loginLinkedinBtn')).toBeVisible();
   });
+
+  test('dedicated Log in button is always visible in navbar', async ({ page }) => {
+    await page.goto('/');
+    const loginBtn = page.locator('#navLoginBtn');
+    await expect(loginBtn).toBeVisible();
+    await expect(loginBtn).toHaveText('Log in');
+
+    // Click Log in -> navigates to /login
+    await loginBtn.click();
+    await page.waitForURL('**/login');
+  });
+
+  test('when logged in, both dedicated Log in and Log out buttons are present in the navbar', async ({ page }) => {
+    // Simulate user having applied stage in localStorage
+    await page.goto('/login');
+    await page.evaluate(() => {
+      localStorage.setItem('vve-stage', 'applied');
+      window.dispatchEvent(new Event('storage'));
+    });
+
+    // Check navbar contains both Log in and Log out
+    const loginBtn = page.locator('#navLoginBtn');
+    const logoutBtn = page.locator('#navLogoutBtn');
+    const verifyPill = page.locator('.nav-account-pill.applied');
+
+    await expect(loginBtn).toBeVisible();
+    await expect(logoutBtn).toBeVisible();
+    await expect(verifyPill).toBeVisible();
+
+    // Verify session notice is visible in login card
+    await expect(page.locator('#loginSessionBanner')).toBeVisible();
+
+    // Click Log out button
+    await logoutBtn.click();
+
+    // After clicking Log out:
+    // 1. logout button disappears
+    await expect(page.locator('#navLogoutBtn')).toBeHidden();
+    // 2. verify pill disappears
+    await expect(page.locator('.nav-account-pill.applied')).toBeHidden();
+    // 3. Log in button remains visible
+    await expect(page.locator('#navLoginBtn')).toBeVisible();
+    // 4. localStorage stage is cleared to guest
+    const stage = await page.evaluate(() => localStorage.getItem('vve-stage'));
+    expect(stage).toBeNull();
+  });
 });
+
 
 
