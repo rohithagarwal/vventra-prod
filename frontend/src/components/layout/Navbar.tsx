@@ -120,8 +120,8 @@ export function Navbar({
               <span>{role === "architect" ? "Architect Workspace" : "Investor Mode"}</span>
             </button>
 
-            {pathname === "/onboarding" || stage === "applied" ? (
-              <Link href="/onboarding" className="nav-account-pill applied">
+            {pathname === "/onboarding" || pathname === "/verify" || stage === "applied" ? (
+              <Link href="/verify" className="nav-account-pill applied">
                 Verify identity
               </Link>
             ) : stage === "verified" ? (

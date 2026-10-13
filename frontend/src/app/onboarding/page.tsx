@@ -198,8 +198,8 @@ function OnboardingContent() {
 
       setTimeout(() => {
         setIsSubmitting(false);
-        router.push("/#dashboard");
-      }, 600);
+        router.push(`/verify?role=${role}`);
+      }, 500);
     }
   };
 

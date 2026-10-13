@@ -126,8 +126,22 @@ test.describe('vvEntra Member Onboarding Flow', () => {
     await page.selectOption('#onboardingRange', '$50,000 – $250,000');
     await page.selectOption('#onboardingTimeline', 'Within 3 months');
 
-    // Finish profile
+    // Finish profile -> redirects to /verify
     await nextBtn.click();
-    await page.waitForTimeout(700);
+    await page.waitForURL('**/verify?role=investor');
+    await expect(page.locator('h1.display')).toContainText('Verify your');
+    await expect(page.locator('#verifyStatusTitle')).toHaveText('Verification in progress');
+    await expect(page.locator('#verifyStatusBadge')).toHaveText('Unverified');
+
+    // Connect LinkedIn
+    await page.fill('#verifyLinkedinUrl', 'https://www.linkedin.com/in/alexandervance');
+    await page.click('#verifyLinkedinBtn');
+    await expect(page.locator('[data-li-done]')).toBeVisible({ timeout: 4000 });
+    await expect(page.locator('#verifySubmitBtn')).toBeEnabled();
+
+    // Submit for verification
+    await page.click('#verifySubmitBtn');
+    await expect(page.locator('#verifyStatusTitle')).toHaveText('Identity verified', { timeout: 4000 });
+    await expect(page.locator('#verifyStatusBadge')).toHaveText('Verified');
   });
 });
