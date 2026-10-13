@@ -154,19 +154,19 @@ export function Navbar({
               </Link>
             )}
 
-            {/* Dedicated Log in button (Always available for guest or switching accounts) */}
-            <Link
-              href="/login"
-              data-route="login"
-              id="navLoginBtn"
-              className={`nav-account-pill guest ${pathname === "/login" || pathname === "/signup" ? "active" : ""}`}
-              title="Go to Login Portal"
-            >
-              Log in
-            </Link>
-
-            {/* Dedicated Log out button (Always available after getting logged in / session exists) */}
-            {(stage === "applied" || stage === "verified") && (
+            {/* When NOT logged in (Guest): Show Log in button */}
+            {stage !== "applied" && stage !== "verified" && pathname !== "/onboarding" && pathname !== "/verify" ? (
+              <Link
+                href="/login"
+                data-route="login"
+                id="navLoginBtn"
+                className={`nav-account-pill guest ${pathname === "/login" || pathname === "/signup" ? "active" : ""}`}
+                title="Log in to vvEntra"
+              >
+                Log in
+              </Link>
+            ) : (
+              /* When logged in: Show ONLY Log out button */
               <button
                 type="button"
                 id="navLogoutBtn"

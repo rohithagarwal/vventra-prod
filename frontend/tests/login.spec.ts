@@ -131,7 +131,7 @@ test.describe('Login & Registration Portal', () => {
     await page.waitForURL('**/login');
   });
 
-  test('when logged in, both dedicated Log in and Log out buttons are present in the navbar', async ({ page }) => {
+  test('when logged in, only Log out button is present in navbar and Log in is hidden', async ({ page }) => {
     // Simulate user having applied stage in localStorage
     await page.goto('/login');
     await page.evaluate(() => {
@@ -139,12 +139,12 @@ test.describe('Login & Registration Portal', () => {
       window.dispatchEvent(new Event('storage'));
     });
 
-    // Check navbar contains both Log in and Log out
     const loginBtn = page.locator('#navLoginBtn');
     const logoutBtn = page.locator('#navLogoutBtn');
     const verifyPill = page.locator('.nav-account-pill.applied');
 
-    await expect(loginBtn).toBeVisible();
+    // When logged in: Log out & Verify pill are visible, Log in is hidden
+    await expect(loginBtn).toBeHidden();
     await expect(logoutBtn).toBeVisible();
     await expect(verifyPill).toBeVisible();
 
@@ -159,7 +159,7 @@ test.describe('Login & Registration Portal', () => {
     await expect(page.locator('#navLogoutBtn')).toBeHidden();
     // 2. verify pill disappears
     await expect(page.locator('.nav-account-pill.applied')).toBeHidden();
-    // 3. Log in button remains visible
+    // 3. Log in button returns and is visible
     await expect(page.locator('#navLoginBtn')).toBeVisible();
     // 4. localStorage stage is cleared to guest
     const stage = await page.evaluate(() => localStorage.getItem('vve-stage'));
