@@ -224,7 +224,7 @@ function OnboardingContent() {
         console.warn("[Onboarding] Error submitting profile payload to backend:", err);
       } finally {
         setIsSubmitting(false);
-        router.push(`/verify?role=${role}`);
+        router.push(`/dashboard?role=${role}`);
       }
     }
   };

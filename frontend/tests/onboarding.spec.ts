@@ -126,9 +126,9 @@ test.describe('vvEntra Member Onboarding Flow', () => {
     await page.selectOption('#onboardingRange', '$50,000 – $250,000');
     await page.selectOption('#onboardingTimeline', 'Within 3 months');
 
-    // Finish profile -> redirects to /verify
+    // Finish profile -> redirects to /dashboard
     await nextBtn.click();
-    await page.waitForURL('**/verify?role=investor');
+    await page.waitForURL('**/dashboard?role=investor');
 
     // Verify exact profile dictionary saved in localStorage
     const storedProfile = await page.evaluate(() => {
@@ -147,19 +147,8 @@ test.describe('vvEntra Member Onboarding Flow', () => {
       deployment_timeline: 'Within 3 months',
     });
 
-    await expect(page.locator('h1.display')).toContainText('Verify your');
-    await expect(page.locator('#verifyStatusTitle')).toHaveText('Verification in progress');
-    await expect(page.locator('#verifyStatusBadge')).toHaveText('Unverified');
-
-    // Connect LinkedIn
-    await page.fill('#verifyLinkedinUrl', 'https://www.linkedin.com/in/alexandervance');
-    await page.click('#verifyLinkedinBtn');
-    await expect(page.locator('[data-li-done]')).toBeVisible({ timeout: 4000 });
-    await expect(page.locator('#verifySubmitBtn')).toBeEnabled();
-
-    // Submit for verification
-    await page.click('#verifySubmitBtn');
-    await expect(page.locator('#verifyStatusTitle')).toHaveText('Identity verified', { timeout: 4000 });
-    await expect(page.locator('#verifyStatusBadge')).toHaveText('Verified');
+    await expect(page.locator('.dashboard-page')).toBeVisible();
+    await expect(page.locator('h1.display')).toContainText('View the market');
+    await expect(page.locator('.role-btn.active')).toHaveAttribute('data-role', 'investor');
   });
 });

@@ -119,7 +119,7 @@ export function Navbar({
           </Link>
 
           <div className="nav-links">
-            <Link href="/#dashboard" data-route="dashboard">Dashboard</Link>
+            <Link href="/dashboard" data-route="dashboard">Dashboard</Link>
             <Link href="/#trust" data-route="trust">Trust</Link>
             <Link href="/#playbook" data-route="playbook">Playbook</Link>
             <Link href="/#architecture" data-route="architecture">Architecture</Link>
@@ -149,7 +149,7 @@ export function Navbar({
             )}
 
             {stage === "verified" && (
-              <Link href="/#dashboard" className="nav-account-pill verified">
+              <Link href="/dashboard" className="nav-account-pill verified">
                 Verified
               </Link>
             )}
