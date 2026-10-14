@@ -82,6 +82,7 @@ export async function registerUser(payload: RegisterPayload): Promise<ApiRespons
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "include",
         body: JSON.stringify(payload),
         signal: controller.signal,
       });
