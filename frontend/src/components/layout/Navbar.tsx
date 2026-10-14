@@ -127,7 +127,7 @@ export function Navbar({
             <Link href="/#pricing" data-route="pricing">Pricing</Link>
             <Link href="/#opportunities" data-route="browse">Opportunities</Link>
             <Link href="/signup?role=architect" data-route="list">List an opportunity</Link>
-            <Link href="/#terms" data-route="terms">Terms</Link>
+            <Link href="/terms" data-route="terms">Terms</Link>
           </div>
 
           <div className="nav-cta">

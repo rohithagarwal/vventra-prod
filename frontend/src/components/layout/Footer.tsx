@@ -11,7 +11,7 @@ export function Footer() {
             <Link href="/#list">Apply as an architect</Link>
             <Link href="/login">Log in</Link>
             <Link href="/#apply">Apply for access</Link>
-            <Link href="/#terms">Terms</Link>
+            <Link href="/terms">Terms</Link>
           </div>
           <div className="footer-meta">
             <span>© 2026 vvEntra · A venture intelligence company</span>
