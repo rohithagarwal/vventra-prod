@@ -171,9 +171,15 @@ nav.top {
 }
 
 .brand-logo-img {
-  height: 28px;
+  height: 42px;
   width: auto;
   display: block;
+  object-fit: contain;
+}
+@media (max-width: 600px) {
+  .brand-logo-img {
+    height: 34px;
+  }
 }
 
 .nav-links {

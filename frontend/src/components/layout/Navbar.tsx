@@ -111,8 +111,8 @@ export function Navbar({
             <Image
               src={theme === "dark" ? "/assets/logo-dark-mode.png" : "/assets/logo.png"}
               alt="vvEntra — We Enter Ventures Together"
-              width={124}
-              height={28}
+              width={121}
+              height={42}
               priority
               className="brand-logo-img"
             />
