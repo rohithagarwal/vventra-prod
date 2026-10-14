@@ -129,6 +129,24 @@ test.describe('vvEntra Member Onboarding Flow', () => {
     // Finish profile -> redirects to /verify
     await nextBtn.click();
     await page.waitForURL('**/verify?role=investor');
+
+    // Verify exact profile dictionary saved in localStorage
+    const storedProfile = await page.evaluate(() => {
+      const raw = localStorage.getItem('vve-profile');
+      return raw ? JSON.parse(raw) : null;
+    });
+
+    expect(storedProfile).toEqual({
+      full_name: 'Alexander Vance',
+      focus: 'Growth investor, operator-investor',
+      location: 'San Francisco, CA, USA',
+      sectors: ['B2B SaaS', 'AI & automation'],
+      additional_notes: null,
+      looking_for: 'Looking for vertical B2B SaaS assets with $500k ARR and proprietary distribution.',
+      capital_range: '$50,000 – $250,000',
+      deployment_timeline: 'Within 3 months',
+    });
+
     await expect(page.locator('h1.display')).toContainText('Verify your');
     await expect(page.locator('#verifyStatusTitle')).toHaveText('Verification in progress');
     await expect(page.locator('#verifyStatusBadge')).toHaveText('Unverified');

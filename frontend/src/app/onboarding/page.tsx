@@ -5,6 +5,12 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { getStoredRegistrationData } from "@/lib/api/auth";
+import {
+  submitInvestorProfile,
+  submitArchitectProfile,
+  InvestorProfilePayload,
+  ArchitectProfilePayload,
+} from "@/lib/api/profile";
 
 function OnboardingContent() {
   const router = useRouter();
@@ -158,7 +164,7 @@ function OnboardingContent() {
     }
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (step === 1) {
       if (!name.trim() || !headline.trim() || !location.trim()) {
         setError("Please complete your name, professional focus, and location to continue.");
@@ -181,25 +187,45 @@ function OnboardingContent() {
       setError("");
       setIsSubmitting(true);
 
-      const onboardingData = {
-        role,
-        name: name.trim(),
-        headline: headline.trim(),
+      // Construct the exact user profile dictionary as requested
+      const profileDictionary: InvestorProfilePayload = {
+        full_name: name.trim(),
+        focus: headline.trim(),
         location: location.trim(),
-        expertise: selectedChips,
-        otherExpertise: otherExpertise.trim(),
-        intent: intent.trim(),
-        range,
-        timeline,
+        sectors: selectedChips,
+        additional_notes: otherExpertise.trim() || null,
+        looking_for: intent.trim(),
+        capital_range: range,
+        deployment_timeline: timeline,
       };
 
+      // Always persist the payload locally in frontend storage
       localStorage.setItem("vve-stage", "applied");
-      localStorage.setItem("vve-profile", JSON.stringify(onboardingData));
+      localStorage.setItem("vve-profile", JSON.stringify(profileDictionary));
+      localStorage.setItem("vve-profile-dict", JSON.stringify(profileDictionary));
 
-      setTimeout(() => {
+      try {
+        if (role === "architect") {
+          const architectPayload: ArchitectProfilePayload = {
+            full_name: name.trim(),
+            headline: headline.trim(),
+            location: location.trim(),
+            sectors: selectedChips,
+            additional_notes: otherExpertise.trim() || null,
+            opportunity_description: intent.trim(),
+            doc_depth: range,
+            submission_timeline: timeline,
+          };
+          await submitArchitectProfile(architectPayload);
+        } else {
+          await submitInvestorProfile(profileDictionary);
+        }
+      } catch (err) {
+        console.warn("[Onboarding] Error submitting profile payload to backend:", err);
+      } finally {
         setIsSubmitting(false);
         router.push(`/verify?role=${role}`);
-      }, 500);
+      }
     }
   };
 
