@@ -2,13 +2,12 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Dashboard Page', () => {
   test.beforeEach(async ({ page }) => {
-    // Clear localStorage
-    await page.goto('/dashboard');
-    await page.evaluate(() => localStorage.clear());
+    // Clear localStorage before navigation
+    await page.addInitScript(() => localStorage.clear());
   });
 
   test('renders dashboard with 1:1 intelligence terminal layout', async ({ page }) => {
-    await page.goto('/dashboard');
+    await page.goto('/dashboard', { waitUntil: 'domcontentloaded' });
 
     // Page wrapper & hero title
     await expect(page.locator('.dashboard-page')).toBeVisible();
@@ -40,7 +39,7 @@ test.describe('Dashboard Page', () => {
   });
 
   test('toggles role perspective between Investor and Architect', async ({ page }) => {
-    await page.goto('/dashboard');
+    await page.goto('/dashboard', { waitUntil: 'domcontentloaded' });
 
     const roleToggle = page.locator('#role-toggle');
     const architectBtn = roleToggle.locator('button[data-role="architect"]');
@@ -67,7 +66,7 @@ test.describe('Dashboard Page', () => {
   });
 
   test('interacts with What Should I List recommender', async ({ page }) => {
-    await page.goto('/dashboard?role=architect');
+    await page.goto('/dashboard?role=architect', { waitUntil: 'domcontentloaded' });
 
     const wslModule = page.locator('#whatToListModule');
     await expect(wslModule).toBeVisible();
@@ -86,7 +85,7 @@ test.describe('Dashboard Page', () => {
   });
 
   test('toggles dashboard filter pills', async ({ page }) => {
-    await page.goto('/dashboard');
+    await page.goto('/dashboard', { waitUntil: 'domcontentloaded' });
 
     const filters = page.locator('.dash-filters');
     await expect(filters).toBeVisible();
