@@ -73,7 +73,7 @@ export async function registerUser(payload: RegisterPayload): Promise<ApiRespons
 
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 1200);
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
 
     let response: Response;
     try {

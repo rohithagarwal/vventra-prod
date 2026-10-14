@@ -138,7 +138,13 @@ export async function submitInvestorProfile(
 
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 1500);
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
+    // 1. Retrieve the token you stored in localStorage upon registration
+    const token = localStorage.getItem("vve-access-token");
+    const headers = {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`,
+    };
 
     let response: Response;
     try {
