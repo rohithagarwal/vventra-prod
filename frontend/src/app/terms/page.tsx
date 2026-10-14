@@ -11,6 +11,21 @@ export default function TermsPage() {
   useEffect(() => {
     const savedRole = (localStorage.getItem("vve-role") as "investor" | "architect") || "investor";
     setRole(savedRole);
+
+    const revealIO = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            e.target.classList.add("in");
+            revealIO.unobserve(e.target);
+          }
+        });
+      },
+      { threshold: 0.05, rootMargin: "0px 0px -20px 0px" }
+    );
+    document.querySelectorAll(".reveal").forEach((el) => revealIO.observe(el));
+
+    return () => revealIO.disconnect();
   }, []);
 
   const handleRoleToggle = (newRole: "investor" | "architect") => {
