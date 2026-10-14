@@ -165,6 +165,13 @@ test.describe('Login & Registration Portal', () => {
     const stage = await page.evaluate(() => localStorage.getItem('vve-stage'));
     expect(stage).toBeNull();
   });
+
+  test('renders Google Continue button with useGoogleLogin handler attached', async ({ page }) => {
+    const googleBtn = page.locator('#loginGoogleBtn');
+    await expect(googleBtn).toBeVisible();
+    await expect(googleBtn).toContainText('Continue with Google');
+    await expect(page.locator('.login-google-icon')).toBeVisible();
+  });
 });
 
 

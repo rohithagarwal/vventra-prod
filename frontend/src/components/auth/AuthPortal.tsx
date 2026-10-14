@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { Check, AlertCircle, Loader2 } from "lucide-react";
+import { useGoogleLogin } from "@react-oauth/google";
 import { registerUser, RegisterPayload, saveRegistrationData } from "@/lib/api/auth";
 
 interface AuthPortalProps {
@@ -139,27 +140,80 @@ export function AuthPortal({ initialMode = "signin" }: AuthPortalProps) {
     return "";
   }, [mode, confirmPassword, password, confirmPasswordTouched, hasSubmitted]);
 
-  const handleGoogleAuth = () => {
-    const clientId = "428998304160-djaan3bkeje5s2chfu30lcg4ipgpnbn5.apps.googleusercontent.com";
-    const redirectUri = window.location.origin + "/login";
+  // Hook to handle Google Sign-in / Sign-up
+  const googleLogin = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      try {
+        setStatus({
+          text: `Authenticating with Google as ${roleLabel}...`,
+          type: "info",
+        });
 
-    setStatus({
-      text: `Opening Google sign-in for ${roleLabel}...`,
-      type: "info",
-    });
+        const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
-    try {
-      const googleUrl = `https://accounts.google.com/o/oauth2/v2/auth?response_type=token&client_id=${clientId}&redirect_uri=${encodeURIComponent(
-        redirectUri
-      )}&scope=openid%20profile%20email`;
-      window.open(googleUrl, "GoogleOAuth", "width=600,height=700,top=100,left=100");
-    } catch {
+        // Send the Google token to your backend
+        const response = await fetch(`${API_BASE_URL}/api/v1/auth/google`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include", // Saves the refresh_token cookie
+          body: JSON.stringify({
+            credential: tokenResponse.access_token, // Backend accepts both ID token and access token
+            role, // "investor" or "architect"
+            remember_me: rememberMe,
+          }),
+        });
+
+        const data = await response.json().catch(() => null);
+
+        if (response.ok && data) {
+          // 1. Save access token and user in localStorage
+          if (data.access_token) {
+            localStorage.setItem("vve-access-token", data.access_token);
+          }
+          if (data.user) {
+            localStorage.setItem("vve-user", JSON.stringify(data.user));
+            if (data.user.role) {
+              localStorage.setItem("vve-role", data.user.role);
+            }
+          }
+          localStorage.setItem("vve-stage", data.user?.status === "verified" ? "verified" : "applied");
+          localStorage.setItem("vve-remember-me", String(rememberMe));
+          window.dispatchEvent(new Event("storage"));
+
+          // 2. Route user based on their status:
+          if (data.is_new_user || data.user?.status === "onboarding") {
+            window.location.href = `/onboarding?role=${data.user?.role || role}`;
+          } else if (data.user?.status === "pending_review") {
+            window.location.href = `/verify?role=${data.user?.role || role}`;
+          } else {
+            window.location.href = `/dashboard`;
+          }
+        } else {
+          const errorMsg = data?.detail || data?.error?.message || "Google sign-in failed.";
+          setStatus({
+            text: errorMsg,
+            type: "error",
+          });
+          alert(errorMsg);
+        }
+      } catch (err) {
+        console.error("Google auth request error:", err);
+        setStatus({
+          text: "Backend server is currently offline or unreachable. Please try again later.",
+          type: "error",
+        });
+      }
+    },
+    onError: () => {
+      console.error("Google Sign-In failed or was cancelled.");
       setStatus({
-        text: `Google OAuth connection initiated for ${roleLabel}.`,
-        type: "info",
+        text: "Google Sign-In failed or was cancelled.",
+        type: "error",
       });
-    }
-  };
+    },
+  });
 
   const handleLinkedInAuth = () => {
     const clientId = "77xjn2z32v0xr3";
@@ -419,7 +473,7 @@ export function AuthPortal({ initialMode = "signin" }: AuthPortalProps) {
                 type="button"
                 className="login-google-btn"
                 id="loginGoogleBtn"
-                onClick={handleGoogleAuth}
+                onClick={() => googleLogin()}
               >
                 <svg className="login-google-icon" viewBox="0 0 24 24" aria-hidden="true">
                   <path

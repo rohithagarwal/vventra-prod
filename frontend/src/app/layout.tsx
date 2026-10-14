@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 import "./globals.css";
 import { Providers } from "./providers";
 
@@ -6,6 +7,8 @@ export const metadata: Metadata = {
   title: "vvEntra · A Venture Intelligence Platform",
   description: "Curated venture opportunities structured for serious institutional capital.",
 };
+
+const GOOGLE_CLIENT_ID = "428998304160-djaan3bkeje5s2chfu30lcg4ipgpnbn5.apps.googleusercontent.com";
 
 export default function RootLayout({
   children,
@@ -32,7 +35,9 @@ export default function RootLayout({
             </linearGradient>
           </defs>
         </svg>
-        <Providers>{children}</Providers>
+        <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+          <Providers>{children}</Providers>
+        </GoogleOAuthProvider>
       </body>
     </html>
   );
