@@ -68,37 +68,52 @@ export function Navbar({
     }
   };
 
+  const isPricing = pathname === "/pricing";
+  const tickerLabelText = isPricing ? "Pricing" : "Live";
+  const tickerList = isPricing
+    ? [
+        { code: "▲", text: "Simple economics · Disciplined process", delta: "" },
+        { code: "▲", text: "No subscriptions · No listing fees · No surprises", delta: "" },
+        { code: "▲", text: "Three engagement paths · Buyer chooses how to proceed", delta: "" },
+        { code: "▲", text: "Try the live calculator below", delta: "" },
+        { code: "▲", text: "Simple economics · Disciplined process", delta: "" },
+        { code: "▲", text: "No subscriptions · No listing fees · No surprises", delta: "" },
+        { code: "▲", text: "Three engagement paths · Buyer chooses how to proceed", delta: "" },
+        { code: "▲", text: "Try the live calculator below", delta: "" },
+      ]
+    : [
+        { code: "VVE-2440", text: "B2B media · subscription play, US", delta: "+12%" },
+        { code: "VVE-2441", text: "Specialty logistics · SEA", delta: "+8%" },
+        { code: "VVE-2442", text: "Vertical AI · legal ops, India", delta: "+24%" },
+        { code: "VVE-2443", text: "Healthtech · diagnostics, India", delta: "+6%" },
+        { code: "VVE-2438", text: "D2C ayurveda · UNLOCKED", delta: "Closed" },
+        { code: "VVE-2429", text: "Creator marketplace · listed", delta: "+18%" },
+        { code: "VVE-2436", text: "AI agent · 3 new buyer requests", delta: "+14%" },
+        { code: "VVE-2425", text: "Climate · industrial monitoring", delta: "+9%" },
+        { code: "VVE-2434", text: "SMB lending · validated", delta: "+22%" },
+        { code: "VVE-2412", text: "Niche marketplace · DEAL CLOSED", delta: "$5.2k" },
+        { code: "VVE-2440", text: "B2B media · subscription play, US", delta: "+12%" },
+        { code: "VVE-2441", text: "Specialty logistics · SEA", delta: "+8%" },
+        { code: "VVE-2442", text: "Vertical AI · legal ops, India", delta: "+24%" },
+        { code: "VVE-2443", text: "Healthtech · diagnostics, India", delta: "+6%" },
+        { code: "VVE-2438", text: "D2C ayurveda · UNLOCKED", delta: "Closed" },
+        { code: "VVE-2429", text: "Creator marketplace · listed", delta: "+18%" },
+        { code: "VVE-2436", text: "AI agent · 3 new buyer requests", delta: "+14%" },
+        { code: "VVE-2425", text: "Climate · industrial monitoring", delta: "+9%" },
+        { code: "VVE-2434", text: "SMB lending · validated", delta: "+22%" },
+        { code: "VVE-2412", text: "Niche marketplace · DEAL CLOSED", delta: "$5.2k" },
+      ];
+
   return (
     <>
       <div className="ticker" tabIndex={0} aria-label="Market bulletin. Focus or hover to pause.">
-        <div className="ticker-label" id="ticker-label">Live</div>
+        <div className="ticker-label" id="ticker-label">{tickerLabelText}</div>
         <div className="ticker-track" id="ticker-track">
-          {[
-            { code: "VVE-2440", text: "B2B media · subscription play, US", delta: "+12%" },
-            { code: "VVE-2441", text: "Specialty logistics · SEA", delta: "+8%" },
-            { code: "VVE-2442", text: "Vertical AI · legal ops, India", delta: "+24%" },
-            { code: "VVE-2443", text: "Healthtech · diagnostics, India", delta: "+6%" },
-            { code: "VVE-2438", text: "D2C ayurveda · UNLOCKED", delta: "Closed" },
-            { code: "VVE-2429", text: "Creator marketplace · listed", delta: "+18%" },
-            { code: "VVE-2436", text: "AI agent · 3 new buyer requests", delta: "+14%" },
-            { code: "VVE-2425", text: "Climate · industrial monitoring", delta: "+9%" },
-            { code: "VVE-2434", text: "SMB lending · validated", delta: "+22%" },
-            { code: "VVE-2412", text: "Niche marketplace · DEAL CLOSED", delta: "$5.2k" },
-            { code: "VVE-2440", text: "B2B media · subscription play, US", delta: "+12%" },
-            { code: "VVE-2441", text: "Specialty logistics · SEA", delta: "+8%" },
-            { code: "VVE-2442", text: "Vertical AI · legal ops, India", delta: "+24%" },
-            { code: "VVE-2443", text: "Healthtech · diagnostics, India", delta: "+6%" },
-            { code: "VVE-2438", text: "D2C ayurveda · UNLOCKED", delta: "Closed" },
-            { code: "VVE-2429", text: "Creator marketplace · listed", delta: "+18%" },
-            { code: "VVE-2436", text: "AI agent · 3 new buyer requests", delta: "+14%" },
-            { code: "VVE-2425", text: "Climate · industrial monitoring", delta: "+9%" },
-            { code: "VVE-2434", text: "SMB lending · validated", delta: "+22%" },
-            { code: "VVE-2412", text: "Niche marketplace · DEAL CLOSED", delta: "$5.2k" },
-          ].map((it, idx) => (
+          {tickerList.map((it, idx) => (
             <span key={idx} className="ticker-item">
               <span className="code">{it.code}</span>
               <span>{it.text}</span>
-              <span className="up">{it.delta}</span>
+              {it.delta && <span className="up">{it.delta}</span>}
               <span className="sep" />
             </span>
           ))}
@@ -119,15 +134,15 @@ export function Navbar({
           </Link>
 
           <div className="nav-links">
-            <Link href="/dashboard" data-route="dashboard">Dashboard</Link>
+            <Link href="/dashboard" data-route="dashboard" className={pathname === "/dashboard" ? "active" : ""}>Dashboard</Link>
             <Link href="/#trust" data-route="trust">Trust</Link>
             <Link href="/#playbook" data-route="playbook">Playbook</Link>
             <Link href="/#architecture" data-route="architecture">Architecture</Link>
             <Link href="/#faq" data-route="faq">FAQ</Link>
-            <Link href="/#pricing" data-route="pricing">Pricing</Link>
+            <Link href="/pricing" data-route="pricing" className={pathname === "/pricing" ? "active" : ""}>Pricing</Link>
             <Link href="/#opportunities" data-route="browse">Opportunities</Link>
             <Link href="/signup?role=architect" data-route="list">List an opportunity</Link>
-            <Link href="/terms" data-route="terms">Terms</Link>
+            <Link href="/terms" data-route="terms" className={pathname === "/terms" ? "active" : ""}>Terms</Link>
           </div>
 
           <div className="nav-cta">
