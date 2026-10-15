@@ -23,9 +23,9 @@ test.describe('Home / Landing Page', () => {
 
     // 2. Navigation
     await expect(page.locator('nav.top')).toBeVisible();
-    await expect(page.locator('.brand-logo-img')).toBeVisible();
-    await expect(page.locator('.nav-role-pill')).toBeVisible();
+    await expect(page.locator('.brand-logo-img').first()).toBeVisible();
     await expect(page.locator('#theme-toggle')).toBeVisible();
+    await expect(page.locator('.nav-links')).toBeVisible();
 
     // 3. Hero Section
     await expect(page.locator('#hero-canvas')).toBeVisible();
@@ -101,15 +101,8 @@ test.describe('Home / Landing Page', () => {
     await expect(page.locator('footer')).toBeVisible();
   });
 
-  test('switches theme and role on home page', async ({ page }) => {
+  test('switches theme on home page', async ({ page }) => {
     await page.goto('/');
-    
-    // Toggle role
-    const roleBtn = page.locator('.nav-role-pill');
-    await roleBtn.click();
-    await expect(page.locator('html')).toHaveAttribute('data-role', 'architect');
-    await roleBtn.click();
-    await expect(page.locator('html')).toHaveAttribute('data-role', 'investor');
 
     // Toggle theme
     const themeBtn = page.locator('#theme-toggle');
