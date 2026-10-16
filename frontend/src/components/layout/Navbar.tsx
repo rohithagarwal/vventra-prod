@@ -136,6 +136,7 @@ export function Navbar({
 
   const isApplied = stage === "applied" || pathname === "/onboarding" || pathname === "/verify";
   const isVerified = stage === "verified";
+  const isLoggedIn = stage === "applied" || stage === "verified";
 
   return (
     <>
@@ -213,13 +214,15 @@ export function Navbar({
             >
               Opportunities
             </Link>
-            <Link
-              href="/signup?role=architect"
-              data-route="list"
-              className={pathname === "/signup" && role === "architect" ? "active" : ""}
-            >
-              List an opportunity
-            </Link>
+            {isLoggedIn && (
+              <Link
+                href="/list"
+                data-route="list"
+                className={pathname === "/list" ? "active" : ""}
+              >
+                List an opportunity
+              </Link>
+            )}
             <Link
               href="/terms"
               data-route="terms"

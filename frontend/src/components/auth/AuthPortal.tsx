@@ -182,8 +182,11 @@ export function AuthPortal({ initialMode = "signin" }: AuthPortalProps) {
           localStorage.setItem("vve-remember-me", String(rememberMe));
           window.dispatchEvent(new Event("storage"));
 
-          // 2. Route user based on their status:
-          if (data.is_new_user || data.user?.status === "onboarding") {
+          // 2. Route user based on their status or redirect parameter:
+          const redirectParam = searchParams.get("redirect");
+          if (redirectParam) {
+            window.location.href = redirectParam;
+          } else if (data.is_new_user || data.user?.status === "onboarding") {
             window.location.href = `/onboarding?role=${data.user?.role || role}`;
           } else if (data.user?.status === "pending_review") {
             window.location.href = `/verify?role=${data.user?.role || role}`;
@@ -305,7 +308,8 @@ export function AuthPortal({ initialMode = "signin" }: AuthPortalProps) {
             text: `Account created successfully for ${email}. Initializing workspace...`,
             type: "info",
           });
-          router.push(`/onboarding?role=${role}`);
+          const redirectParam = searchParams.get("redirect");
+          router.push(redirectParam || `/onboarding?role=${role}`);
         } else {
           setStatus({
             text: result.error || "Registration failed. Please check your details.",
@@ -314,7 +318,8 @@ export function AuthPortal({ initialMode = "signin" }: AuthPortalProps) {
         }
       } catch {
         setIsSubmitting(false);
-        router.push(`/onboarding?role=${role}`);
+        const redirectParam = searchParams.get("redirect");
+        router.push(redirectParam || `/onboarding?role=${role}`);
       }
     } else {
       setStatus({
@@ -332,7 +337,8 @@ export function AuthPortal({ initialMode = "signin" }: AuthPortalProps) {
           text: `Welcome back! Signed in as ${roleLabel} (${email}).`,
           type: "info",
         });
-        router.push(`/onboarding?role=${role}`);
+        const redirectParam = searchParams.get("redirect");
+        router.push(redirectParam || `/onboarding?role=${role}`);
       }, 500);
     }
   };

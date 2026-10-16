@@ -99,4 +99,31 @@ test.describe('Navbar Component', () => {
     await expect(appliedPill).toBeVisible();
     await expect(appliedPill).toHaveText('Verify identity');
   });
+
+  test('shows List an opportunity when logged in, and navigates directly to /list without login prompt', async ({ page }) => {
+    await page.goto('/');
+    // Set user as logged in
+    await page.evaluate(() => {
+      localStorage.setItem('vve-stage', 'applied');
+      localStorage.setItem('vve-role', 'architect');
+      window.dispatchEvent(new Event('storage'));
+    });
+    await page.reload();
+    await page.waitForTimeout(500);
+
+    const listLink = page.locator('.nav-links a[data-route="list"]');
+    await expect(listLink).toBeVisible();
+    await expect(listLink).toHaveText('List an opportunity');
+    await expect(listLink).toHaveAttribute('href', '/list');
+
+    // Click link -> navigates directly to /list
+    await listLink.click();
+    await page.waitForURL('**/list');
+
+    // On /list, verify composer is visible and NO login prompt appears
+    await expect(page.locator('.list-page')).toBeVisible();
+    await expect(page.locator('.list-page h1')).toContainText('Compose your listing');
+    await expect(page.locator('#listComposer')).toBeVisible();
+    await expect(page.locator('#listPreview')).toBeVisible();
+  });
 });
