@@ -293,31 +293,29 @@ export function Navbar({
                 <Link href="/verify" data-route="verify" className="nav-account-pill applied">
                   Verify identity
                 </Link>
-                {pathname === "/login" && (
-                  <button
-                    type="button"
-                    id="navLogoutBtn"
-                    onClick={handleLogout}
-                    className="nav-account-pill logout"
-                    title="Log out and reset session"
+                <button
+                  type="button"
+                  id="navLogoutBtn"
+                  onClick={handleLogout}
+                  className="nav-account-pill logout"
+                  title="Log out and reset session"
+                >
+                  <svg
+                    width="13"
+                    height="13"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
                   >
-                    <svg
-                      width="13"
-                      height="13"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1.8"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-                      <polyline points="16 17 21 12 16 7" />
-                      <line x1="21" y1="12" x2="9" y2="12" />
-                    </svg>
-                    <span>Log out</span>
-                  </button>
-                )}
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                    <polyline points="16 17 21 12 16 7" />
+                    <line x1="21" y1="12" x2="9" y2="12" />
+                  </svg>
+                  <span>Log out</span>
+                </button>
               </>
             ) : (
               <Link

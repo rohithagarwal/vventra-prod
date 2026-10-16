@@ -126,4 +126,26 @@ test.describe('Navbar Component', () => {
     await expect(page.locator('#listComposer')).toBeVisible();
     await expect(page.locator('#listPreview')).toBeVisible();
   });
+
+  test('shows Log out button across pages when logged in, and clicking it logs out', async ({ page }) => {
+    await page.goto('/');
+    await page.evaluate(() => {
+      localStorage.setItem('vve-stage', 'applied');
+      window.dispatchEvent(new Event('storage'));
+    });
+    await page.reload();
+    await page.waitForTimeout(500);
+
+    const logoutBtn = page.locator('#navLogoutBtn');
+    await expect(logoutBtn).toBeVisible();
+    await expect(logoutBtn).toContainText('Log out');
+
+    // Click Log out
+    await logoutBtn.click();
+    await page.waitForURL('**/login');
+
+    // Verify session reset in localStorage
+    const stage = await page.evaluate(() => localStorage.getItem('vve-stage'));
+    expect(stage).toBeNull();
+  });
 });
