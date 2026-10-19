@@ -1,3 +1,5 @@
+import { api } from "@/lib/api/client";
+
 export interface InvestorProfilePayload {
   full_name: string;
   focus: string;
@@ -8,7 +10,6 @@ export interface InvestorProfilePayload {
   capital_range: string;
   deployment_timeline: string;
 }
-
 export interface ArchitectProfilePayload {
   full_name: string;
   headline: string;
@@ -26,8 +27,6 @@ export interface ApiResponse<T> {
   error: string | null;
   isOffline?: boolean;
 }
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 // Sector mapping to backend enum machine values
 export const SECTOR_MAPPING: Record<string, string> = {
@@ -108,12 +107,26 @@ export function getStoredProfileData(): InvestorProfilePayload | null {
 /**
  * Submits the Investor profile dictionary to backend API (PUT /api/v1/profile/investor)
  */
+async function submitProtectedProfile(path: string, payload: unknown): Promise<ApiResponse<unknown>> {
+  try {
+    const response = await api.put(path, payload);
+    const responseData = await response.json().catch(() => null);
+    if (response.ok) return { success: true, data: responseData, error: null };
+
+    const detail = responseData && typeof responseData === "object" && "detail" in responseData
+      ? (responseData as { detail?: unknown }).detail
+      : null;
+    const message = typeof detail === "string" ? detail : "Profile submission failed. Please check your details.";
+    return { success: false, data: null, error: message };
+  } catch {
+    return { success: false, data: null, error: "Could not reach the profile service. Your profile is saved locally." };
+  }
+}
+
 export async function submitInvestorProfile(
   payload: InvestorProfilePayload
 ): Promise<ApiResponse<unknown>> {
   saveProfileData(payload);
-
-  // Map to backend schema values if matching enum exists
   const backendBody = {
     full_name: payload.full_name,
     focus: payload.focus,
@@ -124,86 +137,7 @@ export async function submitInvestorProfile(
     capital_range: CAPITAL_RANGE_MAPPING[payload.capital_range] || payload.capital_range,
     deployment_timeline: TIMELINE_MAPPING[payload.deployment_timeline] || payload.deployment_timeline,
   };
-
-  const headers: Record<string, string> = {
-    "Content-Type": "application/json",
-  };
-
-  if (typeof window !== "undefined") {
-    const token = localStorage.getItem("vve-access-token");
-    if (token) {
-      headers["Authorization"] = `Bearer ${token}`;
-    }
-  }
-
-  try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000);
-    // 1. Retrieve the token you stored in localStorage upon registration
-    const token = localStorage.getItem("vve-access-token");
-    const headers = {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${token}`,
-    };
-
-    let response: Response;
-    try {
-      response = await fetch(`${API_BASE_URL}/api/v1/profile/investor`, {
-        method: "PUT",
-        headers,
-        credentials: "include",
-        body: JSON.stringify(backendBody),
-        signal: controller.signal,
-      });
-    } catch {
-      // If PUT fails or not supported, try POST endpoint as fallback
-      response = await fetch(`${API_BASE_URL}/api/v1/profile/investor`, {
-        method: "POST",
-        headers,
-        credentials: "include",
-        body: JSON.stringify(backendBody),
-        signal: controller.signal,
-      });
-    } finally {
-      clearTimeout(timeoutId);
-    }
-
-    const responseData = await response.json().catch(() => null);
-
-    if (response.ok) {
-      return {
-        success: true,
-        data: responseData,
-        error: null,
-      };
-    } else {
-      let errorMsg = "Profile submission failed. Please check your details.";
-      if (responseData) {
-        if (typeof responseData.detail === "string") {
-          errorMsg = responseData.detail;
-        } else if (Array.isArray(responseData.detail) && responseData.detail[0]?.msg) {
-          errorMsg = responseData.detail[0].msg;
-        }
-      }
-
-      return {
-        success: false,
-        data: null,
-        error: errorMsg,
-      };
-    }
-  } catch (err) {
-    console.warn(
-      `[vvEntra Profile API] Backend unreachable at ${API_BASE_URL}. Saved locally.`,
-      err
-    );
-    return {
-      success: false,
-      data: null,
-      error: "Backend server is offline. Profile saved locally.",
-      isOffline: true,
-    };
-  }
+  return submitProtectedProfile("/api/v1/profile/investor", backendBody);
 }
 
 /**
@@ -225,76 +159,5 @@ export async function submitArchitectProfile(
     submission_timeline: ARCHITECT_TIMELINE_MAPPING[payload.submission_timeline] || payload.submission_timeline,
   };
 
-  const headers: Record<string, string> = {
-    "Content-Type": "application/json",
-  };
-
-  if (typeof window !== "undefined") {
-    const token = localStorage.getItem("vve-access-token");
-    if (token) {
-      headers["Authorization"] = `Bearer ${token}`;
-    }
-  }
-
-  try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 1500);
-
-    let response: Response;
-    try {
-      response = await fetch(`${API_BASE_URL}/api/v1/profile/architect`, {
-        method: "PUT",
-        headers,
-        credentials: "include",
-        body: JSON.stringify(backendBody),
-        signal: controller.signal,
-      });
-    } catch {
-      response = await fetch(`${API_BASE_URL}/api/v1/profile/architect`, {
-        method: "POST",
-        headers,
-        credentials: "include",
-        body: JSON.stringify(backendBody),
-        signal: controller.signal,
-      });
-    } finally {
-      clearTimeout(timeoutId);
-    }
-
-    const responseData = await response.json().catch(() => null);
-
-    if (response.ok) {
-      return {
-        success: true,
-        data: responseData,
-        error: null,
-      };
-    } else {
-      let errorMsg = "Profile submission failed.";
-      if (responseData) {
-        if (typeof responseData.detail === "string") {
-          errorMsg = responseData.detail;
-        } else if (Array.isArray(responseData.detail) && responseData.detail[0]?.msg) {
-          errorMsg = responseData.detail[0].msg;
-        }
-      }
-
-      return {
-        success: false,
-        data: null,
-        error: errorMsg,
-      };
-    }
-  } catch (err) {
-    console.warn(
-      `[vvEntra Profile API] Backend unreachable at ${API_BASE_URL}. Saved locally.`,
-      err
-    );
-    return {
-      success: false,
-      data: null,
-      error: "Backend server is offline. Profile saved locally.",
-      isOffline: true,
-    };
-  }
+  return submitProtectedProfile("/api/v1/profile/architect", backendBody);
 }

@@ -1,5 +1,9 @@
+import { apiUrl, fetchWithAuth } from "@/lib/api/client";
+
+export type UserRole = "investor" | "architect";
+
 export interface RegisterPayload {
-  role: "investor" | "architect";
+  role: UserRole;
   email: string;
   password: string;
   remember_me: boolean;
@@ -8,21 +12,35 @@ export interface RegisterPayload {
 export interface LoginPayload {
   email: string;
   password: string;
-  role?: "investor" | "architect";
+  role: UserRole;
+  remember_me: boolean;
+}
+
+export interface GoogleAuthPayload {
+  credential: string;
+  role: UserRole;
   remember_me: boolean;
 }
 
 export interface UserInfo {
   id: string;
   email: string;
-  role: "investor" | "architect" | string;
+  role: UserRole | string;
+  status: string;
+}
+
+export interface CurrentUserInfo {
+  id?: string;
+  email?: string;
+  role: UserRole | string;
   status: string;
 }
 
 export interface AuthResponse {
-  access_token: string;
+  access_token?: string;
   token_type?: string;
   expires_in?: number;
+  is_new_user?: boolean;
   user?: UserInfo;
 }
 
@@ -30,105 +48,117 @@ export interface ApiResponse<T> {
   success: boolean;
   data: T | null;
   error: string | null;
-  isOffline?: boolean;
 }
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+function getErrorMessage(data: unknown, fallback: string): string {
+  if (!data || typeof data !== "object") return fallback;
+  const body = data as Record<string, unknown>;
+  if (typeof body.detail === "string") return body.detail;
+  if (Array.isArray(body.detail) && body.detail[0] && typeof body.detail[0] === "object" && "msg" in body.detail[0]) {
+    const message = (body.detail[0] as { msg?: unknown }).msg;
+    if (typeof message === "string") return message;
+  }
+  if (typeof body.message === "string") return body.message;
+  if (body.error && typeof body.error === "object" && "message" in body.error) {
+    const message = (body.error as { message?: unknown }).message;
+    if (typeof message === "string") return message;
+  }
+  return fallback;
+}
 
-/**
- * Stores the user registration dictionary in browser storage
- */
+function persistAuthSession(data: AuthResponse, role: UserRole, rememberMe: boolean) {
+  if (typeof window === "undefined") return;
+  // Prefer the backend's HttpOnly refresh cookie. Keep only the short-lived access token
+  // when the API contract requires bearer authorization from the browser.
+  if (data.access_token) localStorage.setItem("vve-access-token", data.access_token);
+  if (data.user) localStorage.setItem("vve-user", JSON.stringify(data.user));
+  const resolvedRole = data.user?.role === "architect" ? "architect" : data.user?.role === "investor" ? "investor" : role;
+  localStorage.setItem("vve-role", resolvedRole);
+  const userStatus = data.user?.status?.toLowerCase();
+  localStorage.setItem("vve-stage", userStatus === "verified" || userStatus === "active" ? "verified" : "applied");
+  localStorage.setItem("vve-remember-me", String(rememberMe));
+  window.dispatchEvent(new Event("storage"));
+}
+
+async function postAuth<T>(path: string, payload: unknown, fallback: string): Promise<ApiResponse<T>> {
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), 15000);
+  try {
+    const response = await fetch(apiUrl(path), {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      credentials: "include",
+      body: JSON.stringify(payload),
+      signal: controller.signal,
+    });
+    const data = await response.json().catch(() => null);
+    if (!response.ok) return { success: false, data: null, error: getErrorMessage(data, fallback) };
+    return { success: true, data: data as T, error: null };
+  } catch (error) {
+    const message = error instanceof DOMException && error.name === "AbortError"
+      ? "The request timed out. Please try again."
+      : "Could not reach the authentication service. Please try again.";
+    return { success: false, data: null, error: message };
+  } finally {
+    window.clearTimeout(timeout);
+  }
+}
+
 export function saveRegistrationData(payload: RegisterPayload): void {
   if (typeof window === "undefined") return;
-
-  // Store the complete dictionary exactly as specified
-  localStorage.setItem("vve-registration-data", JSON.stringify(payload));
+  // Never persist a password in browser storage. Onboarding only needs the chosen role.
+  localStorage.removeItem("vve-registration-data");
   localStorage.setItem("vve-role", payload.role);
   localStorage.setItem("vve-email", payload.email);
-  localStorage.setItem("vve-stage", "applied");
   localStorage.setItem("vve-remember-me", String(payload.remember_me));
 }
 
-/**
- * Retrieves the stored registration dictionary from browser storage
- */
-export function getStoredRegistrationData(): RegisterPayload | null {
+/** Reads the saved signup role for onboarding without restoring credentials to storage. */
+export function getStoredRegistrationData(): Pick<RegisterPayload, "role"> | null {
   if (typeof window === "undefined") return null;
-
-  try {
-    const raw = localStorage.getItem("vve-registration-data");
-    if (!raw) return null;
-    return JSON.parse(raw) as RegisterPayload;
-  } catch {
-    return null;
-  }
+  const role = localStorage.getItem("vve-role");
+  return role === "investor" || role === "architect" ? { role } : null;
 }
 
-/**
- * Sends registration dictionary payload to backend API (POST /api/v1/auth/register)
- */
 export async function registerUser(payload: RegisterPayload): Promise<ApiResponse<AuthResponse>> {
-  // Always persist the payload locally in frontend
-  saveRegistrationData(payload);
+  const result = await postAuth<AuthResponse>("/api/v1/auth/register", payload, "Registration failed. Please check your details.");
+  if (result.success && result.data) persistAuthSession(result.data, payload.role, payload.remember_me);
+  return result;
+}
 
-  try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000);
+export async function loginUser(payload: LoginPayload): Promise<ApiResponse<AuthResponse>> {
+  const result = await postAuth<AuthResponse>("/api/v1/auth/login", payload, "Sign in failed. Check your email and password.");
+  if (result.success && result.data) persistAuthSession(result.data, payload.role, payload.remember_me);
+  return result;
+}
 
-    let response: Response;
-    try {
-      response = await fetch(`${API_BASE_URL}/api/v1/auth/register`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify(payload),
-        signal: controller.signal,
-      });
-    } finally {
-      clearTimeout(timeoutId);
-    }
+export async function authenticateWithGoogle(payload: GoogleAuthPayload): Promise<ApiResponse<AuthResponse>> {
+  const result = await postAuth<AuthResponse>("/api/v1/auth/google", payload, "Google sign-in failed.");
+  if (result.success && result.data) persistAuthSession(result.data, payload.role, payload.remember_me);
+  return result;
+}
 
-    const responseData = await response.json().catch(() => null);
+/** Returns the authenticated user's backend-authoritative role and account status. */
+export async function getCurrentUser(): Promise<CurrentUserInfo> {
+  const response = await fetchWithAuth("/api/v1/users/me", { method: "GET", headers: { Accept: "application/json" } });
+  const body: unknown = await response.json().catch(() => null);
+  if (!response.ok) throw new Error(getErrorMessage(body, "Could not load your account."));
 
-    if (response.ok) {
-      if (typeof window !== "undefined" && responseData?.access_token) {
-        localStorage.setItem("vve-access-token", responseData.access_token);
-        if (responseData.user) {
-          localStorage.setItem("vve-user", JSON.stringify(responseData.user));
-        }
-      }
-      return {
-        success: true,
-        data: responseData as AuthResponse,
-        error: null,
-      };
-    } else {
-      // Extract detailed error message from FastAPI validation response
-      let errorMsg = "Registration failed. Please check your details.";
-      if (responseData) {
-        if (typeof responseData.detail === "string") {
-          errorMsg = responseData.detail;
-        } else if (Array.isArray(responseData.detail) && responseData.detail[0]?.msg) {
-          errorMsg = responseData.detail[0].msg;
-        }
-      }
+  if (!body || typeof body !== "object") throw new Error("The account service returned an unexpected response.");
+  const root = body as Record<string, unknown>;
+  const data = root.data && typeof root.data === "object" ? root.data as Record<string, unknown> : root;
+  const candidate = data.user && typeof data.user === "object" ? data.user as Record<string, unknown> : data;
+  const role = typeof candidate.role === "string" ? candidate.role : "";
+  const status = typeof candidate.status === "string"
+    ? candidate.status
+    : typeof data.user_status === "string" ? data.user_status
+      : typeof root.user_status === "string" ? root.user_status : "";
+  if (!role || !status) throw new Error("The account service did not return a role and account status.");
 
-      return {
-        success: false,
-        data: null,
-        error: errorMsg,
-      };
-    }
-  } catch (err) {
-    // Backend server might be offline during development testing
-    console.warn("[vvEntra API] Backend unreachable at " + API_BASE_URL + ". Falling back to local state.", err);
-    return {
-      success: false,
-      data: null,
-      error: "Backend server is currently offline. Local registration saved.",
-      isOffline: true,
-    };
-  }
+  return {
+    id: typeof candidate.id === "string" ? candidate.id : undefined,
+    email: typeof candidate.email === "string" ? candidate.email : undefined,
+    role,
+    status,
+  };
 }

@@ -38,6 +38,8 @@ export function Navbar({
   }, [currentRole]);
 
   const handleLogout = () => {
+    localStorage.removeItem("vve-access-token");
+    localStorage.removeItem("vve-user");
     localStorage.removeItem("vve-stage");
     localStorage.removeItem("vve-registration-data");
     localStorage.removeItem("vve-profile");

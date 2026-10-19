@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   description: "Curated venture opportunities structured for serious institutional capital.",
 };
 
-const GOOGLE_CLIENT_ID = "428998304160-djaan3bkeje5s2chfu30lcg4ipgpnbn5.apps.googleusercontent.com";
+const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "328215010837-1evekgpek9742dpm9jkf75kpp1apdja5.apps.googleusercontent.com";
 
 export default function RootLayout({
   children,
@@ -25,7 +25,7 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="min-h-full flex flex-col bg-background text-foreground">
+      <body className="min-h-full flex flex-col bg-background text-foreground" suppressHydrationWarning>
         <svg width="0" height="0" style={{ position: "absolute" }} aria-hidden="true">
           <defs>
             <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">

@@ -2,13 +2,16 @@
 
 import React, { useState, useEffect, useRef, Suspense } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
+import { resolveAccountDestination } from "@/lib/auth/access";
 
 function DashboardContent() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const [role, setRole] = useState<"investor" | "architect">("investor");
+  const [isCheckingAccess, setIsCheckingAccess] = useState(true);
   const [period, setPeriod] = useState<"7-day" | "30-day" | "Quarterly">("7-day");
   const [sectorFilter, setSectorFilter] = useState<string>("All sectors");
 
@@ -23,6 +26,32 @@ function DashboardContent() {
     setRole(savedRole);
     document.documentElement.setAttribute("data-role", savedRole);
   }, [searchParams]);
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!localStorage.getItem("vve-access-token")) {
+      router.replace("/login");
+      return () => { cancelled = true; };
+    }
+    void (async () => {
+      try {
+        const destination = await resolveAccountDestination();
+        if (cancelled) return;
+        if (!destination.path.startsWith("/dashboard")) {
+          router.replace(destination.path);
+          return;
+        }
+        localStorage.setItem("vve-role", destination.role);
+        localStorage.setItem("vve-stage", "verified");
+        document.documentElement.setAttribute("data-role", destination.role);
+        setRole(destination.role);
+        setIsCheckingAccess(false);
+      } catch {
+        if (!cancelled) router.replace("/login");
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [router]);
 
   const handleRoleToggle = (newRole: "investor" | "architect") => {
     setRole(newRole);
@@ -422,6 +451,10 @@ function DashboardContent() {
     };
   }, []);
 
+  if (isCheckingAccess) {
+    return <main className="page dashboard-page" aria-live="polite"><div className="container" style={{ padding: "6rem 1.5rem", textAlign: "center" }}>Checking your account…</div></main>;
+  }
+
   return (
     <>
       <Navbar currentRole={role} onRoleChange={handleRoleToggle} />
@@ -701,22 +734,22 @@ function DashboardContent() {
               <circle className="radar-dot-pulse" cx="130" cy="80" r="6"/>
               <circle className="radar-dot" cx="130" cy="80" r="4"/>
               <circle className="radar-dot" cx="250" cy="55" r="4"/>
-              <text className="radar-label" x="230" y="20" text-anchor="middle">AI Compliance</text>
-              <text className="radar-value" x="230" y="32" text-anchor="middle">+28%</text>
-              <text className="radar-label" x="395" y="120" text-anchor="start">RegTech</text>
-              <text className="radar-value" x="395" y="132" text-anchor="start">+26%</text>
-              <text className="radar-label" x="400" y="235" text-anchor="start">Fintech SMB</text>
-              <text className="radar-value" x="400" y="247" text-anchor="start">+9%</text>
-              <text className="radar-label" x="245" y="335" text-anchor="middle">Healthtech</text>
-              <text className="radar-value" x="245" y="347" text-anchor="middle">+12%</text>
-              <text className="radar-label" x="60" y="290" text-anchor="end">Climate Tech</text>
-              <text className="radar-value" x="60" y="302" text-anchor="end">+18%</text>
-              <text className="radar-label" x="35" y="160" text-anchor="end">B2B SaaS</text>
-              <text className="radar-value" x="35" y="172" text-anchor="end">+22%</text>
-              <text className="radar-label" x="80" y="75" text-anchor="end">AI Agents</text>
-              <text className="radar-value" x="80" y="87" text-anchor="end">+24%</text>
-              <text className="radar-label" x="250" y="42" text-anchor="middle">Workflow AI</text>
-              <text className="radar-value" x="250" y="32" text-anchor="middle">+16%</text>
+              <text className="radar-label" x="230" y="20" textAnchor="middle">AI Compliance</text>
+              <text className="radar-value" x="230" y="32" textAnchor="middle">+28%</text>
+              <text className="radar-label" x="395" y="120" textAnchor="start">RegTech</text>
+              <text className="radar-value" x="395" y="132" textAnchor="start">+26%</text>
+              <text className="radar-label" x="400" y="235" textAnchor="start">Fintech SMB</text>
+              <text className="radar-value" x="400" y="247" textAnchor="start">+9%</text>
+              <text className="radar-label" x="245" y="335" textAnchor="middle">Healthtech</text>
+              <text className="radar-value" x="245" y="347" textAnchor="middle">+12%</text>
+              <text className="radar-label" x="60" y="290" textAnchor="end">Climate Tech</text>
+              <text className="radar-value" x="60" y="302" textAnchor="end">+18%</text>
+              <text className="radar-label" x="35" y="160" textAnchor="end">B2B SaaS</text>
+              <text className="radar-value" x="35" y="172" textAnchor="end">+22%</text>
+              <text className="radar-label" x="80" y="75" textAnchor="end">AI Agents</text>
+              <text className="radar-value" x="80" y="87" textAnchor="end">+24%</text>
+              <text className="radar-label" x="250" y="42" textAnchor="middle">Workflow AI</text>
+              <text className="radar-value" x="250" y="32" textAnchor="middle">+16%</text>
             </svg>
           </div>
           <div className="demand-legend" style={{"justifyContent":"center"}}>

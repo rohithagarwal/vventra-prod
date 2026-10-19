@@ -1,10 +1,34 @@
 "use client";
 
 import React, { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
+import { resolveAccountDestination } from "@/lib/auth/access";
 
 export default function Home() {
+  const router = useRouter();
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!localStorage.getItem("vve-access-token")) return;
+
+    void (async () => {
+      try {
+        const destination = await resolveAccountDestination();
+        if (cancelled) return;
+        localStorage.setItem("vve-role", destination.role);
+        localStorage.setItem("vve-stage", destination.path.startsWith("/dashboard") ? "verified" : "applied");
+        window.dispatchEvent(new Event("storage"));
+        router.replace(destination.path);
+      } catch {
+        // The public landing page remains available when session lookup is unavailable.
+      }
+    })();
+
+    return () => { cancelled = true; };
+  }, [router]);
+
   useEffect(() => {
     // 1. HERO CANVAS (theme-aware)
     let animationFrameId: number;
@@ -516,8 +540,8 @@ export default function Home() {
             <path className="quad-axis-arrow" d="M 1160 480 L 1170 480 M 1166 476 L 1170 480 L 1166 484"/>
             <path className="quad-axis-arrow" d="M 80 40 L 80 30 M 76 34 L 80 30 L 84 34"/>
             <text className="quad-axis-label" x="80" y="498">Slow</text>
-            <text className="quad-axis-label" x="620" y="498" text-anchor="middle">Demand growth →</text>
-            <text className="quad-axis-label" x="1160" y="498" text-anchor="end">Fast</text>
+            <text className="quad-axis-label" x="620" y="498" textAnchor="middle">Demand growth →</text>
+            <text className="quad-axis-label" x="1160" y="498" textAnchor="end">Fast</text>
             <text className="quad-axis-label" x="70" y="480" transform="rotate(-90 70 480)" style={{ textAnchor: 'start' }}>Low</text>
             <text className="quad-axis-label" x="70" y="260" transform="rotate(-90 70 260)" style={{ textAnchor: 'start' }}>Market activity ↑</text>
             <text className="quad-axis-label" x="70" y="40" transform="rotate(-90 70 40)" style={{ textAnchor: 'end' }}>High</text>

@@ -6,7 +6,8 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { Check, AlertCircle, Loader2 } from "lucide-react";
 import { useGoogleLogin } from "@react-oauth/google";
-import { registerUser, RegisterPayload, saveRegistrationData } from "@/lib/api/auth";
+import { authenticateWithGoogle, loginUser, registerUser, RegisterPayload, saveRegistrationData, UserInfo } from "@/lib/api/auth";
+import { resolveAccountDestination } from "@/lib/auth/access";
 
 interface AuthPortalProps {
   initialMode?: "signin" | "signup";
@@ -140,74 +141,50 @@ export function AuthPortal({ initialMode = "signin" }: AuthPortalProps) {
     return "";
   }, [mode, confirmPassword, password, confirmPasswordTouched, hasSubmitted]);
 
+  const routeSignedInUser = async (user?: UserInfo) => {
+    const fallbackRole = user?.role === "architect" ? "architect" : user?.role === "investor" ? "investor" : role;
+    try {
+      const destination = await resolveAccountDestination(user ? { role: user.role, status: user.status } : undefined);
+      localStorage.setItem("vve-role", destination.role);
+      localStorage.setItem("vve-stage", destination.path.startsWith("/dashboard") ? "verified" : "applied");
+      window.dispatchEvent(new Event("storage"));
+      setRole(destination.role);
+      router.replace(destination.path);
+    } catch {
+      const fallbackPath = user?.status === "onboarding"
+        ? `/onboarding?role=${fallbackRole}`
+        : user?.status === "active" || user?.status === "verified"
+          ? `/dashboard?role=${fallbackRole}`
+          : `/verify?role=${fallbackRole}`;
+      router.replace(fallbackPath);
+    }
+  };
+
   // Hook to handle Google Sign-in / Sign-up
   const googleLogin = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
-      try {
-        setStatus({
-          text: `Authenticating with Google as ${roleLabel}...`,
-          type: "info",
-        });
-
-        const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-
-        // Send the Google token to your backend
-        const response = await fetch(`${API_BASE_URL}/api/v1/auth/google`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include", // Saves the refresh_token cookie
-          body: JSON.stringify({
-            credential: tokenResponse.access_token, // Backend accepts both ID token and access token
-            role, // "investor" or "architect"
-            remember_me: rememberMe,
-          }),
-        });
-
-        const data = await response.json().catch(() => null);
-
-        if (response.ok && data) {
-          // 1. Save access token and user in localStorage
-          if (data.access_token) {
-            localStorage.setItem("vve-access-token", data.access_token);
-          }
-          if (data.user) {
-            localStorage.setItem("vve-user", JSON.stringify(data.user));
-            if (data.user.role) {
-              localStorage.setItem("vve-role", data.user.role);
-            }
-          }
-          localStorage.setItem("vve-stage", data.user?.status === "verified" ? "verified" : "applied");
-          localStorage.setItem("vve-remember-me", String(rememberMe));
-          window.dispatchEvent(new Event("storage"));
-
-          // 2. Route user based on their status:
-          if (data.is_new_user || data.user?.status === "onboarding") {
-            window.location.href = `/onboarding?role=${data.user?.role || role}`;
-          } else if (data.user?.status === "pending_review") {
-            window.location.href = `/verify?role=${data.user?.role || role}`;
-          } else {
-            window.location.href = `/dashboard`;
-          }
-        } else {
-          const errorMsg = data?.detail || data?.error?.message || "Google sign-in failed.";
-          setStatus({
-            text: errorMsg,
-            type: "error",
-          });
-          alert(errorMsg);
-        }
-      } catch (err) {
-        console.error("Google auth request error:", err);
-        setStatus({
-          text: "Backend server is currently offline or unreachable. Please try again later.",
-          type: "error",
-        });
+      setIsSubmitting(true);
+      setStatus({ text: `Authenticating with Google as ${roleLabel}...`, type: "info" });
+      const result = await authenticateWithGoogle({
+        credential: tokenResponse.access_token,
+        role,
+        remember_me: rememberMe,
+      });
+      setIsSubmitting(false);
+      if (!result.success || !result.data) {
+        setStatus({ text: result.error || "Google sign-in failed.", type: "error" });
+        return;
+      }
+      const user = result.data.user;
+      const resolvedRole = user?.role === "architect" ? "architect" : user?.role === "investor" ? "investor" : role;
+      if (result.data.is_new_user) {
+        router.push(`/onboarding?role=${resolvedRole}`);
+      } else {
+        await routeSignedInUser(user);
       }
     },
     onError: () => {
-      console.error("Google Sign-In failed or was cancelled.");
+      setIsSubmitting(false);
       setStatus({
         text: "Google Sign-In failed or was cancelled.",
         type: "error",
@@ -300,7 +277,7 @@ export function AuthPortal({ initialMode = "signin" }: AuthPortalProps) {
 
         setIsSubmitting(false);
 
-        if (result.success || result.isOffline) {
+        if (result.success && result.data) {
           setStatus({
             text: `Account created successfully for ${email}. Initializing workspace...`,
             type: "info",
@@ -314,7 +291,7 @@ export function AuthPortal({ initialMode = "signin" }: AuthPortalProps) {
         }
       } catch {
         setIsSubmitting(false);
-        router.push(`/onboarding?role=${role}`);
+        setStatus({ text: "Could not reach the authentication service. Please try again.", type: "error" });
       }
     } else {
       setStatus({
@@ -322,18 +299,19 @@ export function AuthPortal({ initialMode = "signin" }: AuthPortalProps) {
         type: "info",
       });
 
-      setTimeout(() => {
-        setIsSubmitting(false);
-        localStorage.setItem("vve-stage", "applied");
-        if (typeof window !== "undefined") {
-          window.dispatchEvent(new Event("storage"));
-        }
-        setStatus({
-          text: `Welcome back! Signed in as ${roleLabel} (${email}).`,
-          type: "info",
-        });
-        router.push(`/onboarding?role=${role}`);
-      }, 500);
+      const result = await loginUser({
+        email: email.trim().toLowerCase(),
+        password,
+        role,
+        remember_me: rememberMe,
+      });
+      setIsSubmitting(false);
+      if (!result.success || !result.data) {
+        setStatus({ text: result.error || "Sign in failed. Check your credentials and try again.", type: "error" });
+        return;
+      }
+      const user = result.data.user;
+      await routeSignedInUser(user);
     }
   };
 
@@ -474,6 +452,7 @@ export function AuthPortal({ initialMode = "signin" }: AuthPortalProps) {
                 className="login-google-btn"
                 id="loginGoogleBtn"
                 onClick={() => googleLogin()}
+                disabled={isSubmitting}
               >
                 <svg className="login-google-icon" viewBox="0 0 24 24" aria-hidden="true">
                   <path
@@ -493,7 +472,7 @@ export function AuthPortal({ initialMode = "signin" }: AuthPortalProps) {
                     d="M12 5.33c1.7 0 3.23.59 4.43 1.74l3.32-3.32C16.81 1.01 14.62 0 12 0A9.72 9.72 0 0 0 .96 6.38l4.72 2.88C6.57 7.32 9.06 5.33 12 5.33Z"
                   />
                 </svg>
-                <span id="loginGoogleText">Continue with Google</span>
+                <span id="loginGoogleText">{isSubmitting ? "Connecting..." : "Continue with Google"}</span>
               </button>
 
               <button
@@ -501,6 +480,7 @@ export function AuthPortal({ initialMode = "signin" }: AuthPortalProps) {
                 className="login-linkedin-btn"
                 id="loginLinkedinBtn"
                 onClick={handleLinkedInAuth}
+                disabled={isSubmitting}
               >
                 <svg
                   className="login-linkedin-icon"
