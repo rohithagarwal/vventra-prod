@@ -345,8 +345,8 @@ export default function Home() {
       const createFeedRow = (a: { role: string; action: string; code: string; sector: string }) => {
         const d = document.createElement("div");
         d.style.cssText =
-          "display:grid;grid-template-columns:1fr auto;gap:.85rem;align-items:center;padding:.55rem 0;border-bottom:1px solid var(--section-dark-line);font-size:.82rem;";
-        d.innerHTML = `<div style="display:flex;flex-direction:column;gap:.1rem;"><span style="color:var(--section-dark-text);"><span style="color:var(--role);">${a.role}</span> ${a.action} <span style="font-family:'JetBrains Mono',monospace;color:var(--role);">${a.code}</span></span><span style="font-size:.65rem;color:var(--section-dark-text-faint);letter-spacing:.04em;font-family:'JetBrains Mono',monospace;">${a.sector} · just now</span></div><span class="live-dot" style="color:var(--section-dark-text-muted);"></span>`;
+          "display:grid;grid-template-columns:1fr auto;gap:.85rem;align-items:center;padding:.55rem 0;border-bottom:1px solid var(--demand-line);font-size:.82rem;";
+        d.innerHTML = `<div style="display:flex;flex-direction:column;gap:.1rem;"><span style="color:var(--demand-text);"><span style="color:var(--role);">${a.role}</span> ${a.action} <span style="font-family:'JetBrains Mono',monospace;color:var(--role);">${a.code}</span></span><span style="font-size:.65rem;color:var(--demand-faint);letter-spacing:.04em;font-family:'JetBrains Mono',monospace;">${a.sector} · just now</span></div><span class="live-dot" style="color:var(--demand-muted);"></span>`;
         return d;
       };
       acts.slice(0, 4).forEach((a) => feed.appendChild(createFeedRow(a)));
@@ -592,7 +592,7 @@ export default function Home() {
   </div>
 </section>
 
-<section className="demand-section dark">
+<section className="demand-section">
   <div className="container">
     <div className="section-head reveal">
       <div className="section-marker"><span className="num">02</span><span className="line"></span><span className="name">Demand vs supply</span></div>
@@ -614,7 +614,7 @@ export default function Home() {
           <div className="ds-row"><span className="nm">D2C Wellness</span><div className="ds-bar demand" style={{ '--w': '52%' } as React.CSSProperties}><div className="fill"></div></div><div className="ds-bar supply" style={{ '--w': '58%' } as React.CSSProperties}><div className="fill"></div></div><span className="gap-v low">−6</span></div>
           <div className="ds-row"><span className="nm">Edtech</span><div className="ds-bar demand" style={{ '--w': '38%' } as React.CSSProperties}><div className="fill"></div></div><div className="ds-bar supply" style={{ '--w': '48%' } as React.CSSProperties}><div className="fill"></div></div><span className="gap-v low">−10</span></div>
         </div>
-        <p style={{ fontSize: '.72rem', color: 'var(--section-dark-text-faint)', margin: '1rem 0 0', letterSpacing: '.04em', lineHeight: '1.5' }}>Gap = (demand − supply). Positive gaps signal undersupplied opportunities, premium pricing power, faster unlock.</p>
+        <p className="demand-footnote">Gap = (demand − supply). Positive gaps signal undersupplied opportunities, premium pricing power, faster unlock.</p>
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
@@ -797,7 +797,7 @@ export default function Home() {
   </div>
 </section>
 
-<section id="trust" className="dark">
+<section id="trust">
   <div className="container">
     <div className="section-head reveal">
       <div className="section-marker"><span className="num">07</span><span className="line"></span><span className="name">Trust architecture</span></div>
