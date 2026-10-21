@@ -234,138 +234,17 @@ function DashboardContent() {
       updateChart();
     }, 2400);
 
-    // 6. Live Metrics Strip Updates
-    let invL = 184, invA = 87, invW = 42, invAr = 247;
-    let arcB = 87, arcS = 312, arcC = 37;
-    const tick = (el: HTMLElement | null) => {
-      if (!el) return;
-      el.classList.add("tick");
-      setTimeout(() => el.classList.remove("tick"), 600);
-    };
+    // 6. Live Metrics Strip Updates (idle: 0 users on platform yet)
+    const metricsInterval = setInterval(() => {}, 60000);
 
-    const metricsInterval = setInterval(() => {
-      if (Math.random() > 0.5) {
-        invL++;
-        const el1 = document.getElementById("inv-m1");
-        const el1d = document.getElementById("inv-m1-d");
-        if (el1) { el1.innerText = String(invL); tick(el1); }
-        if (el1d) { el1d.innerText = `↑ +${invL - 172} today`; }
-      }
-      if (Math.random() > 0.4) {
-        invA += (Math.random() > 0.5 ? 1 : -1);
-        invA = Math.max(80, Math.min(110, invA));
-        const el2 = document.getElementById("inv-m2");
-        if (el2) { el2.innerText = String(invA); tick(el2); }
-      }
-      if (Math.random() > 0.7) {
-        invW++;
-        const el3 = document.getElementById("inv-m3");
-        if (el3) el3.innerText = String(invW);
-      }
-      if (Math.random() > 0.8) {
-        invAr++;
-        const el4 = document.getElementById("inv-m4");
-        if (el4) el4.innerText = String(invAr);
-      }
-      if (Math.random() > 0.4) {
-        arcB += (Math.random() > 0.5 ? 1 : -1);
-        arcB = Math.max(80, Math.min(110, arcB));
-        const arc1 = document.getElementById("arc-m1");
-        if (arc1) arc1.innerText = String(arcB);
-      }
-      if (Math.random() > 0.3) {
-        arcS += Math.round(Math.random() * 3);
-        const arc2 = document.getElementById("arc-m2");
-        if (arc2) arc2.innerText = String(arcS);
-      }
-      if (Math.random() > 0.85) {
-        arcC++;
-        const arc3 = document.getElementById("arc-m3");
-        if (arc3) arc3.innerText = String(arcC);
-      }
-    }, 3800);
+    // 7. Live Deal Feed (idle: 0 users on platform yet)
+    const dealInterval = setInterval(() => {}, 60000);
 
-    // 7. Live Deal Feed
-    const dealFeed = document.getElementById("deal-feed");
-    const dealSamples = [
-      { code: "VVE-2447", title: "Niche B2B media · vertical newsletters", meta: "94p · 6 frameworks · ex-editor", price: "$3,400", status: "live" },
-      { code: "VVE-2448", title: "Specialty logistics · cold chain MENA", meta: "118p · 8 frameworks · ex-ops director", price: "$5,800", status: "surge" },
-      { code: "VVE-2449", title: "AI ops · vertical legal automation", meta: "102p · 7 frameworks · ex-counsel", price: "$4,200", status: "live" },
-      { code: "VVE-2450", title: "Climate · grid storage software", meta: "126p · 9 frameworks · ex-energy", price: "$5,400", status: "surge" },
-      { code: "VVE-2451", title: "Creator economy · niche B2B vertical", meta: "88p · 5 frameworks · operator", price: "$2,900", status: "live" },
-    ];
-    let dealIdx = 0;
-    const dealInterval = setInterval(() => {
-      if (!dealFeed) return;
-      const s = dealSamples[dealIdx % dealSamples.length];
-      dealIdx++;
-      const row = document.createElement("div");
-      row.className = "deal-row new";
-      row.innerHTML = `<span class="deal-code">${s.code}</span><div class="deal-info"><span class="deal-title">${s.title}</span><span class="deal-meta">${s.meta}</span></div><span class="deal-price">${s.price}</span><span class="deal-status ${s.status}"></span>`;
-      dealFeed.insertBefore(row, dealFeed.firstChild);
-      setTimeout(() => row.classList.remove("new"), 800);
-      if (dealFeed.children.length > 8 && dealFeed.lastChild) {
-        dealFeed.removeChild(dealFeed.lastChild);
-      }
-    }, 5800);
+    // 8. Live Peer Activity (idle: 0 users on platform yet)
+    const peerInterval = setInterval(() => {}, 60000);
 
-    // 8. Live Peer Activity (Investor)
-    const peerFeed = document.getElementById("peer-activity-inv");
-    const peerSamples = [
-      { type: "pe", role: "PE Director", interest: "Unlocked B2B SaaS · VVE-2437", badge: "Senior", time: "just now" },
-      { type: "vc", role: "VC Partner", interest: "Requested climate tech access", badge: "Premium", time: "1m ago" },
-      { type: "fo", role: "Family Office", interest: "Closed healthtech · $6.8k", badge: "Senior", time: "3m ago" },
-      { type: "sb", role: "Strategic Buyer", interest: "NDA signed · AI workflow", badge: "Verified", time: "15m ago" },
-    ];
-    let peerIdx = 0;
-    const peerInterval = setInterval(() => {
-      if (!peerFeed) return;
-      const a = peerSamples[peerIdx % peerSamples.length];
-      peerIdx++;
-      const row = document.createElement("div");
-      row.className = "looking-row";
-      row.style.opacity = "0";
-      row.style.transform = "translateY(-8px)";
-      row.style.transition = "opacity .5s, transform .5s";
-      row.innerHTML = `<div class="avatar ${a.type}">${a.type.toUpperCase()}</div><div class="info"><span class="role">${a.role}</span><span class="interest">${a.interest}</span></div><span class="badge">${a.badge}</span><span class="time">${a.time}</span>`;
-      peerFeed.insertBefore(row, peerFeed.firstChild);
-      requestAnimationFrame(() => {
-        row.style.opacity = "1";
-        row.style.transform = "translateY(0)";
-      });
-      if (peerFeed.children.length > 8 && peerFeed.lastChild) {
-        peerFeed.removeChild(peerFeed.lastChild);
-      }
-    }, 6200);
-
-    // 9. Live Looking (Architect)
-    const lookFeed = document.getElementById("looking-arc");
-    const lookSamples = [
-      { type: "pe", role: "PE Principal", interest: "AI vertical compliance" },
-      { type: "vc", role: "VC Partner", interest: "B2B SaaS healthcare" },
-      { type: "sb", role: "Strategic Buyer", interest: "Tier 3: AI agents" },
-      { type: "fo", role: "Family Office", interest: "Workflow AI vertical" },
-    ];
-    let lookIdx = 0;
-    const lookInterval = setInterval(() => {
-      if (!lookFeed) return;
-      const s = lookSamples[lookIdx % lookSamples.length];
-      lookIdx++;
-      const row = document.createElement("div");
-      row.className = "looking-row";
-      row.style.opacity = "0";
-      row.style.transform = "translateY(-8px)";
-      row.style.transition = "opacity .5s, transform .5s";
-      row.innerHTML = `<div class="avatar ${s.type}">${s.type.toUpperCase()}</div><div class="info"><span class="role">${s.role}</span><span class="interest">${s.interest}</span></div><span class="time">just now</span>`;
-      lookFeed.insertBefore(row, lookFeed.firstChild);
-      requestAnimationFrame(() => {
-        row.style.opacity = "1";
-        row.style.transform = "translateY(0)";
-      });
-      if (lookFeed.children.length > 8 && lookFeed.lastChild) {
-        lookFeed.removeChild(lookFeed.lastChild);
-      }
-    }, 7200);
+    // 9. Live Looking (idle: 0 users on platform yet)
+    const lookInterval = setInterval(() => {}, 60000);
 
     // 10. What Should I List interactive module
     const wslModule = document.getElementById("whatToListModule");
@@ -526,66 +405,66 @@ function DashboardContent() {
     <div className="metrics-grid role-show" data-show="investor">
       <div className="metric-cell">
         <span className="nm"><span className="live"></span>Live Listings</span>
-        <span className="v" id="inv-m1">184</span>
-        <span className="d up" id="inv-m1-d">↑ +12 today</span>
+        <span className="v" id="inv-m1">0</span>
+        <span className="d up" id="inv-m1-d">0 today</span>
       </div>
       <div className="metric-cell">
         <span className="nm"><span className="live"></span>Active Now</span>
-        <span className="v" id="inv-m2">87</span>
-        <span className="d up">↑ +14% vs avg</span>
+        <span className="v" id="inv-m2">0</span>
+        <span className="d up">0 vs avg</span>
       </div>
       <div className="metric-cell">
         <span className="nm">New This Week</span>
-        <span className="v" id="inv-m3">42</span>
-        <span className="d up">↑ +18% WoW</span>
+        <span className="v" id="inv-m3">0</span>
+        <span className="d up">0 WoW</span>
       </div>
       <div className="metric-cell">
         <span className="nm">Architects Online</span>
-        <span className="v" id="inv-m4">247</span>
-        <span className="d up">↑ +8 this wk</span>
+        <span className="v" id="inv-m4">0</span>
+        <span className="d up">0 this wk</span>
       </div>
       <div className="metric-cell">
         <span className="nm">Avg Unlock</span>
-        <span className="v">$4.3k</span>
-        <span className="d up">↑ 22% MoM</span>
+        <span className="v">$0</span>
+        <span className="d up">0% MoM</span>
       </div>
       <div className="metric-cell">
         <span className="nm">Deals Closed</span>
-        <span className="v">37</span>
-        <span className="d up">↑ 9% MoM</span>
+        <span className="v">0</span>
+        <span className="d up">0% MoM</span>
       </div>
     </div>
     {/* ARCHITECT METRICS */}
     <div className="metrics-grid role-show" data-show="architect">
       <div className="metric-cell">
         <span className="nm"><span className="live"></span>Buyers Online</span>
-        <span className="v" id="arc-m1">87</span>
-        <span className="d up">↑ +14% vs avg</span>
+        <span className="v" id="arc-m1">0</span>
+        <span className="d up">0 vs avg</span>
       </div>
       <div className="metric-cell">
         <span className="nm">Active Searches</span>
-        <span className="v" id="arc-m2">312</span>
-        <span className="d up">↑ +28% this wk</span>
+        <span className="v" id="arc-m2">0</span>
+        <span className="d up">0 this wk</span>
       </div>
       <div className="metric-cell">
         <span className="nm">Avg Unlock Value</span>
-        <span className="v">$4.3k</span>
-        <span className="d up">↑ 22% MoM</span>
+        <span className="v">$0</span>
+        <span className="d up">0% MoM</span>
       </div>
       <div className="metric-cell">
         <span className="nm">Top Sector Pay</span>
-        <span className="v">$7.2k</span>
-        <span className="d up">Fintech SMB</span>
+        <span className="v">$0</span>
+        <span className="d up">--</span>
       </div>
       <div className="metric-cell">
         <span className="nm">Demand Gap</span>
-        <span className="v" style={{"color":"var(--role)"}}>+34%</span>
+        <span className="v" style={{"color":"var(--role)"}}>0%</span>
         <span className="d up">Top 5 sectors</span>
       </div>
       <div className="metric-cell">
         <span className="nm">Listings Cleared</span>
-        <span className="v" id="arc-m3">37</span>
-        <span className="d up">↑ 9% MoM</span>
+        <span className="v" id="arc-m3">0</span>
+        <span className="d up">0% MoM</span>
       </div>
     </div>
   </div>
@@ -603,7 +482,7 @@ function DashboardContent() {
         </div>
         <div>
           <h4>Your <em>thesis match</em> this week</h4>
-          <p>Based on your interest in <strong>AI vertical workflow</strong> and <strong>B2B SaaS mid-market</strong>: 14 new opportunities matched your filters. 3 are unlocked by peer PE buyers. <strong>2 are in the surge zone with rising demand and limited supply</strong>, these typically clear within 5 days.</p>
+          <p>Based on your interest in <strong>AI vertical workflow</strong> and <strong>B2B SaaS mid-market</strong>: 0 listings matched your thesis currently. As architects publish verified blueprints, matched opportunities and peer unlock signals will stream here.</p>
         </div>
       </div>
     </div>
@@ -614,7 +493,7 @@ function DashboardContent() {
         </div>
         <div>
           <h4>Your <em>build signal</em> this week</h4>
-          <p>Highest-value gap detected in <strong>RegTech compliance for mid-market</strong>: buyer demand index 84, only 18 active listings, average unlock $6,200. <strong>If you can structure a 90+ page opportunity here, expected clear time is under 12 days based on similar listings.</strong></p>
+          <p>Highest-value gap detected in <strong>RegTech compliance for mid-market</strong>: buyer demand index 84, 0 active listings on vvEntra, benchmark unlock $6,200. <strong>Structure a 90+ page opportunity here to be the first architect to capture this demand.</strong></p>
         </div>
       </div>
     </div>
@@ -640,13 +519,7 @@ function DashboardContent() {
             <span className="sub">Live · streaming</span>
           </div>
           <div className="deal-feed" id="deal-feed">
-            <div className="deal-row"><span className="deal-code">VVE-2440</span><div className="deal-info"><span className="deal-title">B2B media · subscription play, US</span><span className="deal-meta">108p · 7 frameworks · senior architect</span></div><span className="deal-price">$3,900</span><span className="deal-status"></span></div>
-            <div className="deal-row"><span className="deal-code">VVE-2441</span><div className="deal-info"><span className="deal-title">Specialty logistics · cross-border SEA</span><span className="deal-meta">124p · 9 frameworks · ex-supply chain</span></div><span className="deal-price">$5,100</span><span className="deal-status surge"></span></div>
-            <div className="deal-row"><span className="deal-code">VVE-2442</span><div className="deal-info"><span className="deal-title">Vertical AI · legal ops, India</span><span className="deal-meta">96p · 6 frameworks · ex-counsel</span></div><span className="deal-price">$3,400</span><span className="deal-status"></span></div>
-            <div className="deal-row"><span className="deal-code">VVE-2443</span><div className="deal-info"><span className="deal-title">Healthtech · diagnostics, India</span><span className="deal-meta">142p · 11 frameworks · ex-PM</span></div><span className="deal-price">$6,800</span><span className="deal-status surge"></span></div>
-            <div className="deal-row"><span className="deal-code">VVE-2444</span><div className="deal-info"><span className="deal-title">Creator marketplace · niche vertical</span><span className="deal-meta">88p · 5 frameworks · operator-investor</span></div><span className="deal-price">$2,800</span><span className="deal-status"></span></div>
-            <div className="deal-row"><span className="deal-code">VVE-2445</span><div className="deal-info"><span className="deal-title">Climate · carbon accounting, EU</span><span className="deal-meta">116p · 8 frameworks · ex-energy</span></div><span className="deal-price">$4,600</span><span className="deal-status"></span></div>
-            <div className="deal-row"><span className="deal-code">VVE-2446</span><div className="deal-info"><span className="deal-title">Workflow AI · vertical ops</span><span className="deal-meta">132p · 10 frameworks · ex-AI lead</span></div><span className="deal-price">$5,400</span><span className="deal-status surge"></span></div>
+            <div className="deal-row" style={{"justifyContent":"center","color":"var(--text-faint)","fontSize":".82rem","padding":"2.5rem 1rem","textAlign":"center"}}>No platform listings yet · Real-time deals will stream here as architects publish.</div>
           </div>
         </div>
 
@@ -862,21 +735,21 @@ function DashboardContent() {
         <div className="card reveal">
           <div className="card-h">
             <h3>Capital <em>deployed</em> · weekly</h3>
-            <span className="meta">Total · $42M</span>
+            <span className="meta">Total · $0</span>
           </div>
           <div className="deploy-chart">
             <div className="deploy-bar-wrap">
-              <div className="deploy-col"><div className="deploy-bar in" style={{"height":"45%"}}><span className="val">$2.4M</span></div><span className="lbl">W1</span></div>
-              <div className="deploy-col"><div className="deploy-bar in" style={{"height":"52%"}}><span className="val">$3.1M</span></div><span className="lbl">W2</span></div>
-              <div className="deploy-col"><div className="deploy-bar in" style={{"height":"38%"}}><span className="val">$1.9M</span></div><span className="lbl">W3</span></div>
-              <div className="deploy-col"><div className="deploy-bar in" style={{"height":"68%"}}><span className="val">$4.2M</span></div><span className="lbl">W4</span></div>
-              <div className="deploy-col"><div className="deploy-bar in" style={{"height":"74%"}}><span className="val">$4.8M</span></div><span className="lbl">W5</span></div>
-              <div className="deploy-col"><div className="deploy-bar in" style={{"height":"62%"}}><span className="val">$3.7M</span></div><span className="lbl">W6</span></div>
-              <div className="deploy-col"><div className="deploy-bar in" style={{"height":"85%"}}><span className="val">$5.4M</span></div><span className="lbl">W7</span></div>
-              <div className="deploy-col"><div className="deploy-bar in" style={{"height":"92%"}}><span className="val">$6.1M</span></div><span className="lbl">W8</span></div>
+              <div className="deploy-col"><div className="deploy-bar in" style={{"height":"4px"}}><span className="val">$0</span></div><span className="lbl">W1</span></div>
+              <div className="deploy-col"><div className="deploy-bar in" style={{"height":"4px"}}><span className="val">$0</span></div><span className="lbl">W2</span></div>
+              <div className="deploy-col"><div className="deploy-bar in" style={{"height":"4px"}}><span className="val">$0</span></div><span className="lbl">W3</span></div>
+              <div className="deploy-col"><div className="deploy-bar in" style={{"height":"4px"}}><span className="val">$0</span></div><span className="lbl">W4</span></div>
+              <div className="deploy-col"><div className="deploy-bar in" style={{"height":"4px"}}><span className="val">$0</span></div><span className="lbl">W5</span></div>
+              <div className="deploy-col"><div className="deploy-bar in" style={{"height":"4px"}}><span className="val">$0</span></div><span className="lbl">W6</span></div>
+              <div className="deploy-col"><div className="deploy-bar in" style={{"height":"4px"}}><span className="val">$0</span></div><span className="lbl">W7</span></div>
+              <div className="deploy-col"><div className="deploy-bar in" style={{"height":"4px"}}><span className="val">$0</span></div><span className="lbl">W8</span></div>
             </div>
           </div>
-          <div style={{"fontSize":".72rem","color":"var(--text-muted)","lineHeight":"1.5","paddingTop":".5rem","borderTop":"1px solid var(--line)"}}>Capital flow accelerating. Week-over-week growth averaging <strong style={{"color":"var(--green)","fontWeight":"500"}}>+18%</strong>.</div>
+          <div style={{"fontSize":".72rem","color":"var(--text-muted)","lineHeight":"1.5","paddingTop":".5rem","borderTop":"1px solid var(--line)"}}>No platform transactions yet. Capital flow will display as deals close.</div>
         </div>
 
         <div className="card reveal delay-1">
@@ -901,12 +774,12 @@ function DashboardContent() {
             <span className="meta">Aggregated buyer signals</span>
           </div>
           <div className="velocity-list">
-            <div className="velocity-row"><span className="rnk">★</span><span className="nm">Fintech SMB</span><span className="change" style={{"fontSize":".7rem","color":"var(--text-faint)","textAlign":"right"}}>2.4k views</span><span className="change up">42 unlocks</span></div>
-            <div className="velocity-row"><span className="rnk">★</span><span className="nm">Healthtech</span><span className="change" style={{"fontSize":".7rem","color":"var(--text-faint)","textAlign":"right"}}>1.8k views</span><span className="change up">28 unlocks</span></div>
-            <div className="velocity-row"><span className="rnk">★</span><span className="nm">AI Workflow</span><span className="change" style={{"fontSize":".7rem","color":"var(--text-faint)","textAlign":"right"}}>3.1k views</span><span className="change up">38 unlocks</span></div>
-            <div className="velocity-row"><span className="rnk">·</span><span className="nm">D2C Ayurveda</span><span className="change" style={{"fontSize":".7rem","color":"var(--text-faint)","textAlign":"right"}}>1.2k views</span><span className="change up">19 unlocks</span></div>
-            <div className="velocity-row"><span className="rnk">·</span><span className="nm">Climate Ind.</span><span className="change" style={{"fontSize":".7rem","color":"var(--text-faint)","textAlign":"right"}}>980 views</span><span className="change up">14 unlocks</span></div>
-            <div className="velocity-row"><span className="rnk">·</span><span className="nm">Edtech</span><span className="change" style={{"fontSize":".7rem","color":"var(--text-faint)","textAlign":"right"}}>650 views</span><span className="change" style={{"textAlign":"right","color":"var(--text-faint)"}}>8 unlocks</span></div>
+            <div className="velocity-row"><span className="rnk">·</span><span className="nm">Fintech SMB</span><span className="change" style={{"fontSize":".7rem","color":"var(--text-faint)","textAlign":"right"}}>0 views</span><span className="change" style={{"textAlign":"right","color":"var(--text-faint)"}}>0 unlocks</span></div>
+            <div className="velocity-row"><span className="rnk">·</span><span className="nm">Healthtech</span><span className="change" style={{"fontSize":".7rem","color":"var(--text-faint)","textAlign":"right"}}>0 views</span><span className="change" style={{"textAlign":"right","color":"var(--text-faint)"}}>0 unlocks</span></div>
+            <div className="velocity-row"><span className="rnk">·</span><span className="nm">AI Workflow</span><span className="change" style={{"fontSize":".7rem","color":"var(--text-faint)","textAlign":"right"}}>0 views</span><span className="change" style={{"textAlign":"right","color":"var(--text-faint)"}}>0 unlocks</span></div>
+            <div className="velocity-row"><span className="rnk">·</span><span className="nm">D2C Ayurveda</span><span className="change" style={{"fontSize":".7rem","color":"var(--text-faint)","textAlign":"right"}}>0 views</span><span className="change" style={{"textAlign":"right","color":"var(--text-faint)"}}>0 unlocks</span></div>
+            <div className="velocity-row"><span className="rnk">·</span><span className="nm">Climate Ind.</span><span className="change" style={{"fontSize":".7rem","color":"var(--text-faint)","textAlign":"right"}}>0 views</span><span className="change" style={{"textAlign":"right","color":"var(--text-faint)"}}>0 unlocks</span></div>
+            <div className="velocity-row"><span className="rnk">·</span><span className="nm">Edtech</span><span className="change" style={{"fontSize":".7rem","color":"var(--text-faint)","textAlign":"right"}}>0 views</span><span className="change" style={{"textAlign":"right","color":"var(--text-faint)"}}>0 unlocks</span></div>
           </div>
         </div>
       </div>
@@ -968,23 +841,23 @@ function DashboardContent() {
             <div className="donut-chart in" id="donut">
               <svg viewBox="0 0 180 180">
                 <circle className="donut-track" cx="90" cy="90" r="70" pathLength="360"/>
-                <circle className="donut-segment" cx="90" cy="90" r="70" pathLength="360" stroke="#E2571B" style={{["--len" as any]:"108","strokeDasharray":"var(--len, 0) 360"}}/>
-                <circle className="donut-segment" cx="90" cy="90" r="70" pathLength="360" stroke="#3B82F6" style={{["--len" as any]:"72","strokeDasharray":"var(--len, 0) 360","strokeDashoffset":"-108"}}/>
-                <circle className="donut-segment" cx="90" cy="90" r="70" pathLength="360" stroke="#8B5CF6" style={{["--len" as any]:"86","strokeDasharray":"var(--len, 0) 360","strokeDashoffset":"-180"}}/>
-                <circle className="donut-segment" cx="90" cy="90" r="70" pathLength="360" stroke="#C7A06B" style={{["--len" as any]:"54","strokeDasharray":"var(--len, 0) 360","strokeDashoffset":"-266"}}/>
-                <circle className="donut-segment" cx="90" cy="90" r="70" pathLength="360" stroke="#16A34A" style={{["--len" as any]:"40","strokeDasharray":"var(--len, 0) 360","strokeDashoffset":"-320"}}/>
+                <circle className="donut-segment" cx="90" cy="90" r="70" pathLength="360" stroke="#E2571B" style={{["--len" as any]:"0","strokeDasharray":"0 360"}}/>
+                <circle className="donut-segment" cx="90" cy="90" r="70" pathLength="360" stroke="#3B82F6" style={{["--len" as any]:"0","strokeDasharray":"0 360","strokeDashoffset":"0"}}/>
+                <circle className="donut-segment" cx="90" cy="90" r="70" pathLength="360" stroke="#8B5CF6" style={{["--len" as any]:"0","strokeDasharray":"0 360","strokeDashoffset":"0"}}/>
+                <circle className="donut-segment" cx="90" cy="90" r="70" pathLength="360" stroke="#C7A06B" style={{["--len" as any]:"0","strokeDasharray":"0 360","strokeDashoffset":"0"}}/>
+                <circle className="donut-segment" cx="90" cy="90" r="70" pathLength="360" stroke="#16A34A" style={{["--len" as any]:"0","strokeDasharray":"0 360","strokeDashoffset":"0"}}/>
               </svg>
               <div className="donut-center">
-                <span className="v"><em>247</em></span>
+                <span className="v"><em>0</em></span>
                 <span className="lbl">Total buyers</span>
               </div>
             </div>
             <div className="donut-legend">
-              <div className="donut-legend-item"><span className="swatch" style={{"background":"#E2571B"}}></span><span>PE Directors</span><span className="val">30%</span></div>
-              <div className="donut-legend-item"><span className="swatch" style={{"background":"#3B82F6"}}></span><span>VC Partners</span><span className="val">20%</span></div>
-              <div className="donut-legend-item"><span className="swatch" style={{"background":"#8B5CF6"}}></span><span>Family Offices</span><span className="val">24%</span></div>
-              <div className="donut-legend-item"><span className="swatch" style={{"background":"#C7A06B"}}></span><span>Strategic Buyers</span><span className="val">15%</span></div>
-              <div className="donut-legend-item"><span className="swatch" style={{"background":"#16A34A"}}></span><span>Operator-Investors</span><span className="val">11%</span></div>
+              <div className="donut-legend-item"><span className="swatch" style={{"background":"#E2571B"}}></span><span>PE Directors</span><span className="val">0%</span></div>
+              <div className="donut-legend-item"><span className="swatch" style={{"background":"#3B82F6"}}></span><span>VC Partners</span><span className="val">0%</span></div>
+              <div className="donut-legend-item"><span className="swatch" style={{"background":"#8B5CF6"}}></span><span>Family Offices</span><span className="val">0%</span></div>
+              <div className="donut-legend-item"><span className="swatch" style={{"background":"#C7A06B"}}></span><span>Strategic Buyers</span><span className="val">0%</span></div>
+              <div className="donut-legend-item"><span className="swatch" style={{"background":"#16A34A"}}></span><span>Operator-Investors</span><span className="val">0%</span></div>
             </div>
           </div>
         </div>
@@ -1012,12 +885,7 @@ function DashboardContent() {
             <span className="sub">Live · privacy preserved</span>
           </div>
           <div className="looking-grid" id="peer-activity-inv">
-            <div className="looking-row"><div className="avatar pe">PE</div><div className="info"><span className="role">PE Director</span><span className="interest">Unlocked AI workflow · VVE-2436</span></div><span className="badge">Senior</span><span className="time">2m ago</span></div>
-            <div className="looking-row"><div className="avatar fo">FO</div><div className="info"><span className="role">Family Office</span><span className="interest">Requested access fintech SMB</span></div><span className="badge">Premium</span><span className="time">5m ago</span></div>
-            <div className="looking-row"><div className="avatar vc">VC</div><div className="info"><span className="role">VC Partner</span><span className="interest">Viewed 8 climate opportunities</span></div><span className="badge">Verified</span><span className="time">12m ago</span></div>
-            <div className="looking-row"><div className="avatar sb">SB</div><div className="info"><span className="role">Strategic Buyer</span><span className="interest">NDA signed · B2B SaaS</span></div><span className="badge">Senior</span><span className="time">28m ago</span></div>
-            <div className="looking-row"><div className="avatar pe">PE</div><div className="info"><span className="role">PE Associate</span><span className="interest">Closed deal · Climate · $4.4k</span></div><span className="badge">Premium</span><span className="time">41m ago</span></div>
-            <div className="looking-row"><div className="avatar vc">VC</div><div className="peer-info info"><span className="role">VC Principal</span><span className="interest">Filtered: AI compliance · UAE</span></div><span className="badge">Verified</span><span className="time">52m ago</span></div>
+            <div className="looking-row" style={{"justifyContent":"center","color":"var(--text-faint)","fontSize":".82rem","padding":"2.5rem 1rem","textAlign":"center"}}>No peer activity yet · Real-time transactions will stream here as buyers engage.</div>
           </div>
         </div>
 
@@ -1050,11 +918,11 @@ function DashboardContent() {
             <span className="meta">Senior tier · 30d</span>
           </div>
           <div className="funnel" id="funnel">
-            <div className="funnel-stage" style={{["--w" as any]:"100%"}}><span className="lbl">Public previews<small>Tier 0</small></span><div className="funnel-bar-wrap"><div className="funnel-bar"></div></div><span className="count">1,847</span><span className="rate">100%</span></div>
-            <div className="funnel-stage" style={{["--w" as any]:"42%"}}><span className="lbl">Verified access<small>Tier 1</small></span><div className="funnel-bar-wrap"><div className="funnel-bar"></div></div><span className="count">776</span><span className="rate">42%</span></div>
-            <div className="funnel-stage" style={{["--w" as any]:"18%"}}><span className="lbl">Interest deposit<small>Tier 2</small></span><div className="funnel-bar-wrap"><div className="funnel-bar"></div></div><span className="count">332</span><span className="rate high">43%</span></div>
-            <div className="funnel-stage" style={{["--w" as any]:"9%"}}><span className="lbl">NDA signed<small>Tier 3</small></span><div className="funnel-bar-wrap"><div className="funnel-bar"></div></div><span className="count">166</span><span className="rate high">50%</span></div>
-            <div className="funnel-stage" style={{["--w" as any]:"5%"}}><span className="lbl">Full unlock<small>Tier 4</small></span><div className="funnel-bar-wrap"><div className="funnel-bar"></div></div><span className="count">92</span><span className="rate high">55%</span></div>
+            <div className="funnel-stage" style={{["--w" as any]:"4px"}}><span className="lbl">Public previews<small>Tier 0</small></span><div className="funnel-bar-wrap"><div className="funnel-bar"></div></div><span className="count">0</span><span className="rate">0%</span></div>
+            <div className="funnel-stage" style={{["--w" as any]:"4px"}}><span className="lbl">Verified access<small>Tier 1</small></span><div className="funnel-bar-wrap"><div className="funnel-bar"></div></div><span className="count">0</span><span className="rate">0%</span></div>
+            <div className="funnel-stage" style={{["--w" as any]:"4px"}}><span className="lbl">Interest deposit<small>Tier 2</small></span><div className="funnel-bar-wrap"><div className="funnel-bar"></div></div><span className="count">0</span><span className="rate">0%</span></div>
+            <div className="funnel-stage" style={{["--w" as any]:"4px"}}><span className="lbl">NDA signed<small>Tier 3</small></span><div className="funnel-bar-wrap"><div className="funnel-bar"></div></div><span className="count">0</span><span className="rate">0%</span></div>
+            <div className="funnel-stage" style={{["--w" as any]:"4px"}}><span className="lbl">Full unlock<small>Tier 4</small></span><div className="funnel-bar-wrap"><div className="funnel-bar"></div></div><span className="count">0</span><span className="rate">0%</span></div>
           </div>
         </div>
 
@@ -1079,12 +947,7 @@ function DashboardContent() {
             <span className="sub">Your sectors</span>
           </div>
           <div className="looking-grid" id="looking-arc">
-            <div className="looking-row"><div className="avatar pe">PE</div><div className="info"><span className="role">PE Director</span><span className="interest">AI workflow vertical</span></div><span className="time">just now</span></div>
-            <div className="looking-row"><div className="avatar fo">FO</div><div className="info"><span className="role">Family Office</span><span className="interest">SMB lending India</span></div><span className="time">3m ago</span></div>
-            <div className="looking-row"><div className="avatar vc">VC</div><div className="info"><span className="role">VC Partner</span><span className="interest">B2B SaaS healthcare</span></div><span className="time">8m ago</span></div>
-            <div className="looking-row"><div className="avatar sb">SB</div><div className="info"><span className="role">Strategic Buyer</span><span className="interest">NDA: AI agents vertical</span></div><span className="time">15m ago</span></div>
-            <div className="looking-row"><div className="avatar pe">PE</div><div className="info"><span className="role">PE Associate</span><span className="interest">RegTech compliance</span></div><span className="time">22m ago</span></div>
-            <div className="looking-row"><div className="avatar fo">FO</div><div className="info"><span className="role">Family Office</span><span className="interest">Healthtech India</span></div><span className="time">38m ago</span></div>
+            <div className="looking-row" style={{"justifyContent":"center","color":"var(--text-faint)","fontSize":".82rem","padding":"2.5rem 1rem","textAlign":"center"}}>No active buyer sessions yet · Real-time buyer signals will stream here.</div>
           </div>
         </div>
       </div>
@@ -1115,7 +978,7 @@ function DashboardContent() {
             <span className="tag">D2C · Ayurveda</span>
           </div>
           <h3 className="pick-title">Indian D2C ayurveda category build-out</h3>
-          <div className="pick-reason">Matches your <em>D2C consumer thesis</em>. 3 peer buyers viewed this in 48h. Architect has 2-exit history in similar plays.</div>
+          <div className="pick-reason">Matches your <em>D2C consumer thesis</em>. 0 peer views yet · Be the first to unlock.</div>
           <div className="pick-meta">
             <span className="pages">127 pages · 9 frameworks</span>
             <span className="price">$4,800</span>
@@ -1168,7 +1031,7 @@ function DashboardContent() {
             <span className="tag">Mid-market</span>
           </div>
           <h3 className="pick-title">RegTech compliance for mid-market manufacturing</h3>
-          <div className="pick-reason"><em>14 buyers</em> searched this in 7 days. Demand index 84, only 18 active listings. Estimated clear time: 12 days.</div>
+          <div className="pick-reason">Demand index 84 · 0 active listings on vvEntra · High buyer demand.</div>
           <div className="pick-meta">
             <span className="pages">120-140p · 8-10 frameworks</span>
             <span className="price">~$6,200</span>
@@ -1182,7 +1045,7 @@ function DashboardContent() {
             <span className="tag">Vertical Ops</span>
           </div>
           <h3 className="pick-title">Industry-specific AI agent for legal operations</h3>
-          <div className="pick-reason"><em>23 buyers</em> filtered "AI legal" in 14 days. Family Offices and Strategic Buyers actively looking. Premium pricing tier.</div>
+          <div className="pick-reason">Family Offices and Strategic Buyers looking in AI legal · 0 active listings on vvEntra.</div>
           <div className="pick-meta">
             <span className="pages">100-120p · 7-9 frameworks</span>
             <span className="price">~$5,800</span>
@@ -1196,7 +1059,7 @@ function DashboardContent() {
             <span className="tag">Diagnostics</span>
           </div>
           <h3 className="pick-title">Tier-2 India diagnostics network playbook</h3>
-          <div className="pick-reason"><em>9 buyers</em> requested intro to senior healthtech architects this month. Family Offices with India thesis are top buyers.</div>
+          <div className="pick-reason">Underserved category · 0 active listings on vvEntra · Target tier-2 healthcare.</div>
           <div className="pick-meta">
             <span className="pages">130-150p · 9-11 frameworks</span>
             <span className="price">~$7,400</span>
