@@ -23,7 +23,7 @@ test.describe('Home / Landing Page', () => {
 
     // 2. Navigation
     await expect(page.locator('nav.top')).toBeVisible();
-    await expect(page.locator('.brand-logo-img')).toBeVisible();
+    await expect(page.locator('.brand-logo-light')).toBeVisible();
     await expect(page.locator('.nav-role-pill')).toBeVisible();
     await expect(page.locator('#theme-toggle')).toBeVisible();
 
