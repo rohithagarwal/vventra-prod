@@ -10,6 +10,13 @@ export default function Home() {
   const router = useRouter();
 
   useEffect(() => {
+    if (typeof window !== "undefined" && window.location.hash === "#pricing") {
+      router.push("/pricing");
+    }
+  }, [router]);
+
+
+  useEffect(() => {
     let cancelled = false;
     if (!localStorage.getItem("vve-access-token")) return;
 

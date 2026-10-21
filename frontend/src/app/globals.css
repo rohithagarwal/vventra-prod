@@ -4999,3 +4999,297 @@ body.is-capped .calc-card .currency {
   color: var(--text-muted);
   margin: 0px;
 }
+
+/* ===================================================================
+   PRICING PAGE EXACT MATCH (1:1 with reference prototype)
+   =================================================================== */
+
+/* Section headers are centered with max-width */
+main[data-page="pricing"] .section-head {
+  text-align: center !important;
+  max-width: 720px !important;
+  margin: 0 auto 3rem !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 1rem !important;
+  align-items: center !important;
+}
+main[data-page="pricing"] .section-head h2 {
+  margin: 0 !important;
+}
+main[data-page="pricing"] .section-head .eyebrow {
+  justify-content: center !important;
+}
+main[data-page="pricing"] .section-head p {
+  font-size: 0.95rem !important;
+  color: var(--text-muted) !important;
+  margin: 0 !important;
+  text-align: center !important;
+}
+
+/* Display typography scale */
+main[data-page="pricing"] .display.lg {
+  font-size: clamp(2rem, 4vw, 3rem) !important;
+  font-weight: 400 !important;
+  line-height: 1.02 !important;
+  letter-spacing: -0.015em !important;
+}
+
+/* Hero role toggle pill */
+main[data-page="pricing"] .role-toggle {
+  display: inline-flex !important;
+  width: fit-content !important;
+  max-width: fit-content !important;
+}
+
+/* Hide workspace switcher pill on pricing page navbar */
+body:has(main[data-page="pricing"]) .nav-role-pill {
+  display: none !important;
+}
+
+/* Based-on strip centered */
+main[data-page="pricing"] .based-on-strip {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.85rem !important;
+  padding: 0.65rem 1.1rem !important;
+  background: var(--bg-paper) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 100px !important;
+  margin: 0.85rem auto 0 !important;
+  font-size: 0.85rem !important;
+  color: var(--text-muted) !important;
+  justify-content: center !important;
+}
+
+/* Flow Section & Diagram */
+main[data-page="pricing"] .flow-section {
+  padding: 6rem 0 !important;
+}
+
+main[data-page="pricing"] .flow-diagram {
+  display: block !important;
+  background: var(--bg-paper) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 12px !important;
+  padding: 3rem !important;
+  max-width: 1100px !important;
+  margin: 0 auto !important;
+}
+
+main[data-page="pricing"] .flow-stops {
+  display: grid !important;
+  grid-template-columns: 1fr 60px 1fr 60px 1fr !important;
+  align-items: center !important;
+  gap: 0 !important;
+  margin-bottom: 2rem !important;
+}
+
+main[data-page="pricing"] .flow-stop {
+  border: 1px solid var(--line) !important;
+  border-radius: 8px !important;
+  padding: 1.5rem !important;
+  text-align: center !important;
+  display: flex;
+  flex-direction: column !important;
+  gap: 0.5rem !important;
+  position: relative !important;
+  background: var(--bg-bone) !important;
+}
+
+/* Absolute role isolation - never let .flow-stop or other rules revive the wrong role's elements */
+html[data-role="investor"] .r-arc,
+html[data-role="investor"] main[data-page="pricing"] .r-arc,
+html[data-role="architect"] .r-inv,
+html[data-role="architect"] main[data-page="pricing"] .r-inv {
+  display: none !important;
+}
+html[data-role="investor"] .r-inv.flow-stop,
+html[data-role="architect"] .r-arc.flow-stop {
+  display: flex !important;
+}
+html[data-role="investor"] .r-inv.flow-arrow,
+html[data-role="architect"] .r-arc.flow-arrow {
+  display: flex !important;
+}
+main[data-page="pricing"] .flow-stop.buyer {
+  border-color: var(--orange-faint) !important;
+  background: var(--orange-ghost) !important;
+}
+main[data-page="pricing"] .flow-stop.platform {
+  border-color: var(--line-strong) !important;
+  background: var(--bg-paper) !important;
+}
+main[data-page="pricing"] .flow-stop.architect {
+  border-color: var(--green-faint) !important;
+  background: var(--green-ghost) !important;
+}
+
+main[data-page="pricing"] .flow-stop .role-tag {
+  font-size: 0.6rem !important;
+  letter-spacing: 0.16em !important;
+  text-transform: uppercase !important;
+  color: var(--text-faint) !important;
+  font-family: 'JetBrains Mono', monospace !important;
+  display: block !important;
+}
+main[data-page="pricing"] .flow-stop .who {
+  font-family: 'Instrument Serif', serif !important;
+  font-size: 1.15rem !important;
+  color: var(--text) !important;
+  display: block !important;
+}
+main[data-page="pricing"] .flow-stop.buyer .who em {
+  color: var(--orange) !important;
+  font-style: italic !important;
+}
+main[data-page="pricing"] .flow-stop.architect .who em {
+  color: var(--green) !important;
+  font-style: italic !important;
+}
+main[data-page="pricing"] .flow-stop .amount {
+  font-family: 'Instrument Serif', serif !important;
+  font-size: 2rem !important;
+  font-weight: 400 !important;
+  line-height: 1 !important;
+  margin-top: 0.25rem !important;
+  letter-spacing: -0.02em !important;
+  display: block !important;
+}
+main[data-page="pricing"] .flow-stop.buyer .amount { color: var(--orange) !important; }
+main[data-page="pricing"] .flow-stop.platform .amount { color: var(--text) !important; }
+main[data-page="pricing"] .flow-stop.architect .amount { color: var(--green) !important; }
+
+main[data-page="pricing"] .flow-stop .small {
+  font-size: 0.68rem !important;
+  color: var(--text-faint) !important;
+  letter-spacing: 0.04em !important;
+  font-family: 'JetBrains Mono', monospace !important;
+  margin-top: 0.25rem !important;
+  display: block !important;
+}
+
+main[data-page="pricing"] .flow-arrow {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-family: 'Instrument Serif', serif !important;
+  font-style: italic !important;
+  color: var(--role) !important;
+  font-size: 1.75rem !important;
+  transition: color 0.35s var(--ease) !important;
+}
+
+main[data-page="pricing"] .flow-rules {
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr) !important;
+  gap: 1rem !important;
+  padding-top: 2rem !important;
+  border-top: 1px dashed var(--line) !important;
+  border-left: none !important;
+  padding-left: 0 !important;
+}
+
+main[data-page="pricing"] .flow-rule {
+  display: flex !important;
+  gap: 0.85rem !important;
+  align-items: flex-start !important;
+}
+main[data-page="pricing"] .flow-rule .ic {
+  width: 28px !important;
+  height: 28px !important;
+  border-radius: 50% !important;
+  background: var(--role-ghost) !important;
+  color: var(--role) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+  font-family: 'Instrument Serif', serif !important;
+  font-style: italic !important;
+  font-size: 0.9rem !important;
+}
+main[data-page="pricing"] .flow-rule .body {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0.25rem !important;
+  text-align: left !important;
+}
+main[data-page="pricing"] .flow-rule .body strong {
+  font-family: 'Instrument Serif', serif !important;
+  font-weight: 400 !important;
+  font-size: 1rem !important;
+  color: var(--text) !important;
+}
+main[data-page="pricing"] .flow-rule .body span {
+  font-size: 0.82rem !important;
+  color: var(--text-muted) !important;
+  line-height: 1.5 !important;
+}
+
+@media (max-width: 800px) {
+  main[data-page="pricing"] .flow-diagram { padding: 1.75rem !important; }
+  main[data-page="pricing"] .flow-stops { grid-template-columns: 1fr !important; gap: 1rem !important; }
+  main[data-page="pricing"] .flow-arrow { display: none !important; }
+  main[data-page="pricing"] .flow-rules { grid-template-columns: 1fr !important; }
+}
+
+/* Protection section */
+main[data-page="pricing"] .protection-section {
+  padding: 6rem 0 !important;
+  background: var(--bg-bone) !important;
+  border-top: 1px solid var(--line) !important;
+  border-bottom: 1px solid var(--line) !important;
+}
+
+/* Options section */
+main[data-page="pricing"] .options-section {
+  padding: 6rem 0 !important;
+  background: var(--bg-bone) !important;
+  border-top: 1px solid var(--line) !important;
+  border-bottom: 1px solid var(--line) !important;
+}
+
+/* Closing section */
+main[data-page="pricing"] .closing {
+  padding: 6rem 0 !important;
+  background: var(--bg-bone) !important;
+  border-top: 1px solid var(--line) !important;
+  border-bottom: 1px solid var(--line) !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+main[data-page="pricing"] .closing::before {
+  content: "" !important;
+  position: absolute !important;
+  top: 50% !important;
+  left: 50% !important;
+  width: 600px !important;
+  height: 600px !important;
+  background: radial-gradient(circle, var(--role-ghost) 0%, transparent 65%) !important;
+  transform: translate(-50%, -50%) !important;
+  pointer-events: none !important;
+  transition: background 0.5s var(--ease) !important;
+}
+main[data-page="pricing"] .closing-content {
+  position: relative !important;
+  text-align: center !important;
+  max-width: 720px !important;
+  margin: 0 auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 1.5rem !important;
+  align-items: center !important;
+}
+main[data-page="pricing"] .closing-content h2 {
+  margin: 0 !important;
+}
+main[data-page="pricing"] .closing-content .eyebrow {
+  justify-content: center !important;
+}
+main[data-page="pricing"] .closing-content p {
+  font-size: 1.05rem !important;
+  color: var(--text-muted) !important;
+  margin: 0 !important;
+  text-align: center !important;
+}

@@ -9,6 +9,10 @@ const nextConfig: NextConfig = {
   async rewrites() {
     return [
       {
+        source: "/website.html",
+        destination: "/",
+      },
+      {
         source: "/api/backend/:path*",
         destination: `${apiProxyTarget}/:path*`,
       },
