@@ -4914,3 +4914,88 @@ body.is-capped .calc-card .currency {
   opacity: 1 !important;
   transform: none !important;
 }
+
+/* ===================================================================
+   PRICING PAGE & HERO ENHANCEMENTS (1:1 with reference prototype)
+   =================================================================== */
+.hero-bg {
+  position: absolute;
+  inset: 0px;
+  pointer-events: none;
+}
+.hero-bg::before {
+  content: "";
+  position: absolute;
+  inset: -20% -10% 30%;
+  background: radial-gradient(ellipse at center top, var(--role-ghost) 0%, transparent 65%);
+  transition: background .5s var(--ease);
+}
+
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+  align-items: center;
+  padding: 3rem 0px 5rem;
+  position: relative;
+}
+@media (max-width: 1000px) {
+  .hero-grid {
+    grid-template-columns: 1fr;
+    gap: 3rem;
+    padding: 2rem 0px 3rem;
+  }
+}
+
+.hero-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+.hero-text h1 {
+  margin: 0px;
+}
+
+.hero-actions {
+  display: flex;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+}
+
+.btn-role {
+  color: #fff;
+  background: var(--role);
+  border-color: var(--role);
+}
+.btn-role:hover {
+  background: var(--role-deep);
+  border-color: var(--role-deep);
+}
+
+.btn-lg {
+  padding: 1rem 1.65rem;
+  font-size: 0.95rem;
+}
+
+.closing-content {
+  position: relative;
+  text-align: center;
+  max-width: 720px;
+  margin: 0px auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  align-items: center;
+}
+.closing-content h2 {
+  margin: 0px;
+}
+.closing-content .eyebrow {
+  justify-content: center;
+}
+.closing-content p {
+  font-size: 1.05rem;
+  color: var(--text-muted);
+  margin: 0px;
+}

@@ -7,7 +7,7 @@ import { Footer } from "@/components/layout/Footer";
 
 export default function PricingPage() {
   const [role, setRole] = useState<"investor" | "architect">("investor");
-  const [priceInput, setPriceInput] = useState<number>(10000);
+  const [priceInput, setPriceInput] = useState<string | number>(10000);
   const [openRuleIndex, setOpenRuleIndex] = useState<number | null>(null);
 
   useEffect(() => {
@@ -38,7 +38,7 @@ export default function PricingPage() {
   };
 
   // Safe pricing calculation
-  const safe = Math.max(500, Math.min(1000000, priceInput || 10000));
+  const safe = Math.max(500, Math.min(1000000, typeof priceInput === "number" ? priceInput : (parseInt(priceInput) || 10000)));
   const capped = safe > 50000;
 
   useEffect(() => {
