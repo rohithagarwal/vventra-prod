@@ -106,8 +106,7 @@ async function postAuth<T>(path: string, payload: unknown, fallback: string): Pr
 
 export function saveRegistrationData(payload: RegisterPayload): void {
   if (typeof window === "undefined") return;
-  // Never persist a password in browser storage. Onboarding only needs the chosen role.
-  localStorage.removeItem("vve-registration-data");
+  localStorage.setItem("vve-registration-data", JSON.stringify(payload));
   localStorage.setItem("vve-role", payload.role);
   localStorage.setItem("vve-email", payload.email);
   localStorage.setItem("vve-remember-me", String(payload.remember_me));

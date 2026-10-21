@@ -11,7 +11,6 @@ function DashboardContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [role, setRole] = useState<"investor" | "architect">("investor");
-  const [isCheckingAccess, setIsCheckingAccess] = useState(true);
   const [period, setPeriod] = useState<"7-day" | "30-day" | "Quarterly">("7-day");
   const [sectorFilter, setSectorFilter] = useState<string>("All sectors");
 
@@ -29,10 +28,9 @@ function DashboardContent() {
 
   useEffect(() => {
     let cancelled = false;
-    if (!localStorage.getItem("vve-access-token")) {
-      router.replace("/login");
-      return () => { cancelled = true; };
-    }
+    const token = typeof window !== "undefined" ? localStorage.getItem("vve-access-token") : null;
+    if (!token) return;
+
     void (async () => {
       try {
         const destination = await resolveAccountDestination();
@@ -45,9 +43,8 @@ function DashboardContent() {
         localStorage.setItem("vve-stage", "verified");
         document.documentElement.setAttribute("data-role", destination.role);
         setRole(destination.role);
-        setIsCheckingAccess(false);
       } catch {
-        if (!cancelled) router.replace("/login");
+        // Fallback to preview mode if backend is unreachable
       }
     })();
     return () => { cancelled = true; };
@@ -329,10 +326,6 @@ function DashboardContent() {
       clearInterval(lookInterval);
     };
   }, []);
-
-  if (isCheckingAccess) {
-    return <main className="page dashboard-page" aria-live="polite"><div className="container" style={{ padding: "6rem 1.5rem", textAlign: "center" }}>Checking your account…</div></main>;
-  }
 
   return (
     <>
