@@ -389,7 +389,7 @@ function VerifyContent() {
       <main data-page="verify" className="page verify-page">
         <div className="container" style={{ maxWidth: "720px", paddingTop: "5rem", paddingBottom: "6rem", margin: "0 auto", paddingLeft: "1.5rem", paddingRight: "1.5rem" }}>
           {/* Header */}
-          <div className="section-head reveal" style={{ marginBottom: "2.5rem" }}>
+          <div className="section-head reveal in" style={{ marginBottom: "2.5rem" }}>
             <div className="section-marker" style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.5rem" }}>
               <span className="num" style={{ font: "600 0.72rem 'JetBrains Mono', monospace", color: "var(--orange)" }}>02</span>
               <span className="line" style={{ width: "20px", height: "1px", background: "var(--line-strong)" }} />

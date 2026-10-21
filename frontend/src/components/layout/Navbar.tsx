@@ -207,14 +207,28 @@ export function Navbar({
             <Link
               href="/#playbook"
               data-route="playbook"
-              className={pathname === "/" && activeHash === "#playbook" ? "active" : ""}
+              className={(pathname === "/" && (activeHash === "#playbook" || activeHash === "#how")) || pathname === "/playbook" ? "active" : ""}
+              onClick={(e) => {
+                if (pathname === "/") {
+                  e.preventDefault();
+                  const el = document.getElementById("playbook") || document.getElementById("how");
+                  if (el) el.scrollIntoView({ behavior: "smooth" });
+                }
+              }}
             >
               Playbook
             </Link>
             <Link
               href="/#faq"
               data-route="faq"
-              className={pathname === "/" && activeHash === "#faq" ? "active" : ""}
+              className={(pathname === "/" && activeHash === "#faq") || pathname === "/faq" ? "active" : ""}
+              onClick={(e) => {
+                if (pathname === "/") {
+                  e.preventDefault();
+                  const el = document.getElementById("faq");
+                  if (el) el.scrollIntoView({ behavior: "smooth" });
+                }
+              }}
             >
               FAQ
             </Link>

@@ -11,6 +11,24 @@ export default function TermsPage() {
   useEffect(() => {
     const savedRole = (localStorage.getItem("vve-role") as "investor" | "architect") || "investor";
     setRole(savedRole);
+
+    const revealIO = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            e.target.classList.add("in");
+            revealIO.unobserve(e.target);
+          }
+        });
+      },
+      { threshold: 0.05, rootMargin: "0px 0px -20px 0px" }
+    );
+    document.querySelectorAll(".reveal").forEach((el) => {
+      revealIO.observe(el);
+      el.classList.add("in");
+    });
+
+    return () => revealIO.disconnect();
   }, []);
 
   const handleRoleToggle = (newRole: "investor" | "architect") => {
@@ -25,7 +43,7 @@ export default function TermsPage() {
 
       <main data-page="terms" className="page terms-page">
         <div className="container terms-container">
-          <div className="section-head reveal" style={{ marginBottom: "3rem" }}>
+          <div className="section-head reveal in" style={{ marginBottom: "3rem" }}>
             <div className="section-marker">
               <span className="num">03</span>
               <span className="line"></span>
@@ -42,7 +60,7 @@ export default function TermsPage() {
             </span>
           </div>
 
-          <div className="terms-body reveal delay-1">
+          <div className="terms-body reveal delay-1 in">
             {/* 01 */}
             <div className="terms-section">
               <div className="terms-section-num">01</div>
@@ -215,7 +233,7 @@ export default function TermsPage() {
           </div>
 
           {/* Terms Footer */}
-          <div className="terms-footer reveal">
+          <div className="terms-footer reveal in">
             <span className="terms-footer-copy">
               © 2026 vvEntra. All rights reserved. These terms are subject to change. Continued use of the platform constitutes acceptance of the current version.
             </span>

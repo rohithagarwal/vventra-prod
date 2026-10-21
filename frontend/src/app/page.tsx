@@ -759,7 +759,8 @@ export default function Home() {
   </div>
 </section>
 
-<section id="opportunities">
+<section id="opportunities" style={{ position: 'relative' }}>
+  <div id="browse" style={{ position: 'absolute', top: '-80px', left: 0 }} />
   <div className="container">
     <div className="section-head reveal" style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', maxWidth: 'none', flexWrap: 'wrap', gap: '1rem' }}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', maxWidth: '680px' }}>
@@ -781,7 +782,8 @@ export default function Home() {
   </div>
 </section>
 
-<section id="how">
+<section id="how" className="how" style={{ position: 'relative' }}>
+  <div id="playbook" style={{ position: 'absolute', top: '-80px', left: 0 }} />
   <div className="container">
     <div className="section-head reveal">
       <div className="section-marker"><span className="num">06</span><span className="line"></span><span className="name">How it works</span></div>
@@ -813,7 +815,68 @@ export default function Home() {
   </div>
 </section>
 
-<section id="cta" className="final">
+
+<section id="faq" className="faq-section" style={{ padding: '6rem 0', borderTop: '1px solid var(--line)' }}>
+  <div className="container">
+    <div className="section-head reveal in">
+      <div className="section-marker">
+        <span className="num">08</span>
+        <span className="line"></span>
+        <span className="name">Platform FAQ</span>
+      </div>
+      <h2 className="display lg">Frequently asked <em>questions.</em></h2>
+      <p className="lead">Clear answers on intellectual property, the 10% unlock fee, moderation standards, and how transactions settle.</p>
+    </div>
+
+    <div className="faq-grid reveal delay-1 in" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem', marginTop: '2.5rem' }}>
+      <div className="card" style={{ padding: '1.75rem', background: 'var(--card-bg, #111)', border: '1px solid var(--line)' }}>
+        <h3 style={{ fontSize: '1.1rem', marginBottom: '0.75rem', color: 'var(--text)' }}>How does vvEntra protect my intellectual property?</h3>
+        <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: '1.6' }}>
+          Everything is mutual NDA-gated. Public previews only reveal market fit, scope, and high-level frameworks without exposing raw proprietary IP. The 10% unlock fee validates buyer seriousness before materials are opened.
+        </p>
+      </div>
+
+      <div className="card" style={{ padding: '1.75rem', background: 'var(--card-bg, #111)', border: '1px solid var(--line)' }}>
+        <h3 style={{ fontSize: '1.1rem', marginBottom: '0.75rem', color: 'var(--text)' }}>What does the 10% unlock fee cover?</h3>
+        <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: '1.6' }}>
+          The unlock fee opens the mutual portal, grants 7 days of direct architect communication, and unlocks the complete opportunity dossier. 90% is held in escrow toward the engagement, while 10% covers escrow security.
+        </p>
+      </div>
+
+      <div className="card" style={{ padding: '1.75rem', background: 'var(--card-bg, #111)', border: '1px solid var(--line)' }}>
+        <h3 style={{ fontSize: '1.1rem', marginBottom: '0.75rem', color: 'var(--text)' }}>What happens if an opportunity is misrepresented?</h3>
+        <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: '1.6' }}>
+          Disputes can be raised within 7 days. vvEntra conducts platform arbitration. If the delivered documentation materially deviates from the validated table of contents, buyers receive a prompt refund.
+        </p>
+      </div>
+
+      <div className="card" style={{ padding: '1.75rem', background: 'var(--card-bg, #111)', border: '1px solid var(--line)' }}>
+        <h3 style={{ fontSize: '1.1rem', marginBottom: '0.75rem', color: 'var(--text)' }}>Who can list opportunities as an architect?</h3>
+        <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: '1.6' }}>
+          Only verified operators, ex-founders, and specialized architects. Every listing undergoes deep review: duplicate checks, depth audits (min. 90 pages equivalent), and quality benchmarking.
+        </p>
+      </div>
+
+      <div className="card" style={{ padding: '1.75rem', background: 'var(--card-bg, #111)', border: '1px solid var(--line)' }}>
+        <h3 style={{ fontSize: '1.1rem', marginBottom: '0.75rem', color: 'var(--text)' }}>How do architects get paid?</h3>
+        <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: '1.6' }}>
+          Funds are held in secure escrow and released upon milestone completion or mutual signoff. vvEntra takes a 10% platform facilitation fee; architects receive 90% of the transaction value directly.
+        </p>
+      </div>
+
+      <div className="card" style={{ padding: '1.75rem', background: 'var(--card-bg, #111)', border: '1px solid var(--line)' }}>
+        <h3 style={{ fontSize: '1.1rem', marginBottom: '0.75rem', color: 'var(--text)' }}>Can I buy out 100% of the opportunity IP?</h3>
+        <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: '1.6' }}>
+          Yes. vvEntra supports full IP transfer, shared advisory, and minority execution partnership structures. The buyer and architect agree on terms during the 7-day engagement window.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="cta" className="final" style={{ position: 'relative' }}>
+  <div id="apply" style={{ position: 'absolute', top: '-80px', left: 0 }} />
+  <div id="list" style={{ position: 'absolute', top: '-80px', left: 0 }} />
   <div className="container">
     <div className="brand-stamp reveal">
       <svg className="logo-mark lg" viewBox="0 0 64 64" aria-hidden="true">

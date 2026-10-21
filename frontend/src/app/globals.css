@@ -4905,3 +4905,12 @@ body.is-capped .calc-card .currency {
   left: 0px;
   color: var(--role);
 }
+
+/* Safety reveal fallback: static and verification pages must always remain visible */
+.terms-page .reveal,
+.verify-page .reveal,
+.trust-page .reveal,
+.faq-page .reveal {
+  opacity: 1 !important;
+  transform: none !important;
+}
