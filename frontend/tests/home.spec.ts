@@ -52,7 +52,7 @@ test.describe('Home / Landing Page', () => {
     await expect(market.locator('.quad-card')).toBeVisible();
 
     // 6. Demand Section
-    const demand = page.locator('section.demand-section.dark');
+    const demand = page.locator('section.demand-section');
     await expect(demand).toBeVisible();
     await expect(demand.locator('h2')).toContainText('Where buyer demand is outpacing supply');
     await expect(demand.locator('#ds-rows')).toBeVisible();
@@ -88,7 +88,7 @@ test.describe('Home / Landing Page', () => {
     await expect(how.locator('.how-step')).toHaveCount(4);
 
     // 12. Trust Architecture
-    const trust = page.locator('section#trust.dark');
+    const trust = page.locator('section#trust');
     await expect(trust).toBeVisible();
     await expect(trust.locator('.trust-card')).toHaveCount(4);
 
