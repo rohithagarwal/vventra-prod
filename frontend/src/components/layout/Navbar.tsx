@@ -253,7 +253,7 @@ export function Navbar({
             >
               Opportunities
             </Link>
-            {isLoggedIn && role === "architect" && (
+            {role === "architect" && (
               <Link
                 href="/list"
                 data-route="list"
