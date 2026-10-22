@@ -151,40 +151,7 @@ function DashboardContent() {
       if (el) regionObs.observe(el);
     });
 
-    // 4. Sector Activity Heatmap population
-    const grid = document.getElementById("heatmap");
-    if (grid && grid.children.length === 0) {
-      const sectors = ["AI Compliance", "RegTech", "AI Agents", "B2B SaaS", "Climate Tech", "Workflow AI", "Healthtech", "Fintech SMB", "D2C Wellness", "Edtech"];
-      const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-      const corner = document.createElement("div");
-      corner.className = "heatmap-header";
-      grid.appendChild(corner);
-      days.forEach(d => {
-        const c = document.createElement("div");
-        c.className = "heatmap-header";
-        c.textContent = d;
-        grid.appendChild(c);
-      });
-      sectors.forEach((sector, sIdx) => {
-        const label = document.createElement("div");
-        label.className = "heatmap-row-label";
-        label.textContent = sector;
-        grid.appendChild(label);
-        days.forEach((d, dIdx) => {
-          const cell = document.createElement("div");
-          cell.className = "heatmap-cell";
-          const sectorWeight = sIdx < 4 ? 3 : sIdx < 7 ? 2 : 1;
-          const dayWeight = dIdx < 5 ? 1.2 : 0.6;
-          const raw = Math.random() * 4 + sectorWeight * dayWeight;
-          const v = Math.min(5, Math.max(0, Math.round(raw)));
-          cell.setAttribute("data-v", v.toString());
-          const counts = Math.round(raw * 20 + 5);
-          cell.setAttribute("data-tooltip", `${sector} · ${d} · ${counts} signals`);
-          if (v >= 3) cell.textContent = counts.toString();
-          grid.appendChild(cell);
-        });
-      });
-    }
+    // 4. Sector Activity Heatmap populated declaratively in JSX
 
     // 5. Demand & Supply SVG Live Chart
     const W = 600, H = 320, POINTS = 30;
@@ -551,10 +518,33 @@ function DashboardContent() {
       {/* HEATMAP */}
       <div className="card reveal delay-2">
         <div className="card-h">
-          <h3>Sector × Day <em>activity heatmap</em></h3>
+          <h3>Sector · Day <em>activity heatmap</em></h3>
           <span className="meta">Last 7 days · buyer interest intensity</span>
         </div>
-        <div className="heatmap-grid" id="heatmap"></div>
+        <div className="heatmap-grid" id="heatmap">
+          <div className="heatmap-header" />
+          {HEATMAP_DAYS.map(day => (
+            <div key={day} className="heatmap-header">{day}</div>
+          ))}
+          {HEATMAP_SECTORS.map((sector, sIdx) => (
+            <React.Fragment key={sector}>
+              <div className="heatmap-row-label">{sector}</div>
+              {HEATMAP_DAYS.map((day, dIdx) => {
+                const cellData = HEATMAP_CELLS[sIdx][dIdx];
+                return (
+                  <div
+                    key={day}
+                    className="heatmap-cell"
+                    data-v={cellData.v}
+                    data-tooltip={`${sector} · ${day} · ${cellData.c} signals`}
+                  >
+                    {cellData.v >= 3 ? cellData.c : ""}
+                  </div>
+                );
+              })}
+            </React.Fragment>
+          ))}
+        </div>
         <div className="heatmap-legend">
           <span>Less activity</span>
           <div className="legend-scale">
@@ -1072,6 +1062,35 @@ function DashboardContent() {
     </>
   );
 }
+
+const HEATMAP_SECTORS = [
+  "AI Compliance", "RegTech", "AI Agents", "B2B SaaS", "Climate Tech",
+  "Workflow AI", "Healthtech", "Fintech SMB", "D2C Wellness", "Edtech"
+];
+const HEATMAP_DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
+const HEATMAP_CELLS = [
+  // AI Compliance (sIdx 0)
+  [{ v: 5, c: 114 }, { v: 4, c: 88 }, { v: 5, c: 104 }, { v: 5, c: 112 }, { v: 4, c: 92 }, { v: 2, c: 42 }, { v: 1, c: 28 }],
+  // RegTech (sIdx 1)
+  [{ v: 4, c: 86 }, { v: 5, c: 98 }, { v: 4, c: 84 }, { v: 4, c: 90 }, { v: 5, c: 106 }, { v: 2, c: 38 }, { v: 2, c: 34 }],
+  // AI Agents (sIdx 2)
+  [{ v: 5, c: 108 }, { v: 4, c: 82 }, { v: 5, c: 96 }, { v: 4, c: 78 }, { v: 5, c: 118 }, { v: 3, c: 54 }, { v: 1, c: 24 }],
+  // B2B SaaS (sIdx 3)
+  [{ v: 4, c: 92 }, { v: 4, c: 84 }, { v: 4, c: 88 }, { v: 5, c: 102 }, { v: 4, c: 80 }, { v: 2, c: 44 }, { v: 2, c: 36 }],
+  // Climate Tech (sIdx 4)
+  [{ v: 3, c: 68 }, { v: 4, c: 76 }, { v: 3, c: 62 }, { v: 3, c: 70 }, { v: 4, c: 74 }, { v: 1, c: 26 }, { v: 1, c: 22 }],
+  // Workflow AI (sIdx 5)
+  [{ v: 3, c: 64 }, { v: 3, c: 72 }, { v: 4, c: 78 }, { v: 3, c: 66 }, { v: 4, c: 82 }, { v: 2, c: 36 }, { v: 1, c: 20 }],
+  // Healthtech (sIdx 6)
+  [{ v: 3, c: 58 }, { v: 3, c: 60 }, { v: 3, c: 64 }, { v: 4, c: 72 }, { v: 3, c: 56 }, { v: 1, c: 22 }, { v: 0, c: 14 }],
+  // Fintech SMB (sIdx 7)
+  [{ v: 2, c: 44 }, { v: 2, c: 48 }, { v: 3, c: 52 }, { v: 2, c: 42 }, { v: 2, c: 46 }, { v: 1, c: 18 }, { v: 0, c: 12 }],
+  // D2C Wellness (sIdx 8)
+  [{ v: 1, c: 32 }, { v: 2, c: 38 }, { v: 1, c: 28 }, { v: 2, c: 36 }, { v: 2, c: 40 }, { v: 1, c: 16 }, { v: 0, c: 10 }],
+  // Edtech (sIdx 9)
+  [{ v: 1, c: 26 }, { v: 1, c: 30 }, { v: 2, c: 34 }, { v: 1, c: 24 }, { v: 2, c: 32 }, { v: 0, c: 12 }, { v: 0, c: 8 }]
+];
 
 export default function DashboardPage() {
   return (

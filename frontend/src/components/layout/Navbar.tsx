@@ -98,8 +98,7 @@ export function Navbar({
     document.documentElement.setAttribute("data-theme", nextTheme);
   };
 
-  const toggleRole = () => {
-    const nextRole = role === "investor" ? "architect" : "investor";
+  const handleSetRole = (nextRole: "investor" | "architect") => {
     setRole(nextRole);
     localStorage.setItem("vve-role", nextRole);
     document.documentElement.setAttribute("data-role", nextRole);
@@ -107,6 +106,14 @@ export function Navbar({
     if (onRoleChange) {
       onRoleChange(nextRole);
     }
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new Event("storage"));
+    }
+  };
+
+  const toggleRole = () => {
+    const nextRole = role === "investor" ? "architect" : "investor";
+    handleSetRole(nextRole);
   };
 
   const isPricing = pathname === "/pricing";
@@ -246,7 +253,7 @@ export function Navbar({
             >
               Opportunities
             </Link>
-            {isLoggedIn && (
+            {isLoggedIn && role === "architect" && (
               <Link
                 href="/list"
                 data-route="list"
@@ -265,15 +272,56 @@ export function Navbar({
           </div>
 
           <div className="nav-cta" ref={accountMenuRef}>
-            <button
-              type="button"
-              className="nav-role-pill"
+            <div
+              className="nav-role-toggle nav-role-pill"
+              id="nav-role-toggle"
+              role="group"
+              aria-label="Toggle role between Investor and Architect"
               onClick={toggleRole}
               title="Switch Workspace Mode"
             >
-              <span className="nav-role-dot" />
-              <span>{role === "architect" ? "Architect Workspace" : "Investor Mode"}</span>
-            </button>
+              <div className="nav-role-indicator" aria-hidden="true" />
+              <button
+                type="button"
+                className={`nav-role-btn ${role === "investor" ? "active" : ""}`}
+                data-role="investor"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (role === "investor") {
+                    handleSetRole("architect");
+                  } else {
+                    handleSetRole("investor");
+                  }
+                }}
+                aria-pressed={role === "investor"}
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true">
+                  <circle cx="12" cy="8" r="4" />
+                  <path d="M4 21v-1a8 8 0 0 1 16 0v1" />
+                </svg>
+                <span>Investor</span>
+              </button>
+              <button
+                type="button"
+                className={`nav-role-btn ${role === "architect" ? "active" : ""}`}
+                data-role="architect"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (role === "architect") {
+                    handleSetRole("investor");
+                  } else {
+                    handleSetRole("architect");
+                  }
+                }}
+                aria-pressed={role === "architect"}
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true">
+                  <path d="M3 3h18M5 3v10a7 7 0 0 0 14 0V3" />
+                  <circle cx="12" cy="20" r="1.5" />
+                </svg>
+                <span>Architect</span>
+              </button>
+            </div>
 
             <button
               type="button"
