@@ -2,7 +2,13 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Pricing Page (/pricing)', () => {
   test.beforeEach(async ({ page }) => {
-    await page.addInitScript(() => localStorage.clear());
+    await page.addInitScript(() => {
+      localStorage.clear();
+      localStorage.setItem('vve-stage', 'verified');
+      localStorage.setItem('vve-access-token', 'test-token');
+      localStorage.setItem('vve-role', 'investor');
+      localStorage.setItem('vve-user', JSON.stringify({ id: 'u_test', email: 'investor@vventra.com', role: 'investor', status: 'active' }));
+    });
   });
 
   test('renders 1:1 identical pricing page with all sections and elements', async ({ page }) => {

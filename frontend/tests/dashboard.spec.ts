@@ -2,9 +2,13 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Dashboard Page', () => {
   test.beforeEach(async ({ page }) => {
-    // Clear localStorage
-    await page.goto('/dashboard');
-    await page.evaluate(() => localStorage.clear());
+    await page.addInitScript(() => {
+      localStorage.clear();
+      localStorage.setItem('vve-stage', 'verified');
+      localStorage.setItem('vve-access-token', 'test-token');
+      localStorage.setItem('vve-role', 'investor');
+      localStorage.setItem('vve-user', JSON.stringify({ id: 'u_test', email: 'investor@vventra.com', role: 'investor', status: 'active' }));
+    });
   });
 
   test('renders dashboard with 1:1 intelligence terminal layout', async ({ page }) => {

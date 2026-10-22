@@ -2,6 +2,10 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Home / Landing Page', () => {
   test.beforeEach(async ({ page }) => {
+    await page.addInitScript(() => {
+      localStorage.setItem('vve-stage', 'applied');
+      localStorage.setItem('vve-role', 'investor');
+    });
     await page.route('**/*', (route) => {
       const url = route.request().url();
       if (url.includes('fonts.googleapis.com') || url.includes('fonts.gstatic.com')) {

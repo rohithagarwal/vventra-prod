@@ -2,6 +2,14 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Navbar Component', () => {
   test.beforeEach(async ({ page }) => {
+    await page.addInitScript(() => {
+      if (!localStorage.getItem('vve-stage')) {
+        localStorage.setItem('vve-stage', 'applied');
+      }
+      if (!localStorage.getItem('vve-role')) {
+        localStorage.setItem('vve-role', 'investor');
+      }
+    });
     await page.route('**/*', (route) => {
       const url = route.request().url();
       if (url.includes('fonts.googleapis.com') || url.includes('fonts.gstatic.com')) {
@@ -68,22 +76,29 @@ test.describe('Navbar Component', () => {
     await expect(page.locator('.brand-logo-dark')).not.toBeVisible();
   });
 
-  test('shows Log in button for guest, and active route highlight on /pricing and /terms', async ({ page }) => {
+  test('shows active route highlight on /pricing and /terms, and guest sees Log in on /login', async ({ page }) => {
     // Pricing page
     await page.goto('/pricing');
     await page.waitForTimeout(500);
     const pricingLink = page.locator('.nav-links a[data-route="pricing"]');
     await expect(pricingLink).toHaveClass(/active/);
 
-    const loginBtn = page.locator('#navLoginBtn');
-    await expect(loginBtn).toBeVisible();
-    await expect(loginBtn).toHaveText('Log in');
-
     // Terms page
     await page.goto('/terms');
     await page.waitForTimeout(500);
     const termsLink = page.locator('.nav-links a[data-route="terms"]');
     await expect(termsLink).toHaveClass(/active/);
+
+    // Guest on /login sees Log in button
+    await page.goto('/login');
+    await page.evaluate(() => {
+      localStorage.clear();
+      window.dispatchEvent(new Event('storage'));
+    });
+    await page.waitForTimeout(300);
+    const loginBtn = page.locator('#navLoginBtn');
+    await expect(loginBtn).toBeVisible();
+    await expect(loginBtn).toHaveText('Log in');
   });
 
   test('shows Verify identity pill when in applied stage', async ({ page }) => {
@@ -102,7 +117,7 @@ test.describe('Navbar Component', () => {
 
   test('shows List an opportunity when logged in, and navigates directly to /list without login prompt', async ({ page }) => {
     await page.goto('/');
-    // Set user as logged in
+    // Set user as logged in with architect role
     await page.evaluate(() => {
       localStorage.setItem('vve-stage', 'applied');
       localStorage.setItem('vve-role', 'architect');
