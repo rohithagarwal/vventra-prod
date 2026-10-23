@@ -155,16 +155,9 @@ const isApplied = stage === "applied" || pathname === "/onboarding" || pathname 
               Trust
             </Link>
             <Link
-              href="/#playbook"
+              href="/playbook"
               data-route="playbook"
-              className={(pathname === "/" && (activeHash === "#playbook" || activeHash === "#how")) || pathname === "/playbook" ? "active" : ""}
-              onClick={(e) => {
-                if (pathname === "/") {
-                  e.preventDefault();
-                  const el = document.getElementById("playbook") || document.getElementById("how");
-                  if (el) el.scrollIntoView({ behavior: "smooth" });
-                }
-              }}
+              className={pathname === "/playbook" ? "active" : ""}
             >
               Playbook
             </Link>
