@@ -219,16 +219,9 @@ export function Navbar({
               Playbook
             </Link>
             <Link
-              href="/#faq"
+              href="/faq"
               data-route="faq"
-              className={(pathname === "/" && activeHash === "#faq") || pathname === "/faq" ? "active" : ""}
-              onClick={(e) => {
-                if (pathname === "/") {
-                  e.preventDefault();
-                  const el = document.getElementById("faq");
-                  if (el) el.scrollIntoView({ behavior: "smooth" });
-                }
-              }}
+              className={pathname === "/faq" ? "active" : ""}
             >
               FAQ
             </Link>
