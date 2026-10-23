@@ -116,62 +116,12 @@ export function Navbar({
     handleSetRole(nextRole);
   };
 
-  const isPricing = pathname === "/pricing";
-  const tickerLabelText = isPricing ? "Pricing" : "Live";
-  const tickerList = isPricing
-    ? [
-        { code: "▲", text: "Simple economics · Disciplined process", delta: "" },
-        { code: "▲", text: "No subscriptions · No listing fees · No surprises", delta: "" },
-        { code: "▲", text: "Three engagement paths · Buyer chooses how to proceed", delta: "" },
-        { code: "▲", text: "Try the live calculator below", delta: "" },
-        { code: "▲", text: "Simple economics · Disciplined process", delta: "" },
-        { code: "▲", text: "No subscriptions · No listing fees · No surprises", delta: "" },
-        { code: "▲", text: "Three engagement paths · Buyer chooses how to proceed", delta: "" },
-        { code: "▲", text: "Try the live calculator below", delta: "" },
-      ]
-    : [
-        { code: "VVE-2440", text: "B2B media · subscription play, US", delta: "+12%" },
-        { code: "VVE-2441", text: "Specialty logistics · SEA", delta: "+8%" },
-        { code: "VVE-2442", text: "Vertical AI · legal ops, India", delta: "+24%" },
-        { code: "VVE-2443", text: "Healthtech · diagnostics, India", delta: "+6%" },
-        { code: "VVE-2438", text: "D2C ayurveda · UNLOCKED", delta: "Closed" },
-        { code: "VVE-2429", text: "Creator marketplace · listed", delta: "+18%" },
-        { code: "VVE-2436", text: "AI agent · 3 new buyer requests", delta: "+14%" },
-        { code: "VVE-2425", text: "Climate · industrial monitoring", delta: "+9%" },
-        { code: "VVE-2434", text: "SMB lending · validated", delta: "+22%" },
-        { code: "VVE-2412", text: "Niche marketplace · DEAL CLOSED", delta: "$5.2k" },
-        { code: "VVE-2440", text: "B2B media · subscription play, US", delta: "+12%" },
-        { code: "VVE-2441", text: "Specialty logistics · SEA", delta: "+8%" },
-        { code: "VVE-2442", text: "Vertical AI · legal ops, India", delta: "+24%" },
-        { code: "VVE-2443", text: "Healthtech · diagnostics, India", delta: "+6%" },
-        { code: "VVE-2438", text: "D2C ayurveda · UNLOCKED", delta: "Closed" },
-        { code: "VVE-2429", text: "Creator marketplace · listed", delta: "+18%" },
-        { code: "VVE-2436", text: "AI agent · 3 new buyer requests", delta: "+14%" },
-        { code: "VVE-2425", text: "Climate · industrial monitoring", delta: "+9%" },
-        { code: "VVE-2434", text: "SMB lending · validated", delta: "+22%" },
-        { code: "VVE-2412", text: "Niche marketplace · DEAL CLOSED", delta: "$5.2k" },
-      ];
-
-  const isApplied = stage === "applied" || pathname === "/onboarding" || pathname === "/verify";
+const isApplied = stage === "applied" || pathname === "/onboarding" || pathname === "/verify";
   const isVerified = stage === "verified";
   const isLoggedIn = stage === "applied" || stage === "verified";
 
   return (
     <>
-      <div className="ticker" tabIndex={0} aria-label="Market bulletin. Focus or hover to pause.">
-        <div className="ticker-label" id="ticker-label">{tickerLabelText}</div>
-        <div className="ticker-track" id="ticker-track">
-          {tickerList.map((it, idx) => (
-            <span key={idx} className="ticker-item">
-              <span className="code">{it.code}</span>
-              <span>{it.text}</span>
-              {it.delta && <span className="up">{it.delta}</span>}
-              <span className="sep" />
-            </span>
-          ))}
-        </div>
-      </div>
-
       <nav className="top" aria-label="Primary navigation">
         <div className="nav-inner">
           <Link href="/" className="brand" data-route="home" aria-label="vvEntra">

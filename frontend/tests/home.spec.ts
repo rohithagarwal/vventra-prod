@@ -19,11 +19,8 @@ test.describe('Home / Landing Page', () => {
     await page.goto('/');
     await page.waitForTimeout(1000);
 
-    // 1. Ticker
-    const ticker = page.locator('.ticker');
-    await expect(ticker).toBeVisible();
-    await expect(page.locator('#ticker-label')).toHaveText('Live');
-    await expect(page.locator('#ticker-track')).toBeVisible();
+    // 1. Top Ticker removed (no fake live data)
+    await expect(page.locator(".ticker")).toHaveCount(0);
 
     // 2. Navigation
     await expect(page.locator('nav.top')).toBeVisible();

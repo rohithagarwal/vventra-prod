@@ -140,7 +140,7 @@ test.describe('Pricing Page (/pricing)', () => {
     await expect(firstRule).not.toHaveClass(/open/);
   });
 
-  test('navbar pricing link routes to /pricing and displays pricing ticker', async ({ page }) => {
+  test('navbar pricing link routes to /pricing and verifies ticker removed', async ({ page }) => {
     await page.goto('/dashboard', { waitUntil: 'domcontentloaded' });
 
     const pricingLink = page.locator('.nav-links a[data-route="pricing"]');
@@ -148,7 +148,6 @@ test.describe('Pricing Page (/pricing)', () => {
     await pricingLink.click();
 
     await expect(page).toHaveURL(/\/pricing/);
-    await expect(page.locator('.ticker-label').first()).toHaveText('Pricing');
-    await expect(page.locator('.ticker-track').first()).toContainText('Simple economics');
+    await expect(page.locator('.ticker')).toHaveCount(0);
   });
 });
