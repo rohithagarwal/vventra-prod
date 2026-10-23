@@ -23,110 +23,7 @@ interface OpportunityItem {
   unlockPrice: string;
 }
 
-const OPPORTUNITIES_DATA: OpportunityItem[] = [
-  {
-    id: "opp-1",
-    industry: "ecommerce",
-    stage: "execution",
-    stageLabel: "Execution-Ready",
-    status: "available",
-    statusLabel: "Available",
-    tags: ["E-Commerce", "AI Automation"],
-    title: "Autonomous Backend Operations System for Mid-Market E-Commerce Brands",
-    hook: "A documented operational intelligence system that removes the founder from backend work in under 90 days.",
-    capital: "$28K – $56K",
-    timeToLaunch: "60–90 days",
-    trustScore: 87,
-    listedDaysAgo: 3,
-    priceNum: 28000,
-    unlockPrice: "$2,800",
-  },
-  {
-    id: "opp-2",
-    industry: "saas",
-    stage: "validated",
-    stageLabel: "Validated Thesis",
-    status: "available",
-    statusLabel: "Available",
-    tags: ["B2B SaaS", "Fintech"],
-    title: "Compliance Copilot for Mid-Market Fintechs",
-    hook: "An embedded compliance review engine that compresses 14-day vendor reviews into a 36-hour structured workflow, validated with nine design partners.",
-    capital: "$42K – $68K",
-    timeToLaunch: "5–7 months",
-    trustScore: 91,
-    listedDaysAgo: 1,
-    priceNum: 42000,
-    unlockPrice: "$4,200",
-  },
-  {
-    id: "opp-3",
-    industry: "services",
-    stage: "execution",
-    stageLabel: "Execution-Ready",
-    status: "available",
-    statusLabel: "Available",
-    tags: ["Professional Services", "AI & Legal"],
-    title: "Structured Tax Memo Generation for Accounting Firms",
-    hook: "An automated research and drafting system that produces audit-defensible tax position memos in 40 minutes instead of six hours.",
-    capital: "$22K – $38K",
-    timeToLaunch: "45–60 days",
-    trustScore: 89,
-    listedDaysAgo: 5,
-    priceNum: 22000,
-    unlockPrice: "$2,200",
-  },
-  {
-    id: "opp-4",
-    industry: "marketplace",
-    stage: "execution",
-    stageLabel: "Execution-Ready",
-    status: "review",
-    statusLabel: "In Review",
-    tags: ["Marketplace", "Home Services"],
-    title: "Verified Contractor Marketplace for Residential Repairs",
-    hook: "A trust-first marketplace connecting homeowners with vetted local contractors, with instant structured quotes and escrow-backed milestones.",
-    capital: "$35K – $75K",
-    timeToLaunch: "90–120 days",
-    trustScore: 83,
-    listedDaysAgo: 2,
-    priceNum: 35000,
-    unlockPrice: "$3,500",
-  },
-  {
-    id: "opp-5",
-    industry: "fintech",
-    stage: "execution",
-    stageLabel: "Execution-Ready",
-    status: "available",
-    statusLabel: "Available",
-    tags: ["Fintech", "B2B"],
-    title: "Embedded Treasury Management for SMB Platforms",
-    hook: "A white-label treasury and yield layer that vertical SaaS platforms can embed to monetise idle customer balances, with full compliance scaffolding.",
-    capital: "$50K – $90K",
-    timeToLaunch: "6–8 months",
-    trustScore: 88,
-    listedDaysAgo: 4,
-    priceNum: 50000,
-    unlockPrice: "$5,000",
-  },
-  {
-    id: "opp-6",
-    industry: "ecommerce",
-    stage: "concept",
-    stageLabel: "Early Concept",
-    status: "available",
-    statusLabel: "Available",
-    tags: ["E-Commerce", "Sustainability"],
-    title: "Zero-Waste Subscription Commerce System",
-    hook: "A curated subscription model for sustainable consumer goods, with supplier vetting frameworks and a content-led retention engine.",
-    capital: "$15K – $30K",
-    timeToLaunch: "60 days",
-    trustScore: 72,
-    listedDaysAgo: 6,
-    priceNum: 15000,
-    unlockPrice: "$1,500",
-  },
-];
+const OPPORTUNITIES_DATA: OpportunityItem[] = [];
 
 const FILTERS = [
   { id: "all", label: "All" },
@@ -323,16 +220,11 @@ export default function BrowsePage() {
           </div>
         ) : (
           /* EMPTY STATE */
-          <div className="container-wide browse-empty" id="browseEmpty" style={{ display: "block" }}>
-            <p>No opportunities match this filter yet. Try another category.</p>
-            <button
-              type="button"
-              className="bfilter active"
-              style={{ marginTop: "1rem" }}
-              onClick={() => setActiveFilter("all")}
-            >
-              Reset to all sectors
-            </button>
+          <div className="container-wide browse-empty platform-empty-state" id="browseEmpty" style={{ display: "block", textAlign: "center", padding: "4rem 2rem", border: "1px dashed var(--line)", background: "var(--card-bg, #0d0d0d)", borderRadius: "12px", margin: "2rem auto" }}>
+            <span className="empty-value" style={{ display: "block", fontSize: "2.5rem", fontWeight: 300, color: "var(--text-faint)", marginBottom: "0.5rem" }}>0</span>
+            <h3 style={{ fontSize: "1.25rem", color: "var(--text)", marginBottom: "0.5rem" }}>No published opportunities yet</h3>
+            <p style={{ color: "var(--text-muted)", fontSize: "0.92rem", maxWidth: "460px", margin: "0 auto 1.5rem" }}>Approved listings will appear automatically when they are published.</p>
+            <Link href="/list" className="btn btn-outline">List an opportunity <span className="arrow">→</span></Link>
           </div>
         )}
       </main>

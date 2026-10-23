@@ -84,7 +84,7 @@ test.describe('Home / Landing Page', () => {
     // 10. Featured Opportunities (6 cards)
     const opportunities = page.locator('section#opportunities');
     await expect(opportunities).toBeVisible();
-    await expect(opportunities.locator('.opp-card')).toHaveCount(6);
+    await expect(opportunities.locator('.platform-empty-state')).toBeVisible();
 
     // 11. How it works
     const how = page.locator('section#how');

@@ -442,9 +442,9 @@ function DashboardContent() {
         </div>
         <div>
           <h4>Your <em>thesis match</em> this week</h4>
-          <p>Based on your interest in <strong>AI vertical workflow</strong> and <strong>B2B SaaS mid-market</strong>: 6 curated listings are live on vvEntra. As architects publish verified blueprints, matched opportunities and peer unlock signals will stream here.</p>
+          <p>Based on your interest in <strong>AI vertical workflow</strong> and <strong>B2B SaaS mid-market</strong>: 0 listings matched your thesis currently. As architects publish verified blueprints, matched opportunities and peer unlock signals will stream here.</p>
           <div style={{ marginTop: '0.85rem', display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-            <Link href="/browse" className="btn btn-outline" style={{ fontSize: '0.8rem', padding: '0.4rem 0.85rem' }}>Browse opportunities (6) <span className="arrow">→</span></Link>
+            <Link href="/browse" className="btn btn-outline" style={{ fontSize: '0.8rem', padding: '0.4rem 0.85rem' }}>Browse opportunities (0) <span className="arrow">→</span></Link>
             <Link href="/list" className="btn btn-ghost" style={{ fontSize: '0.8rem', padding: '0.4rem 0.85rem', border: '1px solid var(--line)' }}>List an opportunity <span className="arrow">→</span></Link>
           </div>
         </div>
@@ -949,7 +949,7 @@ function DashboardContent() {
 <section className="picks-section">
   <div className="container">
 
-    {/* INVESTOR PICKS */}
+    {/* INVESTOR PICKS (EMPTY WHEN NONE PUBLISHED) */}
     <div className="role-show" data-show="investor">
       <div className="section-head reveal" style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', maxWidth: 'none', flexWrap: 'wrap', gap: '1rem', marginBottom: '2rem' }}>
         <div style={{ maxWidth: '680px' }}>
@@ -958,88 +958,17 @@ function DashboardContent() {
           <p>The matching engine surfaces opportunities likely to fit your investment thesis based on past unlocks, search filters, and stated sector interest.</p>
         </div>
         <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-          <Link href="/browse" className="btn btn-outline" style={{ whiteSpace: 'nowrap' }}>Browse all opportunities (6) <span className="arrow">→</span></Link>
+          <Link href="/browse" className="btn btn-outline" style={{ whiteSpace: 'nowrap' }}>Browse catalog (0) <span className="arrow">→</span></Link>
           <Link href="/list" className="btn btn-ghost" style={{ whiteSpace: 'nowrap', border: '1px solid var(--line)' }}>List an opportunity <span className="arrow">→</span></Link>
         </div>
       </div>
 
       <div className="picks-grid">
-        <Link href="/listing" className="pick-card reveal" style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer', display: 'flex', flexDirection: 'column' }}>
-          <span className="match-badge">92% match</span>
-          <div className="pick-head">
-            <span className="code">VVE-2438</span>
-            <span className="tag">D2C · Ayurveda</span>
-          </div>
-          <h3 className="pick-title">Indian D2C ayurveda category build-out</h3>
-          <div className="pick-reason">Matches your <em>D2C consumer thesis</em>. 0 peer views yet · Click to view full dossier.</div>
-          <div className="pick-meta">
-            <span className="pages">127 pages · 9 frameworks</span>
-            <span className="price">$4,800 · Unlock →</span>
-          </div>
-        </Link>
-
-        <Link href="/listing" className="pick-card reveal delay-1" style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer', display: 'flex', flexDirection: 'column' }}>
-          <span className="match-badge">88% match</span>
-          <div className="pick-head">
-            <span className="code">VVE-2436</span>
-            <span className="tag">AI · Workflow</span>
-          </div>
-          <h3 className="pick-title">AI workflow agent for vertical operations</h3>
-          <div className="pick-reason">High <em>demand signal</em>. Sector +24% this week. Architect is ex-AI engineering lead.</div>
-          <div className="pick-meta">
-            <span className="pages">112 pages · 8 frameworks</span>
-            <span className="price">$5,400 · Unlock →</span>
-          </div>
-        </Link>
-
-        <Link href="/listing" className="pick-card reveal delay-2" style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer', display: 'flex', flexDirection: 'column' }}>
-          <span className="match-badge">85% match</span>
-          <div className="pick-head">
-            <span className="code">VVE-2434</span>
-            <span className="tag">Fintech · SMB</span>
-          </div>
-          <h3 className="pick-title">SMB lending for tier-2 Indian cities</h3>
-          <div className="pick-reason">Premium <em>capital signal</em>. Highest-paying sector ($7.2k avg). Architect is ex-NBFC with regulatory experience.</div>
-          <div className="pick-meta">
-            <span className="pages">142 pages · 11 frameworks</span>
-            <span className="price">$7,200 · Unlock →</span>
-          </div>
-        </Link>
-      </div>
-
-      {/* SECTION 05 · ACTIVE OPPORTUNITY CATALOG IN INVESTOR SECTION */}
-      <div className="investor-opps-block" style={{ marginTop: '4rem', paddingTop: '3rem', borderTop: '1px solid var(--line)' }}>
-        <div className="section-head reveal" style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', maxWidth: 'none', flexWrap: 'wrap', gap: '1rem', marginBottom: '2rem' }}>
-          <div style={{ maxWidth: '680px' }}>
-            <div className="section-marker"><span className="num">05</span><span className="line"></span><span className="name">Active Opportunity Catalog</span></div>
-            <h2 className="display md">Curated deal flow · <em>ready for diligence</em>.</h2>
-            <p>Every listing earns its place through verified operational depth. Review structure and architect credibility before requesting confidential access.</p>
-          </div>
-          <Link href="/browse" className="btn btn-outline">Open full marketplace <span className="arrow">→</span></Link>
-        </div>
-
-        <div className="opp-grid">
-          <Link href="/listing" className="opp-card reveal" style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
-            <div className="opp-head"><span className="opp-code">ASSET-7741-B</span><span className="opp-tag">E-Commerce · AI Ops</span><span className="opp-demand-tag">🔥 Featured Dossier</span></div>
-            <h3 className="opp-title">Autonomous Backend Operations <span className="blur">System for Mid-Market Brands</span></h3>
-            <p className="opp-desc">A fully documented operational intelligence system that removes the founder from backend e-commerce operations in under 90 days. 90-page blueprint with complete supplier workflows.</p>
-            <div className="opp-metrics"><div className="opp-metric"><span className="v">90</span><span className="l">Pages</span></div><div className="opp-metric"><span className="v">87</span><span className="l">Trust Score</span></div><div className="opp-metric"><span className="v">$28K</span><span className="l">List Price</span></div></div>
-            <div className="opp-foot"><span className="opp-architect"><span className="architect-dot"></span>Senior Ops Specialist · 3 deployments</span><span className="opp-price"><em>$2,800 to unlock</em></span></div>
-          </Link>
-          <Link href="/listing" className="opp-card reveal delay-1" style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
-            <div className="opp-head"><span className="opp-code">VVE-2437</span><span className="opp-tag">SaaS · Compliance</span><span className="opp-demand-tag">↑ +28% demand</span></div>
-            <h3 className="opp-title">B2B SaaS for <span className="blur">vertical compliance, US mid-market</span></h3>
-            <p className="opp-desc">An execution-ready compliance automation play for US mid-market manufacturers. Includes ICP, regulatory map, GTM motion, and pricing architecture validated against 47 customer signals.</p>
-            <div className="opp-metrics"><div className="opp-metric"><span className="v">96</span><span className="l">Pages</span></div><div className="opp-metric"><span className="v">6</span><span className="l">Frameworks</span></div><div className="opp-metric"><span className="v">3</span><span className="l">Fin models</span></div></div>
-            <div className="opp-foot"><span className="opp-architect"><span className="architect-dot"></span>Senior architect · COO bg</span><span className="opp-price"><em>$3,200 to unlock</em></span></div>
-          </Link>
-          <Link href="/listing" className="opp-card reveal delay-2" style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
-            <div className="opp-head"><span className="opp-code">VVE-2436</span><span className="opp-tag">AI · Workflow</span><span className="opp-demand-tag">🔥 Surging</span></div>
-            <h3 className="opp-title">AI workflow agent for <span className="blur">vertical operations</span></h3>
-            <p className="opp-desc">Vertical-specific AI workflow agent targeting a high-friction operational layer. Includes prompt engineering library, agent architecture, integration spec, and 24-month commercial roadmap.</p>
-            <div className="opp-metrics"><div className="opp-metric"><span className="v">112</span><span className="l">Pages</span></div><div className="opp-metric"><span className="v">8</span><span className="l">Frameworks</span></div><div className="opp-metric"><span className="v">5</span><span className="l">Fin models</span></div></div>
-            <div className="opp-foot"><span className="opp-architect"><span className="architect-dot"></span>Senior architect · AI bg</span><span className="opp-price"><em>$5,400 to unlock</em></span></div>
-          </Link>
+        <div className="platform-empty-state" style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '3.5rem 2rem', border: '1px dashed var(--line)', background: 'var(--card-bg, #0d0d0d)', borderRadius: '12px', width: '100%' }}>
+          <span className="empty-value" style={{ display: 'block', fontSize: '2.5rem', fontWeight: 300, color: 'var(--text-faint)', marginBottom: '0.5rem' }}>0</span>
+          <h3 style={{ fontSize: '1.15rem', color: 'var(--text)', marginBottom: '0.5rem' }}>No published opportunities yet</h3>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', maxWidth: '460px', margin: '0 auto 1.25rem' }}>Approved listings will appear automatically when they are published.</p>
+          <Link href="/list" className="btn btn-outline">List an opportunity <span className="arrow">→</span></Link>
         </div>
       </div>
     </div>

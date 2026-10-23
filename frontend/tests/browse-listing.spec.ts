@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import path from 'path';
 
-test.describe('Browse and Listing Pages 1:1 Reference Match', () => {
+test.describe('Browse and Listing Pages Zero-Listing Production State', () => {
   const artifactDir = 'C:/Users/rohit/.gemini/antigravity/brain/805df1dc-3c11-45cd-8996-1ea9aea20024';
 
   test.beforeEach(async ({ page }) => {
@@ -14,7 +14,7 @@ test.describe('Browse and Listing Pages 1:1 Reference Match', () => {
     });
   });
 
-  test('Browse page loads, renders catalog, filter pills, and navigation', async ({ page }) => {
+  test('Browse page loads, renders 0 opportunities count and reference empty state', async ({ page }) => {
     await page.goto('/browse');
     await page.waitForLoadState('networkidle');
 
@@ -27,62 +27,33 @@ test.describe('Browse and Listing Pages 1:1 Reference Match', () => {
     await expect(pills).toHaveCount(10);
     await expect(pills.first()).toHaveText('All');
 
-    // Check opportunity cards count (6 initial items)
-    const cards = page.locator('.browse-grid .opp-card');
-    await expect(cards).toHaveCount(6);
+    // Check opportunity count is 0
+    await expect(page.locator('.browse-count')).toContainText('0 opportunities');
 
-    // Filter by SaaS
-    await page.click('button.bfilter:has-text("SaaS")');
-    await expect(page.locator('.browse-count')).toContainText('1');
-    await expect(page.locator('.browse-grid .opp-card')).toHaveCount(1);
+    // Check empty state
+    const emptyState = page.locator('.platform-empty-state');
+    await expect(emptyState).toBeVisible();
+    await expect(emptyState.locator('h3')).toContainText('No published opportunities yet');
+    await expect(emptyState.locator('p')).toContainText('Approved listings will appear automatically when they are published');
 
-    // Reset filter
-    await page.click('button.bfilter:has-text("All")');
-    await expect(page.locator('.browse-count')).toContainText('6');
-    await expect(page.locator('.browse-grid .opp-card')).toHaveCount(6);
+    // No dummy opp-cards rendered
+    await expect(page.locator('.opp-card')).toHaveCount(0);
 
-    // Screenshot browse page
-    await page.screenshot({ path: path.join(artifactDir, 'showcase_browse_page.png'), fullPage: true });
-
-    // Click first card to navigate to listing detail
-    await cards.first().click();
-    await page.waitForURL('**/listing');
-    expect(page.url()).toContain('/listing');
+    // Screenshot browse page in zero-listing state
+    await page.screenshot({ path: path.join(artifactDir, 'showcase_browse_page_empty.png'), fullPage: true });
   });
 
-  test('Listing dossier page loads with complete 6 sections and interactive unlock card', async ({ page }) => {
+  test('Listing page renders clean zero-state when no published opportunity is selected', async ({ page }) => {
     await page.goto('/listing');
     await page.waitForLoadState('networkidle');
 
-    // Check listing header
-    await expect(page.locator('.listing-id')).toContainText('ASSET-7741-B');
-    await expect(page.locator('.listing-title')).toContainText('Autonomous Backend Operations System');
-
-    // Check key stat row
-    await expect(page.locator('.listing-stats')).toBeVisible();
-    await expect(page.locator('.listing-stats')).toContainText('$2,800');
-
-    // Check sticky sidebar cards
-    await expect(page.locator('.listing-sidebar')).toBeVisible();
-    await expect(page.locator('.snapshot-card')).toBeVisible();
-    await expect(page.locator('.unlock-mini-card')).toBeVisible();
-    await expect(page.locator('.unlock-mini-card')).toContainText('$2,800');
-
-    // Check Back to opportunities link
-    const backLink = page.locator('.back-link');
-    await expect(backLink).toBeVisible();
-    await expect(backLink).toHaveAttribute('href', '/browse');
-
-    // Check all 6 core sections exist and are populated
-    await expect(page.getByRole('heading', { name: 'Investment thesis' })).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'The problem' })).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Market gap' })).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'The architect' })).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Engagement model' })).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Why now' })).toBeVisible();
+    // Check empty state
+    const emptyState = page.locator('.platform-empty-state');
+    await expect(emptyState).toBeVisible();
+    await expect(emptyState.locator('h1')).toContainText('No published opportunities yet');
 
     // Screenshot listing detail page
-    await page.screenshot({ path: path.join(artifactDir, 'showcase_listing_detail_page.png'), fullPage: true });
+    await page.screenshot({ path: path.join(artifactDir, 'showcase_listing_page_empty.png'), fullPage: true });
   });
 
   test('Guest access to /browse and /listing redirects to /login', async ({ page }) => {

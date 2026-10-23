@@ -680,7 +680,7 @@ export default function Home() {
           <li>Direct intro to senior architects with execution support</li>
         </ul>
         <span className="quote">"Acquire opportunity. Deploy execution."</span>
-        <span className="btn btn-outline">Browse investor opportunities <span className="arrow">→</span></span>
+        <span className="btn btn-outline">Explore investor side <span className="arrow">→</span></span>
       </Link>
 
       <Link href="/list" data-route="list" className="audience-card reveal delay-1">
@@ -741,10 +741,7 @@ export default function Home() {
         <div className="preview-main">
           <div className="preview-h"><h6>Live opportunities</h6><span className="count" id="preview-count">No active listings</span></div>
           <div className="feed" id="feed">
-            <div className="feed-row"><span className="feed-code">VVE-2438</span><div className="feed-info"><span className="feed-title">Indian D2C ayurveda · category build-out</span><span className="feed-meta">127 pages · 9 frameworks · 4 financial models</span></div><span className="feed-price">$4,800</span><span className="feed-status live"></span></div>
-            <div className="feed-row"><span className="feed-code">VVE-2437</span><div className="feed-info"><span className="feed-title">B2B SaaS · vertical compliance, US mid-market</span><span className="feed-meta">96 pages · 6 frameworks · 3 financial models</span></div><span className="feed-price">$3,200</span><span className="feed-status live"></span></div>
-            <div className="feed-row"><span className="feed-code">VVE-2436</span><div className="feed-info"><span className="feed-title">AI workflow agent · vertical operations</span><span className="feed-meta">112 pages · 8 frameworks · 5 financial models</span></div><span className="feed-price">$5,400</span><span className="feed-status locked"></span></div>
-            <div className="feed-row"><span className="feed-code">VVE-2435</span><div className="feed-info"><span className="feed-title">Edtech · senior workforce reskilling, MEA</span><span className="feed-meta">88 pages · 5 frameworks · 3 financial models</span></div><span className="feed-price">$2,900</span><span className="feed-status pending"></span></div>
+            <div style={{ textAlign: 'center', padding: '2.5rem 1rem', color: 'var(--text-faint)', fontSize: '0.85rem' }}>No active listings currently live · Verified opportunities stream here once approved.</div>
           </div>
         </div>
 
@@ -776,52 +773,16 @@ export default function Home() {
         <h2 className="display lg">Curated. Verified. <em>Locked by default.</em></h2>
         <p className="lead">Every opportunity has a public preview. The substance is locked. Buyers see structure, depth, and architect credibility before they request access.</p>
       </div>
-      <Link href="/browse" className="btn btn-outline">Browse all <span id="browse-count">6</span> <span className="arrow">→</span></Link>
+      <Link href="/browse" className="btn btn-outline">Browse all <span id="browse-count">0</span> <span className="arrow">→</span></Link>
     </div>
 
         <div className="opp-grid">
-      <Link href="/listing" className="opp-card reveal" style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
-        <div className="opp-head"><span className="opp-code">VVE-2438</span><span className="opp-tag">D2C · Ayurveda</span><span className="opp-demand-tag">↑ +24% demand</span></div>
-        <h3 className="opp-title">Indian D2C <span className="blur">ayurveda category build-out</span></h3>
-        <p className="opp-desc">A full category playbook for an under-served wellness vertical with $1.2B TAM growth runway. Operator-grade execution plan with sourcing, branding, and channel strategy already mapped.</p>
-        <div className="opp-metrics"><div className="opp-metric"><span className="v">127</span><span className="l">Pages</span></div><div className="opp-metric"><span className="v">9</span><span className="l">Frameworks</span></div><div className="opp-metric"><span className="v">4</span><span className="l">Fin models</span></div></div>
-        <div className="opp-foot"><span className="opp-architect"><span className="architect-dot"></span>Senior architect · 2 exits</span><span className="opp-price"><em>$4,800</em></span></div>
-      </Link>
-      <Link href="/listing" className="opp-card reveal delay-1" style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
-        <div className="opp-head"><span className="opp-code">VVE-2437</span><span className="opp-tag">SaaS · Compliance</span><span className="opp-demand-tag">↑ +28% demand</span></div>
-        <h3 className="opp-title">B2B SaaS for <span className="blur">vertical compliance, US mid-market</span></h3>
-        <p className="opp-desc">An execution-ready compliance automation play for US mid-market manufacturers. Includes ICP, regulatory map, GTM motion, and pricing architecture validated against 47 customer signals.</p>
-        <div className="opp-metrics"><div className="opp-metric"><span className="v">96</span><span className="l">Pages</span></div><div className="opp-metric"><span className="v">6</span><span className="l">Frameworks</span></div><div className="opp-metric"><span className="v">3</span><span className="l">Fin models</span></div></div>
-        <div className="opp-foot"><span className="opp-architect"><span className="architect-dot"></span>Senior architect · COO bg</span><span className="opp-price"><em>$3,200</em></span></div>
-      </Link>
-      <Link href="/listing" className="opp-card reveal delay-2" style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
-        <div className="opp-head"><span className="opp-code">VVE-2436</span><span className="opp-tag">AI · Workflow</span><span className="opp-demand-tag">🔥 Surging</span></div>
-        <h3 className="opp-title">AI workflow agent for <span className="blur">vertical operations</span></h3>
-        <p className="opp-desc">Vertical-specific AI workflow agent targeting a high-friction operational layer. Includes prompt engineering library, agent architecture, integration spec, and 24-month commercial roadmap.</p>
-        <div className="opp-metrics"><div className="opp-metric"><span className="v">112</span><span className="l">Pages</span></div><div className="opp-metric"><span className="v">8</span><span className="l">Frameworks</span></div><div className="opp-metric"><span className="v">5</span><span className="l">Fin models</span></div></div>
-        <div className="opp-foot"><span className="opp-architect"><span className="architect-dot"></span>Senior architect · AI bg</span><span className="opp-price"><em>$5,400</em></span></div>
-      </Link>
-      <Link href="/listing" className="opp-card reveal" style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
-        <div className="opp-head"><span className="opp-code">VVE-2434</span><span className="opp-tag">Fintech · SMB</span><span className="opp-demand-tag">↑ Top paying</span></div>
-        <h3 className="opp-title">SMB lending infrastructure for <span className="blur">tier-2 Indian cities</span></h3>
-        <p className="opp-desc">A regulatory-grade lending architecture for under-banked SMB segments in tier-2 Indian markets. Includes underwriting model, distribution playbook, and a 36-month capital plan.</p>
-        <div className="opp-metrics"><div className="opp-metric"><span className="v">142</span><span className="l">Pages</span></div><div className="opp-metric"><span className="v">11</span><span className="l">Frameworks</span></div><div className="opp-metric"><span className="v">6</span><span className="l">Fin models</span></div></div>
-        <div className="opp-foot"><span className="opp-architect"><span className="architect-dot"></span>Senior architect · ex-NBFC</span><span className="opp-price"><em>$7,200</em></span></div>
-      </Link>
-      <Link href="/listing" className="opp-card reveal delay-1" style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
-        <div className="opp-head"><span className="opp-code">VVE-2432</span><span className="opp-tag">Climate · Industry</span><span className="opp-demand-tag">↑ +18% demand</span></div>
-        <h3 className="opp-title">Industrial emissions monitoring for <span className="blur">heavy manufacturing</span></h3>
-        <p className="opp-desc">A hardware-plus-software stack for emissions monitoring in heavy industry. Includes BOM, supply chain, regulatory pathway, and a clear case for enterprise pilot conversion within 6 months.</p>
-        <div className="opp-metrics"><div className="opp-metric"><span className="v">108</span><span className="l">Pages</span></div><div className="opp-metric"><span className="v">7</span><span className="l">Frameworks</span></div><div className="opp-metric"><span className="v">3</span><span className="l">Fin models</span></div></div>
-        <div className="opp-foot"><span className="opp-architect"><span className="architect-dot"></span>Senior architect · industrial</span><span className="opp-price"><em>$4,400</em></span></div>
-      </Link>
-      <Link href="/listing" className="opp-card reveal delay-2" style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
-        <div className="opp-head"><span className="opp-code">VVE-2429</span><span className="opp-tag">Marketplace · Niche</span><span className="opp-demand-tag">New</span></div>
-        <h3 className="opp-title">Specialty marketplace for <span className="blur">an under-served creator vertical</span></h3>
-        <p className="opp-desc">A two-sided marketplace play in a niche creator vertical with proven demand and weak existing infrastructure. Includes both sides of the GTM, take-rate model, and category economics.</p>
-        <div className="opp-metrics"><div className="opp-metric"><span className="v">94</span><span className="l">Pages</span></div><div className="opp-metric"><span className="v">7</span><span className="l">Frameworks</span></div><div className="opp-metric"><span className="v">3</span><span className="l">Fin models</span></div></div>
-        <div className="opp-foot"><span className="opp-architect"><span className="architect-dot"></span>Senior architect · marketplace</span><span className="opp-price"><em>$3,800</em></span></div>
-      </Link>
+      <div className="platform-empty-state" style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '4rem 2rem', border: '1px dashed var(--line)', background: 'var(--card-bg, #0d0d0d)', borderRadius: '12px', width: '100%' }}>
+        <span className="empty-value" style={{ display: 'block', fontSize: '2.5rem', fontWeight: 300, color: 'var(--text-faint)', marginBottom: '0.5rem' }}>0</span>
+        <h3 style={{ fontSize: '1.25rem', color: 'var(--text)', marginBottom: '0.5rem' }}>No published opportunities yet</h3>
+        <p style={{ color: 'var(--text-muted)', fontSize: '0.92rem', maxWidth: '460px', margin: '0 auto 1.5rem' }}>Approved listings will appear automatically when they are published.</p>
+        <Link href="/list" className="btn btn-outline">List an opportunity <span className="arrow">→</span></Link>
+      </div>
     </div>
   </div>
 </section>
