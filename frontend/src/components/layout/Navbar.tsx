@@ -247,9 +247,9 @@ export function Navbar({
               Pricing
             </Link>
             <Link
-              href="/#opportunities"
+              href="/browse"
               data-route="browse"
-              className={pathname === "/" && activeHash === "#opportunities" ? "active" : ""}
+              className={pathname === "/browse" || (pathname === "/" && activeHash === "#opportunities") ? "active" : ""}
             >
               Opportunities
             </Link>
