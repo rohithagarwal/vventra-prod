@@ -777,8 +777,8 @@ export default function Home() {
     </div>
 
         <div className="opp-grid">
-      <div className="platform-empty-state" style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '4rem 2rem', border: '1px dashed var(--line)', background: 'var(--card-bg, #0d0d0d)', borderRadius: '12px', width: '100%' }}>
-        <span className="empty-value" style={{ display: 'block', fontSize: '2.5rem', fontWeight: 300, color: 'var(--text-faint)', marginBottom: '0.5rem' }}>0</span>
+      <div className="platform-empty-state" style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '4rem 2rem', border: '1px dashed var(--line-strong)', background: 'var(--bg-paper)', borderRadius: '12px', width: '100%' }}>
+        <span className="empty-value" style={{ display: 'block', fontSize: '2.5rem', fontWeight: 300, color: 'var(--role)', marginBottom: '0.5rem' }}>0</span>
         <h3 style={{ fontSize: '1.25rem', color: 'var(--text)', marginBottom: '0.5rem' }}>No published opportunities yet</h3>
         <p style={{ color: 'var(--text-muted)', fontSize: '0.92rem', maxWidth: '460px', margin: '0 auto 1.5rem' }}>Approved listings will appear automatically when they are published.</p>
         <Link href="/list" className="btn btn-outline">List an opportunity <span className="arrow">→</span></Link>
@@ -834,42 +834,42 @@ export default function Home() {
     </div>
 
     <div className="faq-grid reveal delay-1 in" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem', marginTop: '2.5rem' }}>
-      <div className="card" style={{ padding: '1.75rem', background: 'var(--card-bg, #111)', border: '1px solid var(--line)' }}>
+      <div className="card" style={{ padding: '1.75rem', background: 'var(--bg-paper)', border: '1px solid var(--line)' }}>
         <h3 style={{ fontSize: '1.1rem', marginBottom: '0.75rem', color: 'var(--text)' }}>How does vvEntra protect my intellectual property?</h3>
         <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: '1.6' }}>
           Everything is mutual NDA-gated. Public previews only reveal market fit, scope, and high-level frameworks without exposing raw proprietary IP. The 10% unlock fee validates buyer seriousness before materials are opened.
         </p>
       </div>
 
-      <div className="card" style={{ padding: '1.75rem', background: 'var(--card-bg, #111)', border: '1px solid var(--line)' }}>
+      <div className="card" style={{ padding: '1.75rem', background: 'var(--bg-paper)', border: '1px solid var(--line)' }}>
         <h3 style={{ fontSize: '1.1rem', marginBottom: '0.75rem', color: 'var(--text)' }}>What does the 10% unlock fee cover?</h3>
         <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: '1.6' }}>
           The unlock fee opens the mutual portal, grants 7 days of direct architect communication, and unlocks the complete opportunity dossier. 90% is held in escrow toward the engagement, while 10% covers escrow security.
         </p>
       </div>
 
-      <div className="card" style={{ padding: '1.75rem', background: 'var(--card-bg, #111)', border: '1px solid var(--line)' }}>
+      <div className="card" style={{ padding: '1.75rem', background: 'var(--bg-paper)', border: '1px solid var(--line)' }}>
         <h3 style={{ fontSize: '1.1rem', marginBottom: '0.75rem', color: 'var(--text)' }}>What happens if an opportunity is misrepresented?</h3>
         <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: '1.6' }}>
           Disputes can be raised within 7 days. vvEntra conducts platform arbitration. If the delivered documentation materially deviates from the validated table of contents, buyers receive a prompt refund.
         </p>
       </div>
 
-      <div className="card" style={{ padding: '1.75rem', background: 'var(--card-bg, #111)', border: '1px solid var(--line)' }}>
+      <div className="card" style={{ padding: '1.75rem', background: 'var(--bg-paper)', border: '1px solid var(--line)' }}>
         <h3 style={{ fontSize: '1.1rem', marginBottom: '0.75rem', color: 'var(--text)' }}>Who can list opportunities as an architect?</h3>
         <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: '1.6' }}>
           Only verified operators, ex-founders, and specialized architects. Every listing undergoes deep review: duplicate checks, depth audits (min. 90 pages equivalent), and quality benchmarking.
         </p>
       </div>
 
-      <div className="card" style={{ padding: '1.75rem', background: 'var(--card-bg, #111)', border: '1px solid var(--line)' }}>
+      <div className="card" style={{ padding: '1.75rem', background: 'var(--bg-paper)', border: '1px solid var(--line)' }}>
         <h3 style={{ fontSize: '1.1rem', marginBottom: '0.75rem', color: 'var(--text)' }}>How do architects get paid?</h3>
         <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: '1.6' }}>
           Funds are held in secure escrow and released upon milestone completion or mutual signoff. vvEntra takes a 10% platform facilitation fee; architects receive 90% of the transaction value directly.
         </p>
       </div>
 
-      <div className="card" style={{ padding: '1.75rem', background: 'var(--card-bg, #111)', border: '1px solid var(--line)' }}>
+      <div className="card" style={{ padding: '1.75rem', background: 'var(--bg-paper)', border: '1px solid var(--line)' }}>
         <h3 style={{ fontSize: '1.1rem', marginBottom: '0.75rem', color: 'var(--text)' }}>Can I buy out 100% of the opportunity IP?</h3>
         <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: '1.6' }}>
           Yes. vvEntra supports full IP transfer, shared advisory, and minority execution partnership structures. The buyer and architect agree on terms during the 7-day engagement window.

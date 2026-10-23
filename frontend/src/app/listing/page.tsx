@@ -47,8 +47,8 @@ export default function ListingDetailPage() {
 
             <main data-page="listing" className="page listing-page">
         <div className="container-wide" style={{ padding: "4rem 1.5rem", maxWidth: "800px", margin: "0 auto", textAlign: "center" }}>
-          <div className="platform-empty-state" style={{ padding: "5rem 2rem", border: "1px dashed var(--line)", background: "var(--card-bg, #0d0d0d)", borderRadius: "16px" }}>
-            <span className="empty-value" style={{ display: "block", fontSize: "3rem", fontWeight: 300, color: "var(--text-faint)", marginBottom: "0.75rem" }}>0</span>
+          <div className="platform-empty-state" style={{ padding: "5rem 2rem", border: "1px dashed var(--line-strong)", background: "var(--bg-paper)", borderRadius: "16px" }}>
+            <span className="empty-value" style={{ display: "block", fontSize: "3rem", fontWeight: 300, color: "var(--role)", marginBottom: "0.75rem" }}>0</span>
             <h1 className="display md" style={{ fontSize: "1.6rem", marginBottom: "0.75rem", color: "var(--text)" }}>No published opportunities yet</h1>
             <p style={{ color: "var(--text-muted)", fontSize: "0.95rem", maxWidth: "480px", margin: "0 auto 2rem", lineHeight: 1.6 }}>
               Approved listings will appear automatically when they are published. As architects pass moderation, confidential opportunity dossiers will unlock here.

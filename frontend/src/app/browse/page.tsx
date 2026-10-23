@@ -103,16 +103,6 @@ export default function BrowsePage() {
             href="/dashboard"
             data-route="dashboard"
           >
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.8"
-            >
-              <path d="M19 12H5M5 12l7-7M5 12l7 7" />
-            </svg>
             Back to your overview
           </Link>
           <span className="eyebrow reveal in">The marketplace</span>
@@ -220,8 +210,8 @@ export default function BrowsePage() {
           </div>
         ) : (
           /* EMPTY STATE */
-          <div className="container-wide browse-empty platform-empty-state" id="browseEmpty" style={{ display: "block", textAlign: "center", padding: "4rem 2rem", border: "1px dashed var(--line)", background: "var(--card-bg, #0d0d0d)", borderRadius: "12px", margin: "2rem auto" }}>
-            <span className="empty-value" style={{ display: "block", fontSize: "2.5rem", fontWeight: 300, color: "var(--text-faint)", marginBottom: "0.5rem" }}>0</span>
+          <div className="container-wide browse-empty platform-empty-state" id="browseEmpty" style={{ display: "block", textAlign: "center", padding: "4rem 2rem", border: "1px dashed var(--line-strong)", background: "var(--bg-paper)", borderRadius: "12px", margin: "2rem auto" }}>
+            <span className="empty-value" style={{ display: "block", fontSize: "2.5rem", fontWeight: 300, color: "var(--role)", marginBottom: "0.5rem" }}>0</span>
             <h3 style={{ fontSize: "1.25rem", color: "var(--text)", marginBottom: "0.5rem" }}>No published opportunities yet</h3>
             <p style={{ color: "var(--text-muted)", fontSize: "0.92rem", maxWidth: "460px", margin: "0 auto 1.5rem" }}>Approved listings will appear automatically when they are published.</p>
             <Link href="/list" className="btn btn-outline">List an opportunity <span className="arrow">→</span></Link>

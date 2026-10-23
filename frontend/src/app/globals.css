@@ -37,6 +37,7 @@ html { scroll-behavior: smooth; }
   --bg-paper: #FFFFFF;
   --bg-bone: #F4F0E8;
   --bg-tint: #FDF4EE;
+  --card-bg: #FFFFFF;
 
   --text: #0A0908;
   --text-muted: rgba(10, 9, 8, 0.70);
@@ -81,6 +82,7 @@ html { scroll-behavior: smooth; }
   --bg-paper: #141110;
   --bg-bone: #1A1614;
   --bg-tint: #1F1612;
+  --card-bg: #141110;
 
   --text: #F2EDE4;
   --text-muted: rgba(242, 237, 228, 0.72);
@@ -5376,8 +5378,9 @@ main[data-page="pricing"] .closing-content p {
 
 /* BROWSE / MARKETPLACE PAGE */
 /* ============================================== */
-.browse-header {
-  padding-top: clamp(3rem, 6vw, 5rem);
+.browse-header,
+.browse-page .browse-header {
+  padding-top: clamp(8.5rem, 11vw, 10.5rem);
   padding-bottom: 2rem;
   max-width: 900px;
 }
@@ -5612,6 +5615,7 @@ main[data-page="pricing"] .closing-content p {
 
 /* Layout */
 .listing-page {
+  padding-top: clamp(8rem, 11vw, 10rem);
   --ls-gap: clamp(3rem, 6vw, 5.5rem);
   --sidebar-w: 320px;
 }
@@ -5619,7 +5623,8 @@ main[data-page="pricing"] .closing-content p {
 .container-wide {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 0 var(--gutter);
+  padding-left: var(--gutter);
+  padding-right: var(--gutter);
 }
 
 .listing-back {
