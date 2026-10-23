@@ -198,16 +198,9 @@ export function Navbar({
               Dashboard
             </Link>
             <Link
-              href="/#trust"
+              href="/trust"
               data-route="trust"
-              className={(pathname === "/" && activeHash === "#trust") || pathname === "/trust" ? "active" : ""}
-              onClick={(e) => {
-                if (pathname === "/") {
-                  e.preventDefault();
-                  const el = document.getElementById("trust");
-                  if (el) el.scrollIntoView({ behavior: "smooth" });
-                }
-              }}
+              className={pathname === "/trust" ? "active" : ""}
             >
               Trust
             </Link>
