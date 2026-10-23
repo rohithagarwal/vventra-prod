@@ -669,7 +669,7 @@ export default function Home() {
     </div>
 
     <div className="audience-grid">
-      <a href="#list" data-route="list" className="audience-card reveal">
+      <Link href="/browse" data-route="browse" className="audience-card reveal">
         <span className="role">— For investors & buyers</span>
         <h3>I have <em>capital.</em> I need conviction-ready opportunities.</h3>
         <p>You command capital, teams, and execution capacity. What you lack is research time. vvEntra surfaces validated opportunities matched to your sector, scale, and conviction.</p>
@@ -680,10 +680,10 @@ export default function Home() {
           <li>Direct intro to senior architects with execution support</li>
         </ul>
         <span className="quote">"Acquire opportunity. Deploy execution."</span>
-        <span className="btn btn-outline">Explore investor side <span className="arrow">→</span></span>
-      </a>
+        <span className="btn btn-outline">Browse investor opportunities <span className="arrow">→</span></span>
+      </Link>
 
-      <a href="#browse" data-route="browse" className="audience-card reveal delay-1">
+      <Link href="/list" data-route="list" className="audience-card reveal delay-1">
         <span className="role">— For architects & opportunity creators</span>
         <h3>I have <em>intelligence.</em> I monetise the thinking.</h3>
         <p>You build systems, identify gaps, and architect opportunities others would not find on their own. But you do not want to run every venture you imagine. vvEntra gives your intelligence a market.</p>
@@ -694,8 +694,8 @@ export default function Home() {
           <li>Knowledge base on what serious buyers want to see</li>
         </ul>
         <span className="quote">"Sell the thinking. Keep your operating life clean."</span>
-        <span className="btn btn-outline">Explore architect side <span className="arrow">→</span></span>
-      </a>
+        <span className="btn btn-outline">List an opportunity <span className="arrow">→</span></span>
+      </Link>
     </div>
   </div>
 </section>
