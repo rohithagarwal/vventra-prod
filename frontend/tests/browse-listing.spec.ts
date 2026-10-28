@@ -15,6 +15,13 @@ test.describe('Browse and Listing Pages Zero-Listing Production State', () => {
   });
 
   test('Browse page loads, renders 0 opportunities count and reference empty state', async ({ page }) => {
+    await page.route('**/api/**/opportunities*', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ total: 0, items: [] }),
+      });
+    });
     await page.goto('/browse');
     await page.waitForLoadState('networkidle');
 
