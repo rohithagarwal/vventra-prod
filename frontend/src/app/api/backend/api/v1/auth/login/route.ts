@@ -7,10 +7,16 @@ export async function POST(request: Request) {
     const email = body.email || "member@vventra.com";
 
     // Try forwarding to real backend if running on target port
-    const backendUrl = process.env.API_PROXY_TARGET || "http://localhost:8000";
+    const backendUrl = (
+      process.env.API_PROXY_TARGET ||
+      (process.env.NODE_ENV === "production"
+        ? "https://vventra-backend.onrender.com"
+        : "http://localhost:8000")
+    ).replace(/\/$/, "");
+
     try {
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 800);
+      const timeout = setTimeout(() => controller.abort(), 6000);
       const res = await fetch(`${backendUrl}/api/v1/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -18,9 +24,9 @@ export async function POST(request: Request) {
         signal: controller.signal,
       });
       clearTimeout(timeout);
-      if (res.ok) {
-        const data = await res.json();
-        return NextResponse.json(data);
+      const data = await res.json().catch(() => null);
+      if (data) {
+        return NextResponse.json(data, { status: res.status });
       }
     } catch {
       // Backend offline, fallback to authoritative local auth

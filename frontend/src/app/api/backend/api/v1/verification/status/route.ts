@@ -1,10 +1,16 @@
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
-  const backendUrl = process.env.API_PROXY_TARGET || "http://localhost:8000";
+  const backendUrl = (
+    process.env.API_PROXY_TARGET ||
+    (process.env.NODE_ENV === "production"
+      ? "https://vventra-backend.onrender.com"
+      : "http://localhost:8000")
+  ).replace(/\/$/, "");
+
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 800);
+    const timeout = setTimeout(() => controller.abort(), 6000);
     const headers: Record<string, string> = {};
     const auth = request.headers.get("authorization");
     if (auth) headers["authorization"] = auth;
@@ -17,9 +23,9 @@ export async function GET(request: Request) {
       signal: controller.signal,
     });
     clearTimeout(timeout);
-    if (res.ok) {
-      const data = await res.json();
-      return NextResponse.json(data);
+    const data = await res.json().catch(() => null);
+    if (data) {
+      return NextResponse.json(data, { status: res.status });
     }
   } catch {
     // Backend offline
