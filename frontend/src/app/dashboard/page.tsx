@@ -35,7 +35,13 @@ function DashboardContent() {
       try {
         const destination = await resolveAccountDestination();
         if (cancelled) return;
-        if (!destination.path.startsWith("/dashboard")) {
+        const hasSubmittedProfile =
+          typeof window !== "undefined" &&
+          (Boolean(localStorage.getItem("vve-profile")) ||
+            localStorage.getItem("vve-stage") === "applied" ||
+            localStorage.getItem("vve-stage") === "verified");
+
+        if (!destination.path.startsWith("/dashboard") && !hasSubmittedProfile) {
           router.replace(destination.path);
           return;
         }

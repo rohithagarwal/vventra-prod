@@ -24,8 +24,26 @@ export async function resolveAccountDestination(fallbackUser?: CurrentUserInfo):
   if (!user) throw new Error("No authenticated account is available.");
 
   const role = normalizeRole(user.role);
-  const status = user.status.trim().toLowerCase();
-  if (isAccountActive(status)) return { role, path: `/dashboard?role=${role}`, user };
+  const status = (user.status || "").trim().toLowerCase();
+
+  // Active, verified, or pending_review (completed onboarding) can access dashboard
+  if (
+    isAccountActive(status) ||
+    status === "pending_review" ||
+    status === "applied" ||
+    status === "verified" ||
+    status === "active"
+  ) {
+    return { role, path: `/dashboard?role=${role}`, user };
+  }
+
+  // If local storage has completed profile, allow landing on dashboard
+  if (
+    typeof window !== "undefined" &&
+    (localStorage.getItem("vve-profile") || localStorage.getItem("vve-stage") === "applied" || localStorage.getItem("vve-stage") === "verified")
+  ) {
+    return { role, path: `/dashboard?role=${role}`, user };
+  }
 
   if (role === "architect") {
     try {
@@ -34,16 +52,16 @@ export async function resolveAccountDestination(fallbackUser?: CurrentUserInfo):
         return { role, path: "/dashboard?role=architect", user: { ...user, status: "active" } };
       }
       if (status === "onboarding") return { role, path: "/onboarding?role=architect", user };
-      return { role, path: "/verify?role=architect", user };
+      return { role, path: "/dashboard?role=architect", user };
     } catch {
       return {
         role,
-        path: status === "onboarding" ? "/onboarding?role=architect" : "/verify?role=architect",
+        path: status === "onboarding" ? "/onboarding?role=architect" : "/dashboard?role=architect",
         user,
       };
     }
   }
 
-  if (status === "onboarding") return { role, path: "/onboarding?role=investor", user };
-  return { role, path: "/verify?role=investor", user };
+  if (status === "onboarding") return { role, path: `/onboarding?role=investor`, user };
+  return { role, path: `/dashboard?role=investor`, user };
 }
