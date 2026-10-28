@@ -1,6 +1,10 @@
 import type { NextConfig } from "next";
 
-const apiProxyTarget = (process.env.API_PROXY_TARGET || process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000").replace(/\/$/, "");
+const apiProxyTarget = (
+  process.env.API_PROXY_TARGET ||
+  process.env.NEXT_PUBLIC_API_URL ||
+  (process.env.NODE_ENV === "production" ? "https://vventra-backend.onrender.com" : "http://localhost:8000")
+).replace(/\/$/, "");
 
 const nextConfig: NextConfig = {
   /* config options here */
