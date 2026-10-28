@@ -10,6 +10,9 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",
+    "@neon/config": "^1.9.5",
+    "@neon/env": "^1.6.6",
+    "@neondatabase/serverless": "^1.2.0",
     "@react-oauth/google": "^0.13.5",
     "@tanstack/react-query": "^5.104.1",
     "class-variance-authority": "^0.7.1",
