@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Navbar } from "@/components/layout/Navbar";
+import { createOpportunity, OpportunityCreatePayload } from "@/lib/api/opportunities";
 
 interface DeepFieldConfig {
   id: string;
@@ -194,21 +195,54 @@ export default function ListOpportunityPage() {
 
   const isAllRequiredDone = completedCount === REQUIRED.length;
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!isAllRequiredDone) return;
     setIsSubmitting(true);
 
-    setTimeout(() => {
-      const listingPayload = {
-        ...formData,
-        deep: deepTexts,
-        aiSummaries,
-        submittedAt: new Date().toISOString(),
-      };
-      localStorage.setItem("vve-composed-listing", JSON.stringify(listingPayload));
-      setIsSubmitting(false);
-      setIsSubmitted(true);
-    }, 600);
+    const priceNum = Number(formData.price) || 28000;
+    const calcUnlockFee = Math.max(150, Math.round(priceNum * 0.015));
+    const firstTag = (formData.tags || "").split(",")[0]?.trim() || "saas";
+
+    const payload: OpportunityCreatePayload = {
+      title: formData.title || "Autonomous Operations System",
+      sector: firstTag.toLowerCase(),
+      category: formData.stage || "Validated Thesis",
+      deal_size: priceNum,
+      unlock_fee: calcUnlockFee,
+      target_return: "3.5x projected return",
+      timeline: formData.timeline || "60–90 days",
+      headline: formData.hook || "",
+      summary: deepTexts.thesis || formData.hook || "",
+      problem_statement: deepTexts.problem || "",
+      solution_overview: deepTexts.thesis || "",
+      market_size: deepTexts.gap || "",
+      business_model: deepTexts.model || formData.monet || "",
+      doc_depth_pages: 90,
+      readiness_score: 95,
+      financial_model: {
+        projections: deepTexts.financials || "",
+        gtm: deepTexts.gtm || "",
+        risks: deepTexts.risks || "",
+      },
+      status: "active",
+    };
+
+    try {
+      const created = await createOpportunity(payload);
+      localStorage.setItem("vve-last-created-opp", JSON.stringify(created));
+    } catch (e) {
+      console.warn("Backend opportunity save fallback to local:", e);
+    }
+
+    const listingPayload = {
+      ...formData,
+      deep: deepTexts,
+      aiSummaries,
+      submittedAt: new Date().toISOString(),
+    };
+    localStorage.setItem("vve-composed-listing", JSON.stringify(listingPayload));
+    setIsSubmitting(false);
+    setIsSubmitted(true);
   };
 
   if (isCheckingAuth) {

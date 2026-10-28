@@ -103,3 +103,14 @@ async def verify_origin(request: Request) -> None:
     own_origin = f"{request.url.scheme}://{request.headers.get('host', '')}"  # e.g. Swagger UI
     if origin != own_origin and origin not in settings.cors_origins:
         raise ForbiddenOrigin()
+
+
+async def get_current_user_optional(
+    request: Request,
+    credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(_bearer)],
+    db: DbSession,
+) -> User | None:
+    try:
+        return await get_current_user(request, credentials, db)
+    except Exception:
+        return None

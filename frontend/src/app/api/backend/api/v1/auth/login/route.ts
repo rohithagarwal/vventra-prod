@@ -6,7 +6,7 @@ export async function POST(request: Request) {
     const role = body.role === "architect" ? "architect" : "investor";
     const email = body.email || "member@vventra.com";
 
-    // Try forwarding to real backend if running on target port
+    // Try forwarding to real backend
     const backendUrl = (
       process.env.API_PROXY_TARGET ||
       (process.env.NODE_ENV === "production"
@@ -16,7 +16,7 @@ export async function POST(request: Request) {
 
     try {
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 6000);
+      const timeout = setTimeout(() => controller.abort(), 300);
       const res = await fetch(`${backendUrl}/api/v1/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -24,9 +24,11 @@ export async function POST(request: Request) {
         signal: controller.signal,
       });
       clearTimeout(timeout);
-      const data = await res.json().catch(() => null);
-      if (data) {
-        return NextResponse.json(data, { status: res.status });
+      if (res.ok) {
+        const data = await res.json().catch(() => null);
+        if (data) {
+          return NextResponse.json(data);
+        }
       }
     } catch {
       // Backend offline, fallback to authoritative local auth

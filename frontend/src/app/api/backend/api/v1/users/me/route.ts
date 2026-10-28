@@ -10,7 +10,7 @@ export async function GET(request: Request) {
 
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 6000);
+    const timeout = setTimeout(() => controller.abort(), 1500);
     const headers: Record<string, string> = {};
     const auth = request.headers.get("authorization");
     if (auth) headers["authorization"] = auth;
@@ -23,12 +23,14 @@ export async function GET(request: Request) {
       signal: controller.signal,
     });
     clearTimeout(timeout);
-    const data = await res.json().catch(() => null);
-    if (data) {
-      return NextResponse.json(data, { status: res.status });
+    if (res.ok) {
+      const data = await res.json().catch(() => null);
+      if (data) {
+        return NextResponse.json(data);
+      }
     }
   } catch {
-    // Backend offline, fallback to local user data
+    // Backend offline or token local, fallback to local user data
   }
 
   const authHeader = request.headers.get("authorization") || "";
