@@ -13,7 +13,7 @@ export async function POST(request: Request) {
 
     try {
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 8000);
+      const timeout = setTimeout(() => controller.abort(), 12000);
       const res = await fetch(`${backendUrl}/api/v1/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -21,11 +21,9 @@ export async function POST(request: Request) {
         signal: controller.signal,
       });
       clearTimeout(timeout);
-      if (res.ok) {
-        const data = await res.json().catch(() => null);
-        if (data) {
-          return NextResponse.json(data);
-        }
+      const data = await res.json().catch(() => null);
+      if (data) {
+        return NextResponse.json(data, { status: res.status });
       }
     } catch {
       // Backend offline, fallback to local registration
