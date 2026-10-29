@@ -28,7 +28,7 @@ class Settings(BaseSettings):
 
     cors_origins: list[str] = Field(default_factory=list)
     google_client_id: str | None = Field(
-        default="428998304160-djaan3bkeje5s2chfu30lcg4ipgpnbn5.apps.googleusercontent.com", validation_alias=AliasChoices("GOOGLE_CLIENT_ID", "google_client_id")
+        default="428998304160-uvaaeqo6o95g3u477imsfja3pir6g970.apps.googleusercontent.com", validation_alias=AliasChoices("GOOGLE_CLIENT_ID", "google_client_id")
     )
     linkedin_client_id: str | None = Field(
         default=None, validation_alias=AliasChoices("LINKEDIN_CLIENT_ID", "linkedin_client_id")
