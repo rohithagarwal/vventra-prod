@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Navbar } from "@/components/layout/Navbar";
+import { saveNewOpportunity, OpportunityItem } from "@/lib/storage/opportunities";
 
 interface DeepFieldConfig {
   id: string;
@@ -206,6 +207,60 @@ export default function ListOpportunityPage() {
         submittedAt: new Date().toISOString(),
       };
       localStorage.setItem("vve-composed-listing", JSON.stringify(listingPayload));
+
+      const tagList = formData.tags
+        .split(",")
+        .map((t) => t.trim())
+        .filter(Boolean);
+
+      const docList = formData.docs
+        .split("\n")
+        .map((l) => l.trim())
+        .filter(Boolean);
+
+      const stageLower = (formData.stage || "").toLowerCase();
+      const stage: "execution" | "validated" | "concept" = stageLower.includes("execution")
+        ? "execution"
+        : stageLower.includes("validate")
+        ? "validated"
+        : "concept";
+
+      const rawIndustry = (tagList[0] || "saas").toLowerCase();
+      const industry = rawIndustry.includes("ai")
+        ? "ai"
+        : rawIndustry.includes("fintech")
+        ? "fintech"
+        : rawIndustry.includes("ecom")
+        ? "ecommerce"
+        : "saas";
+
+      const oppId = "opp-" + Date.now();
+      const newOpp: OpportunityItem = {
+        id: oppId,
+        industry,
+        stage,
+        stageLabel: formData.stage || "Validated Concept",
+        status: "available",
+        statusLabel: "Available",
+        tags: tagList.length > 0 ? tagList : ["B2B SaaS", "Automation"],
+        title: formData.title,
+        hook: formData.hook,
+        capital: formData.capital || "$50k - $100k",
+        timeToLaunch: formData.timeline || "30 days",
+        trustScore: 94,
+        listedDaysAgo: 0,
+        priceNum: numericPrice,
+        unlockPrice: unlockFee || "$450",
+        submittedAt: new Date().toISOString(),
+        thesis: deepTexts.thesis,
+        problem: deepTexts.problem,
+        geography: formData.geography,
+        monetisation: formData.monet,
+        docs: docList,
+      };
+
+      saveNewOpportunity(newOpp);
+
       setIsSubmitting(false);
       setIsSubmitted(true);
     }, 600);

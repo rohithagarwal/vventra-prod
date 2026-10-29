@@ -4,26 +4,9 @@ import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
+import { getStoredOpportunities, OpportunityItem } from "@/lib/storage/opportunities";
 
-interface OpportunityItem {
-  id: string;
-  industry: string;
-  stage: "execution" | "validated" | "concept";
-  stageLabel: string;
-  status: "available" | "review";
-  statusLabel: string;
-  tags: string[];
-  title: string;
-  hook: string;
-  capital: string;
-  timeToLaunch: string;
-  trustScore: number;
-  listedDaysAgo: number;
-  priceNum: number;
-  unlockPrice: string;
-}
 
-const OPPORTUNITIES_DATA: OpportunityItem[] = [];
 
 const FILTERS = [
   { id: "all", label: "All" },
@@ -42,6 +25,23 @@ export default function BrowsePage() {
   const [role, setRole] = useState<"investor" | "architect">("investor");
   const [activeFilter, setActiveFilter] = useState("all");
   const [sortBy, setSortBy] = useState("trust");
+  const [opportunities, setOpportunities] = useState<OpportunityItem[]>([]);
+
+  useEffect(() => {
+    const syncOpps = () => {
+      setOpportunities(getStoredOpportunities());
+    };
+    syncOpps();
+
+    window.addEventListener("vve-opportunities-updated", syncOpps);
+    window.addEventListener("vve-opportunity-listed", syncOpps);
+    window.addEventListener("storage", syncOpps);
+    return () => {
+      window.removeEventListener("vve-opportunities-updated", syncOpps);
+      window.removeEventListener("vve-opportunity-listed", syncOpps);
+      window.removeEventListener("storage", syncOpps);
+    };
+  }, []);
 
   useEffect(() => {
     const savedRole = (localStorage.getItem("vve-role") as "investor" | "architect") || "investor";
@@ -71,7 +71,7 @@ export default function BrowsePage() {
   };
 
   const filtered = useMemo(() => {
-    let result = OPPORTUNITIES_DATA.filter((item) => {
+    let result = opportunities.filter((item) => {
       if (activeFilter === "all") return true;
       if (activeFilter === "ai") {
         return item.tags.some((t) => t.toLowerCase().includes("ai")) || item.industry === "ai";
@@ -88,7 +88,7 @@ export default function BrowsePage() {
     });
 
     return result;
-  }, [activeFilter, sortBy]);
+  }, [opportunities, activeFilter, sortBy]);
 
   return (
     <>
@@ -156,7 +156,7 @@ export default function BrowsePage() {
             {filtered.map((opp, idx) => (
               <Link
                 key={opp.id}
-                href="/listing"
+                href={`/listing?id=${opp.id}`}
                 data-route="listing"
                 className={`opp-card reveal in delay-${idx % 3}`}
                 data-industry={opp.industry}

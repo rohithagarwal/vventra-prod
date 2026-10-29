@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { resolveAccountDestination } from "@/lib/auth/access";
+import { getStoredOpportunities, calculateLiveStats, OpportunityItem, LiveMarketStats } from "@/lib/storage/opportunities";
 
 function DashboardContent() {
   const router = useRouter();
@@ -13,6 +14,27 @@ function DashboardContent() {
   const [role, setRole] = useState<"investor" | "architect">("investor");
   const [period, setPeriod] = useState<"7-day" | "30-day" | "Quarterly">("7-day");
   const [sectorFilter, setSectorFilter] = useState<string>("All sectors");
+  const [opportunities, setOpportunities] = useState<OpportunityItem[]>([]);
+  const [stats, setStats] = useState<LiveMarketStats>(calculateLiveStats([]));
+
+  useEffect(() => {
+    const syncOpps = () => {
+      const opps = getStoredOpportunities();
+      setOpportunities(opps);
+      setStats(calculateLiveStats(opps));
+    };
+    syncOpps();
+
+    window.addEventListener("vve-opportunities-updated", syncOpps);
+    window.addEventListener("vve-opportunity-listed", syncOpps);
+    window.addEventListener("storage", syncOpps);
+
+    return () => {
+      window.removeEventListener("vve-opportunities-updated", syncOpps);
+      window.removeEventListener("vve-opportunity-listed", syncOpps);
+      window.removeEventListener("storage", syncOpps);
+    };
+  }, []);
 
   // What Should I List interactive state
   const [wslCapital, setWslCapital] = useState<"lean" | "mid" | "heavy">("lean");
@@ -365,32 +387,32 @@ function DashboardContent() {
     <div className="metrics-grid role-show" data-show="investor">
       <div className="metric-cell">
         <span className="nm"><span className="live"></span>Live Listings</span>
-        <span className="v" id="inv-m1">0</span>
-        <span className="d up" id="inv-m1-d">0 today</span>
+        <span className="v" id="inv-m1">{stats.totalListings}</span>
+        <span className="d up" id="inv-m1-d">{stats.deltaToday}</span>
       </div>
       <div className="metric-cell">
         <span className="nm"><span className="live"></span>Active Now</span>
-        <span className="v" id="inv-m2">0</span>
+        <span className="v" id="inv-m2">{stats.activeNow}</span>
         <span className="d up">0 vs avg</span>
       </div>
       <div className="metric-cell">
         <span className="nm">New This Week</span>
-        <span className="v" id="inv-m3">0</span>
-        <span className="d up">0 WoW</span>
+        <span className="v" id="inv-m3">{stats.newThisWeek}</span>
+        <span className="d up">{stats.deltaWoW}</span>
       </div>
       <div className="metric-cell">
         <span className="nm">Architects Online</span>
-        <span className="v" id="inv-m4">0</span>
+        <span className="v" id="inv-m4">{stats.architectsOnline}</span>
         <span className="d up">0 this wk</span>
       </div>
       <div className="metric-cell">
         <span className="nm">Avg Unlock</span>
-        <span className="v">$0</span>
+        <span className="v">{stats.avgUnlockFmt}</span>
         <span className="d up">0% MoM</span>
       </div>
       <div className="metric-cell">
         <span className="nm">Deals Closed</span>
-        <span className="v">0</span>
+        <span className="v">{stats.dealsClosed}</span>
         <span className="d up">0% MoM</span>
       </div>
     </div>
@@ -398,32 +420,32 @@ function DashboardContent() {
     <div className="metrics-grid role-show" data-show="architect">
       <div className="metric-cell">
         <span className="nm"><span className="live"></span>Buyers Online</span>
-        <span className="v" id="arc-m1">0</span>
+        <span className="v" id="arc-m1">{stats.activeNow}</span>
         <span className="d up">0 vs avg</span>
       </div>
       <div className="metric-cell">
         <span className="nm">Active Searches</span>
-        <span className="v" id="arc-m2">0</span>
+        <span className="v" id="arc-m2">{stats.totalListings}</span>
         <span className="d up">0 this wk</span>
       </div>
       <div className="metric-cell">
         <span className="nm">Avg Unlock Value</span>
-        <span className="v">$0</span>
+        <span className="v">{stats.avgUnlockFmt}</span>
         <span className="d up">0% MoM</span>
       </div>
       <div className="metric-cell">
         <span className="nm">Top Sector Pay</span>
-        <span className="v">$0</span>
+        <span className="v">{stats.avgUnlockFmt}</span>
         <span className="d up">--</span>
       </div>
       <div className="metric-cell">
         <span className="nm">Demand Gap</span>
-        <span className="v" style={{"color":"var(--role)"}}>0%</span>
+        <span className="v" style={{"color":"var(--role)"}}>{stats.demandGap}</span>
         <span className="d up">Top 5 sectors</span>
       </div>
       <div className="metric-cell">
         <span className="nm">Listings Cleared</span>
-        <span className="v" id="arc-m3">0</span>
+        <span className="v" id="arc-m3">{stats.dealsClosed}</span>
         <span className="d up">0% MoM</span>
       </div>
     </div>
@@ -442,9 +464,9 @@ function DashboardContent() {
         </div>
         <div>
           <h4>Your <em>thesis match</em> this week</h4>
-          <p>Based on your interest in <strong>AI vertical workflow</strong> and <strong>B2B SaaS mid-market</strong>: 0 listings matched your thesis currently. As architects publish verified blueprints, matched opportunities and peer unlock signals will stream here.</p>
+          <p>Based on your interest in <strong>AI vertical workflow</strong> and <strong>B2B SaaS mid-market</strong>: {stats.totalListings} {stats.totalListings === 1 ? "listing matched" : "listings matched"} your thesis currently.{stats.totalListings > 0 ? " Review verified deal architecture, unlocked financial projections, and peer unlock signals below." : " As architects publish verified blueprints, matched opportunities and peer unlock signals will stream here."}</p>
           <div style={{ marginTop: '0.85rem', display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-            <Link href="/browse" className="btn btn-outline" style={{ fontSize: '0.8rem', padding: '0.4rem 0.85rem' }}>Browse opportunities (0) <span className="arrow">→</span></Link>
+            <Link href="/browse" className="btn btn-outline" style={{ fontSize: '0.8rem', padding: '0.4rem 0.85rem' }}>Browse opportunities ({stats.totalListings}) <span className="arrow">→</span></Link>
             <Link href="/list" className="btn btn-ghost" style={{ fontSize: '0.8rem', padding: '0.4rem 0.85rem', border: '1px solid var(--line)' }}>List an opportunity <span className="arrow">→</span></Link>
           </div>
         </div>
@@ -483,7 +505,21 @@ function DashboardContent() {
             <span className="sub">Live · streaming</span>
           </div>
           <div className="deal-feed" id="deal-feed">
-            <div className="deal-row" style={{"justifyContent":"center","color":"var(--text-faint)","fontSize":".82rem","padding":"2.5rem 1rem","textAlign":"center"}}>No platform listings yet · Real-time deals will stream here as architects publish.</div>
+            {opportunities.length === 0 ? (
+              <div className="deal-row" style={{"justifyContent":"center","color":"var(--text-faint)","fontSize":".82rem","padding":"2.5rem 1rem","textAlign":"center"}}>No platform listings yet · Real-time deals will stream here as architects publish.</div>
+            ) : (
+              opportunities.slice(0, 5).map((opp, idx) => (
+                <Link href={`/listing?id=${opp.id}`} key={opp.id} className={`deal-row ${idx === 0 ? "new" : ""}`} style={{ textDecoration: 'none' }}>
+                  <span className="deal-status surge"></span>
+                  <div className="deal-info">
+                    <span className="deal-title">{opp.title}</span>
+                    <span className="deal-meta">{(opp.tags?.[0] || opp.industry).toUpperCase()} · {opp.stageLabel} · {opp.timeToLaunch}</span>
+                  </div>
+                  <span className="deal-code">OPP-{opp.id.slice(-4).toUpperCase()}</span>
+                  <span className="deal-price">{opp.unlockPrice}</span>
+                </Link>
+              ))
+            )}
           </div>
         </div>
 
@@ -958,18 +994,36 @@ function DashboardContent() {
           <p>The matching engine surfaces opportunities likely to fit your investment thesis based on past unlocks, search filters, and stated sector interest.</p>
         </div>
         <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-          <Link href="/browse" className="btn btn-outline" style={{ whiteSpace: 'nowrap' }}>Browse catalog (0) <span className="arrow">→</span></Link>
+          <Link href="/browse" className="btn btn-outline" style={{ whiteSpace: 'nowrap' }}>Browse catalog ({opportunities.length}) <span className="arrow">→</span></Link>
           <Link href="/list" className="btn btn-ghost" style={{ whiteSpace: 'nowrap', border: '1px solid var(--line)' }}>List an opportunity <span className="arrow">→</span></Link>
         </div>
       </div>
 
       <div className="picks-grid">
-        <div className="platform-empty-state" style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '3.5rem 2rem', border: '1px dashed var(--line)', background: 'var(--card-bg, #0d0d0d)', borderRadius: '12px', width: '100%' }}>
-          <span className="empty-value" style={{ display: 'block', fontSize: '2.5rem', fontWeight: 300, color: 'var(--text-faint)', marginBottom: '0.5rem' }}>0</span>
-          <h3 style={{ fontSize: '1.15rem', color: 'var(--text)', marginBottom: '0.5rem' }}>No published opportunities yet</h3>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', maxWidth: '460px', margin: '0 auto 1.25rem' }}>Approved listings will appear automatically when they are published.</p>
-          <Link href="/list" className="btn btn-outline">List an opportunity <span className="arrow">→</span></Link>
-        </div>
+        {opportunities.length === 0 ? (
+          <div className="platform-empty-state" style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '3.5rem 2rem', border: '1px dashed var(--line)', background: 'var(--card-bg, #0d0d0d)', borderRadius: '12px', width: '100%' }}>
+            <span className="empty-value" style={{ display: 'block', fontSize: '2.5rem', fontWeight: 300, color: 'var(--text-faint)', marginBottom: '0.5rem' }}>0</span>
+            <h3 style={{ fontSize: '1.15rem', color: 'var(--text)', marginBottom: '0.5rem' }}>No published opportunities yet</h3>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', maxWidth: '460px', margin: '0 auto 1.25rem' }}>Approved listings will appear automatically when they are published.</p>
+            <Link href="/list" className="btn btn-outline">List an opportunity <span className="arrow">→</span></Link>
+          </div>
+        ) : (
+          opportunities.slice(0, 3).map((opp, idx) => (
+            <Link href={`/listing?id=${opp.id}`} key={opp.id} className={`pick-card reveal in delay-${idx}`} style={{ textDecoration: 'none' }}>
+              <span className="match-badge">🔥 {opp.trustScore > 90 ? "Top Match" : "Verified"}</span>
+              <div className="pick-head">
+                <span className="tag">{opp.industry}</span>
+                <span className="tag">{opp.stageLabel}</span>
+              </div>
+              <h3 className="pick-title">{opp.title}</h3>
+              <div className="pick-reason">{opp.hook}</div>
+              <div className="pick-meta">
+                <span className="pages">{opp.timeToLaunch} · Trust {opp.trustScore}</span>
+                <span className="price">{opp.unlockPrice}</span>
+              </div>
+            </Link>
+          ))
+        )}
       </div>
     </div>
 
