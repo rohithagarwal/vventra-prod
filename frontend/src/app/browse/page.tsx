@@ -4,7 +4,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
-import { getStoredOpportunities, OpportunityItem } from "@/lib/storage/opportunities";
+import { getStoredOpportunities, syncOpportunitiesWithBackend, OpportunityItem } from "@/lib/storage/opportunities";
 
 
 
@@ -32,6 +32,9 @@ export default function BrowsePage() {
       setOpportunities(getStoredOpportunities());
     };
     syncOpps();
+    void syncOpportunitiesWithBackend().then((opps) => {
+      setOpportunities(opps);
+    });
 
     window.addEventListener("vve-opportunities-updated", syncOpps);
     window.addEventListener("vve-opportunity-listed", syncOpps);

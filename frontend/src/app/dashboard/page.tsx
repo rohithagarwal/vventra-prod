@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { resolveAccountDestination } from "@/lib/auth/access";
-import { getStoredOpportunities, calculateLiveStats, OpportunityItem, LiveMarketStats } from "@/lib/storage/opportunities";
+import { getStoredOpportunities, calculateLiveStats, syncOpportunitiesWithBackend, OpportunityItem, LiveMarketStats } from "@/lib/storage/opportunities";
 
 function DashboardContent() {
   const router = useRouter();
@@ -24,6 +24,10 @@ function DashboardContent() {
       setStats(calculateLiveStats(opps));
     };
     syncOpps();
+    void syncOpportunitiesWithBackend().then((opps) => {
+      setOpportunities(opps);
+      setStats(calculateLiveStats(opps));
+    });
 
     window.addEventListener("vve-opportunities-updated", syncOpps);
     window.addEventListener("vve-opportunity-listed", syncOpps);
@@ -57,7 +61,13 @@ function DashboardContent() {
       try {
         const destination = await resolveAccountDestination();
         if (cancelled) return;
-        if (!destination.path.startsWith("/dashboard")) {
+        const hasSubmittedProfile =
+          typeof window !== "undefined" &&
+          (Boolean(localStorage.getItem("vve-profile")) ||
+            localStorage.getItem("vve-stage") === "applied" ||
+            localStorage.getItem("vve-stage") === "verified");
+
+        if (!destination.path.startsWith("/dashboard") && !hasSubmittedProfile) {
           router.replace(destination.path);
           return;
         }

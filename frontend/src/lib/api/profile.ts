@@ -61,10 +61,13 @@ export const TIMELINE_MAPPING: Record<string, string> = {
 // Architect document depth mapping
 export const ARCHITECT_DOC_DEPTH_MAPPING: Record<string, string> = {
   "90-120 pages": "90_120_pages",
+  "90–120 pages": "90_120_pages",
   "120-150 pages": "120_150_pages",
+  "120–150 pages": "120_150_pages",
   "150+ pages": "150_plus_pages",
   "I'm still planning it.": "still_planning",
   "I am still planning": "still_planning",
+  "I am still planning it": "still_planning",
 };
 
 // Architect submission timeline mapping
@@ -111,7 +114,20 @@ async function submitProtectedProfile(path: string, payload: unknown): Promise<A
   try {
     const response = await api.put(path, payload);
     const responseData = await response.json().catch(() => null);
-    if (response.ok) return { success: true, data: responseData, error: null };
+    if (response.ok) {
+      if (typeof window !== "undefined") {
+        localStorage.setItem("vve-stage", "applied");
+        const stored = localStorage.getItem("vve-user");
+        if (stored) {
+          try {
+            const u = JSON.parse(stored);
+            u.status = "pending_review";
+            localStorage.setItem("vve-user", JSON.stringify(u));
+          } catch {}
+        }
+      }
+      return { success: true, data: responseData, error: null };
+    }
 
     const detail = responseData && typeof responseData === "object" && "detail" in responseData
       ? (responseData as { detail?: unknown }).detail

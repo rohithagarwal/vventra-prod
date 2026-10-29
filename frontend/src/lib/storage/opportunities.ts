@@ -114,3 +114,46 @@ export function calculateLiveStats(opportunities: OpportunityItem[]): LiveMarket
     demandGap: "+34%",
   };
 }
+
+export async function syncOpportunitiesWithBackend(): Promise<OpportunityItem[]> {
+  if (typeof window === "undefined") return [];
+  try {
+    const backendUrl = "https://vventra-backend.onrender.com";
+    const res = await fetch(`${backendUrl}/api/v1/opportunities`).catch(() => null);
+    if (res && res.ok) {
+      const data = await res.json().catch(() => null);
+      if (data && Array.isArray(data.items) && data.items.length > 0) {
+        const mapped: OpportunityItem[] = data.items.map((b: any) => ({
+          id: b.id,
+          industry: b.sector || "saas",
+          stage: "validated",
+          stageLabel: b.category || "Validated Concept",
+          status: "available",
+          statusLabel: "Available",
+          tags: [b.sector?.toUpperCase() || "B2B SAAS", "Verified"],
+          title: b.title,
+          hook: b.headline || b.summary || "",
+          capital: b.deal_size ? `$${b.deal_size.toLocaleString()}` : "$50,000",
+          timeToLaunch: b.timeline || "30 days",
+          trustScore: b.readiness_score || 94,
+          listedDaysAgo: 0,
+          priceNum: b.deal_size || 50000,
+          unlockPrice: b.unlock_fee ? `$${b.unlock_fee.toLocaleString()}` : "$450",
+          thesis: b.summary,
+          problem: b.problem_statement,
+        }));
+        const current = getStoredOpportunities();
+        const merged = [...current];
+        for (const m of mapped) {
+          if (!merged.find((item) => item.id === m.id)) {
+            merged.push(m);
+          }
+        }
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
+        window.dispatchEvent(new CustomEvent("vve-opportunities-updated", { detail: merged }));
+        return merged;
+      }
+    }
+  } catch {}
+  return getStoredOpportunities();
+}

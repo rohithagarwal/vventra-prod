@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Navbar } from "@/components/layout/Navbar";
 import { saveNewOpportunity, OpportunityItem } from "@/lib/storage/opportunities";
+import { createOpportunity } from "@/lib/api/opportunities";
 
 interface DeepFieldConfig {
   id: string;
@@ -260,6 +261,22 @@ export default function ListOpportunityPage() {
       };
 
       saveNewOpportunity(newOpp);
+
+      try {
+        void createOpportunity({
+          title: formData.title,
+          sector: industry,
+          category: formData.stage,
+          deal_size: numericPrice,
+          unlock_fee: parseFloat(unlockFee.replace(/[^0-9.]/g, "")) || 450,
+          timeline: formData.timeline,
+          headline: formData.hook,
+          summary: deepTexts.thesis,
+          problem_statement: deepTexts.problem,
+          is_featured: false,
+          status: "available",
+        }).catch(() => {});
+      } catch {}
 
       setIsSubmitting(false);
       setIsSubmitted(true);

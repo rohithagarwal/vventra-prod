@@ -205,6 +205,15 @@ function OnboardingContent() {
       localStorage.setItem("vve-profile-dict", JSON.stringify(profileDictionary));
 
       try {
+        const storedUserRaw = localStorage.getItem("vve-user");
+        if (storedUserRaw) {
+          const storedUser = JSON.parse(storedUserRaw);
+          storedUser.status = "pending_review";
+          localStorage.setItem("vve-user", JSON.stringify(storedUser));
+        }
+      } catch {}
+
+      try {
         if (role === "architect") {
           const architectPayload: ArchitectProfilePayload = {
             full_name: name.trim(),

@@ -6,10 +6,14 @@ export async function POST(request: Request) {
     const role = body.role === "architect" ? "architect" : "investor";
     const email = body.email || "newmember@vventra.com";
 
-    const backendUrl = process.env.API_PROXY_TARGET || "http://localhost:8000";
+    const backendUrl = (
+      process.env.API_PROXY_TARGET ||
+      "https://vventra-backend.onrender.com"
+    ).replace(/\/$/, "");
+
     try {
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 800);
+      const timeout = setTimeout(() => controller.abort(), 8000);
       const res = await fetch(`${backendUrl}/api/v1/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -18,8 +22,10 @@ export async function POST(request: Request) {
       });
       clearTimeout(timeout);
       if (res.ok) {
-        const data = await res.json();
-        return NextResponse.json(data);
+        const data = await res.json().catch(() => null);
+        if (data) {
+          return NextResponse.json(data);
+        }
       }
     } catch {
       // Backend offline, fallback to local registration
