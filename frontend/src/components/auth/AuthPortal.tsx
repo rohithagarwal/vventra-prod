@@ -192,25 +192,7 @@ export function AuthPortal({ initialMode = "signin" }: AuthPortalProps) {
     },
   });
 
-  const handleLinkedInAuth = () => {
-    const clientId = "77xjn2z32v0xr3";
-    let redirectUri = window.location.origin + "/login";
-    if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
-      redirectUri = "http://localhost:3000/login";
-    }
 
-    const state = "linkedin_" + Math.random().toString(36).substring(2, 15);
-    const linkedInUrl = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(
-      redirectUri
-    )}&state=${state}&scope=openid%20profile%20email`;
-
-    setStatus({
-      text: `Opening LinkedIn authorization for ${roleLabel}...`,
-      type: "info",
-    });
-
-    window.open(linkedInUrl, "LinkedInOAuth", "width=600,height=700,top=100,left=100");
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -362,7 +344,7 @@ export function AuthPortal({ initialMode = "signin" }: AuthPortalProps) {
                 </h1>
                 <p className="login-card-subtitle" id="loginSubtitle">
                   {mode === "signup"
-                    ? "Start with your email, Google, or LinkedIn account. Your profile details come next."
+                    ? "Start with your email or Google account. Your profile details come next."
                     : `Use your ${roleLabel} account to continue.`}
                 </p>
               </div>
@@ -443,7 +425,7 @@ export function AuthPortal({ initialMode = "signin" }: AuthPortalProps) {
               </button>
             </div>
 
-            {/* Social Authentication: Google & LinkedIn */}
+            {/* Social Authentication: Google */}
             <div className="login-social-grid">
               <button
                 type="button"
@@ -473,23 +455,7 @@ export function AuthPortal({ initialMode = "signin" }: AuthPortalProps) {
                 <span id="loginGoogleText">{isSubmitting ? "Connecting..." : "Continue with Google"}</span>
               </button>
 
-              <button
-                type="button"
-                className="login-linkedin-btn"
-                id="loginLinkedinBtn"
-                onClick={handleLinkedInAuth}
-                disabled={isSubmitting}
-              >
-                <svg
-                  className="login-linkedin-icon"
-                  viewBox="0 0 24 24"
-                  fill="#0A66C2"
-                  aria-hidden="true"
-                >
-                  <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z" />
-                </svg>
-                <span>Continue with LinkedIn</span>
-              </button>
+
             </div>
 
             <div className="login-divider">

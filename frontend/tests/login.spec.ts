@@ -16,7 +16,7 @@ test.describe('Login & Registration Portal', () => {
     await expect(page.locator('#loginTitle')).toContainText('Welcome back');
     await expect(page.locator('.login-kicker')).toContainText('Member access');
     await expect(page.locator('#loginGoogleBtn')).toBeVisible();
-    await expect(page.locator('#loginLinkedinBtn')).toBeVisible();
+    await expect(page.locator('#loginLinkedinBtn')).toHaveCount(0);
     await expect(page.locator('#loginEmail')).toBeVisible();
     await expect(page.locator('#loginPassword')).toBeVisible();
     await expect(page.locator('#loginSubmitBtn')).toContainText('Sign in as Investor / Buyer');
@@ -117,7 +117,8 @@ test.describe('Login & Registration Portal', () => {
     await expect(page.locator('#loginConfirmField')).toBeVisible();
     await expect(page.locator('#passwordConstraints')).toBeVisible();
     await expect(page.locator('#loginSubmitBtn')).toContainText('Create Investor / Buyer account');
-    await expect(page.locator('#loginLinkedinBtn')).toBeVisible();
+    await expect(page.locator('#loginGoogleBtn')).toBeVisible();
+    await expect(page.locator('#loginLinkedinBtn')).toHaveCount(0);
   });
 
   test('dedicated Log in button is always visible in navbar', async ({ page }) => {
@@ -166,11 +167,15 @@ test.describe('Login & Registration Portal', () => {
     expect(stage).toBeNull();
   });
 
-  test('renders Google Continue button with useGoogleLogin handler attached', async ({ page }) => {
+  test('renders Google Continue button with useGoogleLogin handler attached and no LinkedIn login button', async ({ page }) => {
     const googleBtn = page.locator('#loginGoogleBtn');
     await expect(googleBtn).toBeVisible();
     await expect(googleBtn).toContainText('Continue with Google');
     await expect(page.locator('.login-google-icon')).toBeVisible();
+
+    // Verify LinkedIn button is completely removed
+    await expect(page.locator('#loginLinkedinBtn')).toHaveCount(0);
+    await expect(page.locator('text=Continue with LinkedIn')).toHaveCount(0);
   });
 });
 
