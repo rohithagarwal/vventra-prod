@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   description: "Curated venture opportunities structured for serious institutional capital.",
 };
 
-const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "328215010837-1evekgpek9742dpm9jkf75kpp1apdja5.apps.googleusercontent.com";
+const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "428998304160-djaan3bkeje5s2chfu30lcg4ipgpnbn5.apps.googleusercontent.com";
 
 export default function RootLayout({
   children,
