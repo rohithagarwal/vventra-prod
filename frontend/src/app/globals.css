@@ -8547,3 +8547,59 @@ p.lead { font-size: clamp(1.02rem, 1.25vw, 1.18rem); color: var(--text-muted); m
   margin: 0 auto;
 }
 
+
+/* ============================================== */
+/* VERIFY LINKEDIN OAUTH ENHANCEMENT              */
+/* ============================================== */
+.verify-li-oauth-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  width: 100%;
+  padding: 0.85rem 1.25rem;
+  background: #0a66c2;
+  color: #fff;
+  border: 1px solid #0a66c2;
+  border-radius: 8px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 6px rgba(10, 102, 194, 0.25);
+  margin-bottom: 0.75rem;
+}
+
+.verify-li-oauth-btn:hover:not(:disabled) {
+  background: #004182;
+  border-color: #004182;
+  transform: translateY(-1px);
+}
+
+.verify-li-oauth-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.verify-or-divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 1.1rem 0;
+  color: var(--text-faint);
+  font-size: 0.72rem;
+  font-family: "JetBrains Mono", monospace;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.verify-or-divider::before,
+.verify-or-divider::after {
+  content: "";
+  flex: 1;
+  border-bottom: 1px solid var(--line);
+}
+
+.verify-or-divider span {
+  padding: 0 0.75rem;
+}

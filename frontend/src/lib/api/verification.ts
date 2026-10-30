@@ -91,6 +91,15 @@ export async function submitRecordedVideo(videoBlob: Blob): Promise<VideoVerific
   return result;
 }
 
+export async function connectLinkedInOAuth(code: string, redirectUri: string): Promise<VerificationStatusResponse> {
+  const response = await api.post("/api/v1/verification/linkedin/connect", {
+    code,
+    redirect_uri: redirectUri,
+  });
+  const data = await readApiResponse<VerificationStatusResponse>(response, "LinkedIn authentication could not be completed.");
+  return data;
+}
+
 export async function verifyLinkedInProfile(linkedinUrl: string): Promise<LinkedInVerificationResponse> {
   const response = await api.post("/api/v1/verification/linkedin", { linkedin_url: linkedinUrl });
   const data: unknown = await response.json().catch(() => null);

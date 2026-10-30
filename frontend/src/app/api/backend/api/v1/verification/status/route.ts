@@ -32,27 +32,21 @@ export async function GET(request: Request) {
   }
 
   return NextResponse.json({
-    total_steps: 3,
-    current_step: 3,
+    total_steps: 4,
+    current_step: 2,
     verifying_as: "architect",
-    is_verified: true,
-    is_fully_verified: true,
-    status: "verified",
-    user_status: "verified",
+    is_verified: false,
+    is_fully_verified: false,
+    status: "applied",
+    user_status: "applied",
     video_verification: {
-      is_verified: true,
-      status: "success",
+      is_verified: false,
+      is_submitted: false,
+      status: "pending",
     },
     linkedin: {
-      is_verified: true,
-      username: "member",
-    },
-    payout: {
-      account_id: "acct_demo_verified",
-      is_connected: true,
-      bank_name: "Standard Chartered",
-      last4: "8899",
-      currency: "USD",
+      is_verified: false,
+      username: "",
     },
   });
 }

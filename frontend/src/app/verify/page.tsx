@@ -6,12 +6,10 @@ import Link from "next/link";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import {
-  confirmPayoutOnboarding,
+  connectLinkedInOAuth,
   getVerificationStatus,
   isAccountVerificationComplete,
   isVideoVerificationApproved,
-  PayoutAccount,
-  startPayoutOnboarding,
   submitRecordedVideo,
   VerificationStatusResponse,
   verifyLinkedInProfile,
@@ -20,7 +18,7 @@ import {
 function VerifyContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const payoutConfirmationStarted = useRef(false);
+  const linkedinOAuthStarted = useRef(false);
   const videoElementRef = useRef<HTMLVideoElement | null>(null);
   const cameraStreamRef = useRef<MediaStream | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -38,12 +36,7 @@ function VerifyContent() {
   const [linkedinUsername, setLinkedinUsername] = useState("");
   const [linkedinFeedback, setLinkedinFeedback] = useState<{ type: "info" | "error" | "success"; text: string } | null>(null);
 
-  // Seller specific steps
-  const [isConnectingPayout, setIsConnectingPayout] = useState(false);
-  const [isConfirmingPayout, setIsConfirmingPayout] = useState(false);
-  const [payoutAccount, setPayoutAccount] = useState<PayoutAccount | null>(null);
-  const [payoutFeedback, setPayoutFeedback] = useState<{ type: "error" | "success"; text: string } | null>(null);
-  const [isBankDone, setIsBankDone] = useState(false);
+  // Video verification (Lister / Architect)
   const [isVideoDone, setIsVideoDone] = useState(false);
   const [isVideoRecording, setIsVideoRecording] = useState(false);
   const [isUploadingVideo, setIsUploadingVideo] = useState(false);
@@ -69,7 +62,6 @@ function VerifyContent() {
         ? storedRole
         : "investor";
     const isArchitect = resolvedRole === "architect";
-    // Browser storage is only available after hydration; reconcile the page role once here.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setRole(resolvedRole);
     document.documentElement.setAttribute("data-role", resolvedRole);
@@ -78,23 +70,17 @@ function VerifyContent() {
     setIsLinkedinDone(linkedinVerified);
     setLinkedinUsername(localStorage.getItem("vve-linkedin-username") || "");
     setIsVerified(false);
-    setIsBankDone(localStorage.getItem("vve-vbank") === "true");
 
     const applyStatus = (status: VerificationStatusResponse) => {
       const linkedin = status.linkedin ?? status.linkedin_verification;
+      const liDone = Boolean(linkedin?.is_verified);
       if (typeof linkedin?.is_verified === "boolean") {
-        setIsLinkedinDone(linkedin.is_verified);
-        localStorage.setItem("vve-vlinkedin", String(linkedin.is_verified));
+        setIsLinkedinDone(liDone);
+        localStorage.setItem("vve-vlinkedin", String(liDone));
       }
       if (linkedin?.username) {
         setLinkedinUsername(linkedin.username);
         localStorage.setItem("vve-linkedin-username", linkedin.username);
-      }
-      if ("payout" in status) {
-        const payout = status.payout ?? null;
-        setPayoutAccount(payout);
-        setIsBankDone(Boolean(payout?.is_connected));
-        localStorage.setItem("vve-vbank", String(Boolean(payout?.is_connected)));
       }
       const video = status.video_verification;
       if (isArchitect && video) {
@@ -136,34 +122,58 @@ function VerifyContent() {
       try {
         const status = await getVerificationStatus();
         if (!cancelled) applyStatus(status);
-      } catch (error) {
-        if (!cancelled && (searchParams.get("payout_success") === "true" || searchParams.get("payout_connected") === "true")) {
-          setPayoutFeedback({ type: "error", text: error instanceof Error ? error.message : "Could not confirm your payout account." });
-        }
+      } catch {
+        // Fallback gracefully to localStorage state
       }
     };
 
-    const payoutReturned = searchParams.get("payout_success") === "true" || searchParams.get("payout_connected") === "true";
-    if (payoutReturned && isArchitect && !payoutConfirmationStarted.current) {
-      payoutConfirmationStarted.current = true;
-      setIsConfirmingPayout(true);
-      setPayoutFeedback(null);
+    // Handle LinkedIn OAuth 2.0 return
+    const code = searchParams.get("code");
+    const errorParam = searchParams.get("error");
+    const errorDesc = searchParams.get("error_description");
+
+    if (errorParam) {
+      setVerificationFailed(true);
+      setLinkedinFeedback({
+        type: "error",
+        text: errorDesc || "LinkedIn authorization was cancelled or failed.",
+      });
+      router.replace(`/verify?role=${resolvedRole}`);
+      return;
+    }
+
+    if (code && !linkedinOAuthStarted.current) {
+      linkedinOAuthStarted.current = true;
+      setIsCheckingLinkedin(true);
+      setLinkedinFeedback({ type: "info", text: "Connecting to LinkedIn… confirming official identity credentials." });
+      const redirectUri = window.location.origin + "/verify";
       void (async () => {
         try {
-          const confirmation = await confirmPayoutOnboarding();
-          applyStatus(confirmation);
-          const status = await getVerificationStatus();
+          const status = await connectLinkedInOAuth(code, redirectUri);
           applyStatus(status);
-          setPayoutFeedback({ type: "success", text: "Payout account connected securely." });
-        } catch (error) {
-          setPayoutFeedback({ type: "error", text: error instanceof Error ? error.message : "Could not confirm your payout account." });
+          const name = status.linkedin?.username || status.linkedin_verification?.username || "LinkedIn Member";
+          setIsLinkedinDone(true);
+          setLinkedinUsername(name);
+          localStorage.setItem("vve-vlinkedin", "true");
+          localStorage.setItem("vve-linkedin-username", name);
+          if (!isArchitect) {
+            setIsVerified(true);
+            localStorage.setItem("vve-stage", "verified");
+            window.dispatchEvent(new Event("storage"));
+          }
+          setLinkedinFeedback({ type: "success", text: `LinkedIn verified successfully as ${name}.` });
+          showToast(`LinkedIn identity verified: ${name}`);
+        } catch (err) {
+          setVerificationFailed(true);
+          setLinkedinFeedback({
+            type: "error",
+            text: err instanceof Error ? err.message : "LinkedIn verification could not be completed.",
+          });
         } finally {
-          setIsConfirmingPayout(false);
+          setIsCheckingLinkedin(false);
           router.replace(`/verify?role=${resolvedRole}`);
         }
       })();
-    } else if (payoutReturned && isArchitect) {
-      // React Strict Mode can replay effects in development; the confirmation is already in flight.
     } else {
       void loadStatus();
     }
@@ -212,6 +222,15 @@ function VerifyContent() {
   const showToast = (msg: string) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(""), 3500);
+  };
+
+  const handleLaunchLinkedInOAuth = () => {
+    const clientId = "77xjn2z32v0xr3";
+    const redirectUri = window.location.origin + "/verify";
+    const state = "linkedin_verify_" + Math.random().toString(36).substring(2, 9);
+    sessionStorage.setItem("vve_li_state", state);
+    const authUrl = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&state=${state}&scope=openid%20profile%20email`;
+    window.location.assign(authUrl);
   };
 
   const handleConnectLinkedin = async () => {
@@ -265,10 +284,13 @@ function VerifyContent() {
       localStorage.setItem("vve-vlinkedin", "true");
       localStorage.setItem("vve-linkedin-url", result.linkedin_url);
       localStorage.setItem("vve-linkedin-username", result.username);
-      // Like Subinoy's implementation, confirming professional identity via LinkedIn verifies the account
-      setIsVerified(true);
-      localStorage.setItem("vve-stage", "verified");
-      window.dispatchEvent(new Event("storage"));
+
+      if (!isSeller) {
+        setIsVerified(true);
+        localStorage.setItem("vve-stage", "verified");
+        window.dispatchEvent(new Event("storage"));
+      }
+
       setLinkedinFeedback({ type: "success", text: result.message || "LinkedIn profile verified successfully." });
       showToast(result.message || "Identity confirmed via LinkedIn. Clearance unlocked!");
     } catch (error) {
@@ -277,26 +299,6 @@ function VerifyContent() {
       showToast(error instanceof Error ? error.message : "LinkedIn verification failed. Please try again.");
     } finally {
       setIsCheckingLinkedin(false);
-    }
-  };
-
-  const handleConnectPayout = async () => {
-    setIsConnectingPayout(true);
-    setPayoutFeedback(null);
-    const returnUrl = `${window.location.origin}/verify?role=architect&payout_success=true`;
-    const refreshUrl = `${window.location.origin}/verify?role=architect`;
-    try {
-      const session = await startPayoutOnboarding(returnUrl, refreshUrl);
-      if (!session.onboarding_url) throw new Error("The payout service did not return an onboarding link.");
-      const onboardingUrl = new URL(session.onboarding_url);
-      const isLocalDevelopmentUrl = onboardingUrl.protocol === "http:" && ["localhost", "127.0.0.1"].includes(onboardingUrl.hostname);
-      if (onboardingUrl.protocol !== "https:" && !isLocalDevelopmentUrl) {
-        throw new Error("The payout service returned an insecure onboarding link.");
-      }
-      window.location.assign(onboardingUrl.href);
-    } catch (error) {
-      setPayoutFeedback({ type: "error", text: error instanceof Error ? error.message : "Could not start payout account setup." });
-      setIsConnectingPayout(false);
     }
   };
 
@@ -394,7 +396,7 @@ function VerifyContent() {
     setVideoFeedback("");
     if (isUploadingVideo || isVideoSubmitted) return;
     if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === "undefined") {
-      setVideoFeedback("Camera is not directly supported in this browser. Use 'Upload video file' or 'Generate verification check' below.");
+      setVideoFeedback("Camera is not directly supported in this browser. Use 'Upload video file' or 'Instant verification check' below.");
       return;
     }
     try {
@@ -503,13 +505,12 @@ function VerifyContent() {
     if (recordedVideoUrlRef.current) URL.revokeObjectURL(recordedVideoUrlRef.current);
   }, []);
 
-  const totalSteps = isSeller ? 5 : 3;
+  const totalSteps = isSeller ? 4 : 3;
 
   const completedCount = () => {
     let done = 1; // Step 1 Account created is always complete
     if (isLinkedinDone) done++;
     if (isSeller) {
-      if (isBankDone) done++;
       if (isVideoDone) done++;
     }
     if (isVerified) done = totalSteps;
@@ -540,7 +541,7 @@ function VerifyContent() {
             </h1>
             <p className="lead" style={{ maxWidth: "540px", color: "var(--text-muted)", fontSize: "0.95rem", lineHeight: 1.6, margin: 0 }} id="verifyIntro">
               {isSeller
-                ? "Listers are the people whose work backs every opportunity. Your verification goes deepest: professional identity, a connected payout account, and a short live video check."
+                ? "Listers are the people whose work backs every opportunity. Your verification includes: confirmed professional identity and a short live video check."
                 : "Buyers confirm a real professional identity through LinkedIn. This protects every lister you engage with."}
             </p>
           </div>
@@ -556,7 +557,6 @@ function VerifyContent() {
                 ) : (
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
                     <circle cx="12" cy="12" r="10" />
-                    <polyline points="12 6 12 12 16 14" />
                   </svg>
                 )}
               </div>
@@ -567,7 +567,7 @@ function VerifyContent() {
                 <span className="verify-status-sub" id="verifyStatusSub">
                   {isVerified
                     ? isSeller
-                      ? "You can list opportunities, meet buyers, and receive payouts."
+                      ? "You can list opportunities, meet buyers, and finalize deals."
                       : "You can unlock opportunities and engage with listers."
                     : "Complete each step below to activate your account."}
                 </span>
@@ -592,7 +592,7 @@ function VerifyContent() {
             </span>
             <span className="vrb-note" id="verifyRoleNote">
               {isSeller
-                ? "Listers complete the full check: LinkedIn, payout account, and a live video verification."
+                ? "Listers complete the full check: LinkedIn and a live video verification."
                 : "Buyers confirm professional identity through LinkedIn."}
             </span>
           </div>
@@ -620,8 +620,7 @@ function VerifyContent() {
                 <div className="vstep-info">
                   <span className="vstep-title">Professional identity · LinkedIn</span>
                   <span className="vstep-sub">
-                    Connect your LinkedIn so we can confirm you are a real professional. We check your name, headline,
-                    and account standing.
+                    Connect your real LinkedIn profile so we can confirm you are a verified professional in good standing.
                   </span>
                 </div>
                 <span className={`vstep-state ${isLinkedinDone ? "done" : "active"}`} data-state-for="linkedin">
@@ -630,6 +629,57 @@ function VerifyContent() {
               </div>
               {!isLinkedinDone && (
                 <div className="verify-step-body">
+                  {/* Official LinkedIn OAuth Button */}
+                  <button
+                    className="verify-li-oauth-btn"
+                    id="verifyLinkedinOAuthBtn"
+                    type="button"
+                    onClick={handleLaunchLinkedInOAuth}
+                    disabled={isCheckingLinkedin}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: "0.65rem",
+                      width: "100%",
+                      padding: "0.85rem 1.25rem",
+                      background: "#0a66c2",
+                      color: "#ffffff",
+                      border: "1px solid #0a66c2",
+                      borderRadius: "8px",
+                      fontSize: "0.92rem",
+                      fontWeight: 600,
+                      cursor: "pointer",
+                      boxShadow: "0 2px 6px rgba(10, 102, 194, 0.25)",
+                      marginBottom: "0.75rem",
+                      transition: "all 0.2s ease",
+                    }}
+                  >
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14zM8.34 17V10.5H6.17V17h2.17zM7.25 9.46a1.26 1.26 0 1 0 0-2.52 1.26 1.26 0 0 0 0 2.52zM18 17v-3.57c0-1.9-.4-3.36-2.63-3.36a2.3 2.3 0 0 0-2.07 1.14h-.03V10.5h-2.08V17h2.17v-3.21c0-.85.16-1.67 1.21-1.67s1.06.97 1.06 1.73V17H18z" />
+                    </svg>
+                    <span>Sign in with LinkedIn to verify</span>
+                  </button>
+
+                  <div
+                    className="verify-or-divider"
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      textAlign: "center",
+                      margin: "1.1rem 0",
+                      color: "var(--text-muted)",
+                      fontSize: "0.75rem",
+                      fontFamily: "'JetBrains Mono', monospace",
+                      letterSpacing: "0.08em",
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    <span style={{ flex: 1, borderBottom: "1px solid var(--line)" }} />
+                    <span style={{ padding: "0 0.75rem" }}>or verify by profile URL</span>
+                    <span style={{ flex: 1, borderBottom: "1px solid var(--line)" }} />
+                  </div>
+
                   <div className="verify-linkedin-row" data-li-input>
                     <div className="verify-li-field">
                       <label className="apply-label">Your LinkedIn profile URL</label>
@@ -657,7 +707,7 @@ function VerifyContent() {
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14zM8.34 17V10.5H6.17V17h2.17zM7.25 9.46a1.26 1.26 0 1 0 0-2.52 1.26 1.26 0 0 0 0 2.52zM18 17v-3.57c0-1.9-.4-3.36-2.63-3.36a2.3 2.3 0 0 0-2.07 1.14h-.03V10.5h-2.08V17h2.17v-3.21c0-.85.16-1.67 1.21-1.67s1.06.97 1.06 1.73V17H18z" />
                       </svg>
-                      {isCheckingLinkedin ? "Checking…" : "Connect LinkedIn"}
+                      {isCheckingLinkedin ? "Checking…" : "Verify URL"}
                     </button>
                   </div>
                   {linkedinFeedback && (
@@ -677,15 +727,14 @@ function VerifyContent() {
                   {isCheckingLinkedin && (
                     <div className="verify-li-checking" data-li-checking>
                       <span className="vli-spinner" />
-                      <span>Checking profile…</span>
+                      <span>Verifying profile…</span>
                     </div>
                   )}
                   <div className="verify-id-note">
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
                       <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                     </svg>
-                    We never post to your LinkedIn or contact your connections. We read your public profile once to confirm
-                    identity.
+                    We never post to your LinkedIn or contact your connections. We verify your real professional identity to protect all parties.
                   </div>
                 </div>
               )}
@@ -708,98 +757,15 @@ function VerifyContent() {
               )}
             </div>
 
-            {/* SELLER ONLY: Bank payout */}
-            {isSeller && (
-              <div className={`verify-step ${isBankDone ? "" : isLinkedinDone ? "active" : "locked"}`} data-vstep="bank">
-                <div className="verify-step-head">
-                  <span className={`vstep-num ${isBankDone ? "done" : isLinkedinDone ? "active" : "locked"}`}>
-                    {isBankDone ? "✓" : "3"}
-                  </span>
-                  <div className="vstep-info">
-                    <span className="vstep-title">Payout account</span>
-                    <span className="vstep-sub">
-                      Connect the bank account where your earnings are paid. Handled securely through our payments partner.
-                      vvEntra never sees or stores your bank details.
-                    </span>
-                  </div>
-                  <span
-                    className={`vstep-state ${isBankDone ? "done" : isLinkedinDone ? "active" : "locked"}`}
-                    data-state-for="bank"
-                  >
-                    {isBankDone ? "Complete" : isLinkedinDone ? "Required" : "Locked"}
-                  </span>
-                </div>
-                {isLinkedinDone && !isBankDone && (
-                  <div className="verify-step-body" data-body-for="bank">
-                    <button
-                      className="verify-bank-connect"
-                      id="verifyBankBtn"
-                      type="button"
-                      onClick={handleConnectPayout}
-                      disabled={isConnectingPayout || isConfirmingPayout}
-                    >
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7">
-                        <rect x="2" y="5" width="20" height="14" rx="2" />
-                        <line x1="2" y1="10" x2="22" y2="10" />
-                      </svg>
-                      {isConnectingPayout ? "Opening secure setup…" : isConfirmingPayout ? "Confirming payout account…" : "Connect payout account securely"}
-                    </button>
-                    {(isConnectingPayout || isConfirmingPayout) && (
-                      <div className="verify-bank-checking" id="verifyBankChecking">
-                        <span className="vli-spinner" />
-                        <span>{isConfirmingPayout ? "Confirming your connected account…" : "Preparing secure connection…"}</span>
-                      </div>
-                    )}
-                    {payoutFeedback && (
-                      <p
-                        id="payoutFeedback"
-                        role={payoutFeedback.type === "error" ? "alert" : "status"}
-                        style={{
-                          margin: "0.65rem 0 0",
-                          color: payoutFeedback.type === "error" ? "var(--red)" : "var(--green)",
-                          fontSize: "0.82rem",
-                        }}
-                      >
-                        {payoutFeedback.text}
-                      </p>
-                    )}
-                    <div className="verify-id-note">
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                      </svg>
-                      Your payout account is connected through our regulated payments partner. vvEntra stores only a secure
-                      reference, never your account number.
-                    </div>
-                  </div>
-                )}
-                {isBankDone && (
-                  <div className="verify-step-body">
-                    <div className="verify-bank-done" id="verifyBankDone">
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <polyline points="20 6 9 17 4 12" />
-                      </svg>
-                      <div className="vli-done-info">
-                        <span className="vli-done-name">{payoutAccount?.bank_name || "Payout account connected"}</span>
-                        <span className="vli-done-meta">
-                          {payoutAccount?.last4 ? `Account ending ••${payoutAccount.last4}` : "Connected securely"}
-                          {payoutAccount?.currency ? ` · ${payoutAccount.currency}` : ""}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-
             {/* SELLER ONLY: Video check */}
             {isSeller && (
               <div
-                className={`verify-step ${isVideoDone ? "" : isBankDone ? "active" : "locked"}`}
+                className={`verify-step ${isVideoDone ? "" : isLinkedinDone ? "active" : "locked"}`}
                 data-vstep="video"
               >
                 <div className="verify-step-head">
-                  <span className={`vstep-num ${isVideoDone ? "done" : isBankDone ? "active" : "locked"}`}>
-                    {isVideoDone ? "✓" : "4"}
+                  <span className={`vstep-num ${isVideoDone ? "done" : isLinkedinDone ? "active" : "locked"}`}>
+                    {isVideoDone ? "✓" : "3"}
                   </span>
                   <div className="vstep-info">
                     <span className="vstep-title">Live video verification · 2 minutes</span>
@@ -809,13 +775,13 @@ function VerifyContent() {
                     </span>
                   </div>
                   <span
-                    className={`vstep-state ${isVideoDone ? "done" : isBankDone ? "active" : "locked"}`}
+                    className={`vstep-state ${isVideoDone ? "done" : isLinkedinDone ? "active" : "locked"}`}
                     data-state-for="video"
                   >
-                    {isVideoSubmitted ? "Pending review" : isVideoDone ? "Ready to submit" : isBankDone ? "Required" : "Locked"}
+                    {isVideoSubmitted ? "Pending review" : isVideoDone ? "Ready to submit" : isLinkedinDone ? "Required" : "Locked"}
                   </span>
                 </div>
-                {isBankDone && (
+                {isLinkedinDone && (
                   <div className="verify-step-body" data-body-for="video">
                     <div className="verify-video-stage" id="verifyVideoStage">
                       <div className={`vv-frame ${isVideoRecording ? "live" : ""}`} id="vvFrame">
@@ -892,7 +858,7 @@ function VerifyContent() {
                               id="vvStartBtn"
                               type="button"
                               onClick={isVideoRecording ? stopVideoRecording : handleStartVideo}
-                              disabled={!isBankDone}
+                              disabled={!isLinkedinDone}
                             >
                               {isVideoRecording ? (
                                 <>
@@ -910,7 +876,7 @@ function VerifyContent() {
                                   id="vvUploadFileBtn"
                                   type="button"
                                   onClick={() => fileInputRef.current?.click()}
-                                  disabled={!isBankDone}
+                                  disabled={!isLinkedinDone}
                                 >
                                   Upload video file (.mp4, .webm)
                                 </button>
@@ -919,7 +885,7 @@ function VerifyContent() {
                                   id="vvGenerateSampleBtn"
                                   type="button"
                                   onClick={handleGenerateSampleVideo}
-                                  disabled={!isBankDone}
+                                  disabled={!isLinkedinDone}
                                   title="Test verification if webcam is absent or blocked"
                                 >
                                   Instant verification check
@@ -959,7 +925,7 @@ function VerifyContent() {
                   <span className="vstep-title">Verified</span>
                   <span className="vstep-sub" id="vstepDoneSub">
                     {isSeller
-                      ? "Your account is activated. You can list opportunities, meet buyers, and receive payouts."
+                      ? "Your account is activated. You can list opportunities, meet buyers, and finalize transactions."
                       : "Your account is activated. You can unlock opportunities and engage with listers."}
                   </span>
                 </div>
@@ -984,7 +950,7 @@ function VerifyContent() {
                 Verification Failed
               </h3>
               <p style={{ color: "var(--text-muted)", fontSize: "0.92rem", maxWidth: "420px", margin: "0 auto", lineHeight: 1.6 }}>
-                Failed to verify your LinkedIn Profile. Please ensure you have a valid and active LinkedIn account
+                Failed to verify your LinkedIn Profile. Please ensure you have a valid and active LinkedIn account.
               </p>
             </div>
           )}
@@ -1028,7 +994,7 @@ function VerifyContent() {
             </h4>
             <p style={{ fontSize: "0.88rem", color: "var(--text-muted)", margin: "0 0 0.6rem", lineHeight: 1.6 }}>
               Every deal on vvEntra involves real capital, real IP, and real accountability. Buyers confirm professional
-              identity through LinkedIn. Listers go further: bank-linked payouts and a live video check, so every
+              identity through LinkedIn. Listers go further with a live video check, so every
               opportunity is backed by a verified, real person.
             </p>
             <p style={{ fontSize: "0.88rem", color: "var(--text-muted)", margin: 0, lineHeight: 1.6 }}>
