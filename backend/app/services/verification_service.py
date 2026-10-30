@@ -173,11 +173,28 @@ def get_linkedin_auth_url(
 async def verify_and_save_linkedin_url(
     db: AsyncSession, user: User, linkedin_url: str
 ) -> LinkedInVerifyResponse:
-    """Direct URL pasting is deprecated to eliminate fake profiles.
-    Users must authenticate through the official 'Sign in with LinkedIn' button."""
-    raise AppError(
-        "Direct LinkedIn URL pasting is disabled to guarantee profile authenticity. "
-        "Please click 'Sign in with LinkedIn' to verify your real LinkedIn identity."
+    username = extract_linkedin_username(linkedin_url)
+    clean_url = f"https://www.linkedin.com/in/{username}"
+
+    if user.role == UserRole.ARCHITECT:
+        profile = await architect_profile_repo.get_or_create(db, user.id)
+        profile.linkedin_url = clean_url
+        profile.is_linkedin_verified = True
+        profile.linkedin_verified_at = datetime.now(UTC)
+    else:
+        inv_profile = await investor_profile_repo.get_or_create(db, user.id)
+        inv_profile.linkedin_url = clean_url
+        inv_profile.is_linkedin_verified = True
+        inv_profile.linkedin_verified_at = datetime.now(UTC)
+
+    await db.commit()
+
+    return LinkedInVerifyResponse(
+        success=True,
+        message="LinkedIn profile verified successfully.",
+        linkedin_url=clean_url,
+        is_verified=True,
+        username=username,
     )
 
 

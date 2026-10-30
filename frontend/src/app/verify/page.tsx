@@ -210,16 +210,43 @@ function VerifyContent() {
   };
 
   const handleConnectLinkedin = async () => {
-    const normalizedUrl = linkedinUrl.trim();
-    if (!/^https:\/\/(www\.)?linkedin\.com\/in\/[a-zA-Z0-9%_-]+\/?(?:\?.*)?$/.test(normalizedUrl)) {
-      setLinkedinFeedback({ type: "error", text: "Enter a valid URL in the format https://www.linkedin.com/in/username." });
+    let raw = linkedinUrl.trim();
+    if (!raw) {
+      setLinkedinFeedback({
+        type: "error",
+        text: "Please enter your LinkedIn profile URL or username.",
+      });
       return;
     }
+
+    // Support @username, plain username, or missing https://
+    if (raw.startsWith("@")) {
+      raw = raw.slice(1).trim();
+    }
+    if (!raw.includes("linkedin.com")) {
+      raw = `https://www.linkedin.com/in/${raw}`;
+    } else if (!/^https?:\/\//i.test(raw)) {
+      raw = `https://${raw}`;
+    }
+
+    // Clean URL: strip query parameters and trailing slash
+    const cleanUrl = raw.split("?")[0].replace(/\/+$/, "");
+
+    // Support www, localized/country subdomains (e.g. in.linkedin.com), or bare linkedin.com
+    if (!/^https?:\/\/([a-zA-Z0-9_-]+\.)?linkedin\.com\/in\/[a-zA-Z0-9%_-]+$/i.test(cleanUrl)) {
+      setLinkedinFeedback({
+        type: "error",
+        text: "Enter a valid URL in the format https://www.linkedin.com/in/username.",
+      });
+      return;
+    }
+
+    setLinkedinUrl(cleanUrl);
     setVerificationFailed(false);
     setIsCheckingLinkedin(true);
     setLinkedinFeedback({ type: "info", text: "Connecting to LinkedIn verification…" });
     try {
-      const result = await verifyLinkedInProfile(normalizedUrl);
+      const result = await verifyLinkedInProfile(cleanUrl);
       if (!result.success || !result.is_verified) {
         setVerificationFailed(true);
         setLinkedinFeedback({ type: "error", text: "LinkedIn profile verification failed. Please check your account and try again." });
@@ -387,7 +414,7 @@ function VerifyContent() {
       <Navbar currentRole={role} onRoleChange={(r) => setRole(r)} />
 
       <main data-page="verify" className="page verify-page">
-        <div className="container" style={{ maxWidth: "720px", paddingTop: "5rem", paddingBottom: "6rem", margin: "0 auto", paddingLeft: "1.5rem", paddingRight: "1.5rem" }}>
+        <div className="container" style={{ maxWidth: "720px", paddingTop: "clamp(6.5rem, 9vw, 8rem)", paddingBottom: "6rem", margin: "0 auto", paddingLeft: "1.5rem", paddingRight: "1.5rem" }}>
           {/* Header */}
           <div className="section-head reveal in" style={{ marginBottom: "2.5rem" }}>
             <div className="section-marker" style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.5rem" }}>
