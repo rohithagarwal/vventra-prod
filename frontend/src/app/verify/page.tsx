@@ -28,6 +28,7 @@ function VerifyContent() {
   const recordedVideoBlobRef = useRef<Blob | null>(null);
   const recordingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const recordedVideoUrlRef = useRef<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [role, setRole] = useState<"investor" | "architect">("investor");
 
   // Verification step states
@@ -305,21 +306,59 @@ function VerifyContent() {
     if (videoElementRef.current) videoElementRef.current.srcObject = null;
   };
 
+  const handleVideoFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 50 * 1024 * 1024) {
+      setVideoFeedback("Video file exceeds the 50MB maximum allowed limit.");
+      return;
+    }
+    if (file.size < 1000) {
+      setVideoFeedback("Video file is too small or corrupted. Please choose a valid video.");
+      return;
+    }
+
+    stopVideoRecording();
+    if (recordedVideoUrlRef.current) URL.revokeObjectURL(recordedVideoUrlRef.current);
+    const url = URL.createObjectURL(file);
+    recordedVideoUrlRef.current = url;
+    recordedVideoBlobRef.current = file;
+    setRecordedVideoUrl(url);
+    setIsVideoDone(true);
+    setVideoFeedback("");
+  };
+
   const handleStartVideo = async () => {
     setVideoFeedback("");
+    if (isUploadingVideo || isVideoSubmitted) return;
     if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === "undefined") {
-      setVideoFeedback("Camera recording is not supported by this browser. Please use a current version of Chrome, Edge, or Firefox.");
+      setVideoFeedback("Camera recording is not supported by this browser. You can upload a recorded video file instead.");
       return;
     }
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: true });
+      let stream: MediaStream;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: true });
+      } catch {
+        // Fallback to video only if microphone is unavailable or blocked
+        stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+      }
       cameraStreamRef.current = stream;
       recordedChunksRef.current = [];
       if (videoElementRef.current) {
         videoElementRef.current.srcObject = stream;
-        await videoElementRef.current.play();
+        videoElementRef.current.muted = true;
+        await videoElementRef.current.play().catch(() => {});
       }
-      const recorder = new MediaRecorder(stream);
+      const mimeType = MediaRecorder.isTypeSupported("video/webm;codecs=vp9,opus")
+        ? "video/webm;codecs=vp9,opus"
+        : MediaRecorder.isTypeSupported("video/webm")
+        ? "video/webm"
+        : MediaRecorder.isTypeSupported("video/mp4")
+        ? "video/mp4"
+        : "";
+      const recorder = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
       mediaRecorderRef.current = recorder;
       recorder.ondataavailable = (event) => {
         if (event.data.size > 0) recordedChunksRef.current.push(event.data);
@@ -342,6 +381,7 @@ function VerifyContent() {
       setIsVideoRecording(true);
       setIsVideoDone(false);
       setVideoTimer("0:00");
+      if (recordingIntervalRef.current) clearInterval(recordingIntervalRef.current);
       recordingIntervalRef.current = setInterval(() => {
         const elapsed = Math.min(120, Math.floor((Date.now() - startedAt) / 1000));
         setVideoTimer(`${Math.floor(elapsed / 60)}:${String(elapsed % 60).padStart(2, "0")}`);
@@ -349,9 +389,11 @@ function VerifyContent() {
       }, 1000);
     } catch (error) {
       stopVideoRecording();
-      setVideoFeedback(error instanceof Error && error.name === "NotAllowedError"
-        ? "Camera access was blocked. Allow camera and microphone access, then try again."
-        : "Could not start your camera. Check that it is connected and not being used by another app.");
+      setVideoFeedback(
+        error instanceof Error && error.name === "NotAllowedError"
+          ? "Camera permission was denied. Please allow camera access in your browser, or upload a video file below."
+          : "Could not start camera. Check that it is connected, or upload a recorded video file below."
+      );
     }
   };
 
@@ -749,25 +791,61 @@ function VerifyContent() {
                         </div>
                       </div>
                       <div className="vv-actions">
+                        <input
+                          ref={fileInputRef}
+                          type="file"
+                          accept="video/mp4,video/webm,video/quicktime,video/*"
+                          style={{ display: "none" }}
+                          onChange={handleVideoFileChange}
+                        />
                         {isVideoDone ? (
-                          <button className="vv-start-btn vv-submit-btn" id="vvSubmitBtn" type="button" onClick={handleSubmitVideo} disabled={isUploadingVideo || isVideoSubmitted} style={isVideoSubmitted ? { cursor: "not-allowed", backgroundColor: "#10a34a", color: "#fff" } : undefined}>
-                            {isUploadingVideo ? "Uploading video…" : isVideoSubmitted ? "Submitted for review" : "Submit for verification"}
-                          </button>
+                          <>
+                            <button
+                              className="vv-start-btn vv-submit-btn"
+                              id="vvSubmitBtn"
+                              type="button"
+                              onClick={handleSubmitVideo}
+                              disabled={isUploadingVideo || isVideoSubmitted}
+                              style={isVideoSubmitted ? { cursor: "not-allowed", backgroundColor: "#10a34a", color: "#fff" } : undefined}
+                            >
+                              {isUploadingVideo ? "Uploading video…" : isVideoSubmitted ? "Submitted for review" : "Submit for verification"}
+                            </button>
+                            {!isVideoSubmitted && (
+                              <button className="vv-retake-btn" id="vvRetakeBtn" type="button" onClick={handleRetakeVideo}>
+                                Retake / Change file
+                              </button>
+                            )}
+                          </>
                         ) : (
-                          <button
-                            className="vv-start-btn"
-                            id="vvStartBtn"
-                            type="button"
-                            onClick={isVideoRecording ? stopVideoRecording : handleStartVideo}
-                            disabled={!isBankDone}
-                          >
-                            {isVideoRecording ? "Done" : "Start 2-minute verification"}
-                          </button>
-                        )}
-                        {isVideoDone && !isVideoSubmitted && (
-                          <button className="vv-retake-btn" id="vvRetakeBtn" type="button" onClick={handleRetakeVideo}>
-                            Retake
-                          </button>
+                          <>
+                            <button
+                              className="vv-start-btn"
+                              id="vvStartBtn"
+                              type="button"
+                              onClick={isVideoRecording ? stopVideoRecording : handleStartVideo}
+                              disabled={!isBankDone}
+                            >
+                              {isVideoRecording ? (
+                                <>
+                                  <span className="vv-btn-stop-dot" />
+                                  Done (Stop Recording)
+                                </>
+                              ) : (
+                                "Start 2-minute verification"
+                              )}
+                            </button>
+                            {!isVideoRecording && (
+                              <button
+                                className="vv-retake-btn"
+                                id="vvUploadFileBtn"
+                                type="button"
+                                onClick={() => fileInputRef.current?.click()}
+                                disabled={!isBankDone}
+                              >
+                                Upload video file (.mp4, .webm)
+                              </button>
+                            )}
+                          </>
                         )}
                       </div>
                       {videoFeedback && !isVideoSubmitted && (
