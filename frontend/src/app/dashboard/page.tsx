@@ -72,7 +72,13 @@ function DashboardContent() {
           return;
         }
         localStorage.setItem("vve-role", destination.role);
-        localStorage.setItem("vve-stage", "verified");
+        const userStatus = destination.user?.status?.toLowerCase();
+        const isUserFullyVerified = userStatus === "active" || userStatus === "verified";
+        if (isUserFullyVerified) {
+          localStorage.setItem("vve-stage", "verified");
+        } else if (localStorage.getItem("vve-stage") !== "verified") {
+          localStorage.setItem("vve-stage", "applied");
+        }
         document.documentElement.setAttribute("data-role", destination.role);
         setRole(destination.role);
       } catch {

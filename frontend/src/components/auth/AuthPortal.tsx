@@ -146,7 +146,8 @@ export function AuthPortal({ initialMode = "signin" }: AuthPortalProps) {
     try {
       const destination = await resolveAccountDestination(user ? { role: user.role, status: user.status } : undefined);
       localStorage.setItem("vve-role", destination.role);
-      localStorage.setItem("vve-stage", destination.path.startsWith("/dashboard") ? "verified" : "applied");
+      const isUserVerified = destination.user?.status?.toLowerCase() === "active" || destination.user?.status?.toLowerCase() === "verified";
+      localStorage.setItem("vve-stage", isUserVerified ? "verified" : "applied");
       window.dispatchEvent(new Event("storage"));
       setRole(destination.role);
       router.replace(destination.path);

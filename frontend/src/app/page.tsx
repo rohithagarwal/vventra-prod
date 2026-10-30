@@ -26,7 +26,8 @@ export default function Home() {
         const destination = await resolveAccountDestination();
         if (cancelled) return;
         localStorage.setItem("vve-role", destination.role);
-        localStorage.setItem("vve-stage", destination.path.startsWith("/dashboard") ? "verified" : "applied");
+        const isUserVerified = destination.user?.status?.toLowerCase() === "active" || destination.user?.status?.toLowerCase() === "verified";
+        localStorage.setItem("vve-stage", isUserVerified ? "verified" : "applied");
         window.dispatchEvent(new Event("storage"));
         router.replace(destination.path);
       } catch {

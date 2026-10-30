@@ -120,9 +120,9 @@ function VerifyContent() {
         localStorage.setItem("vve-stage", "verified");
         window.dispatchEvent(new Event("storage"));
         if (isArchitect) router.replace("/dashboard?role=architect");
-      } else if (typeof status.is_verified === "boolean") {
-        setIsVerified(status.is_verified);
-        localStorage.setItem("vve-stage", status.is_verified ? "verified" : "applied");
+      } else {
+        setIsVerified(false);
+        localStorage.setItem("vve-stage", "applied");
         window.dispatchEvent(new Event("storage"));
       }
     };

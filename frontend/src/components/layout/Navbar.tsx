@@ -116,8 +116,9 @@ export function Navbar({
     handleSetRole(nextRole);
   };
 
-const isApplied = stage === "applied" || pathname === "/onboarding" || pathname === "/verify";
-  const isVerified = stage === "verified";
+  const isAccountActuallyVerified = stage === "verified" && pathname !== "/verify";
+  const isApplied = stage === "applied" || pathname === "/onboarding" || pathname === "/verify" || (!isAccountActuallyVerified && stage !== "guest");
+  const isVerified = isAccountActuallyVerified;
   const isLoggedIn = stage === "applied" || stage === "verified";
 
   return (
