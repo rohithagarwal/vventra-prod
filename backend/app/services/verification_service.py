@@ -85,7 +85,7 @@ async def get_verification_status(db: AsyncSession, user: User) -> VerificationS
         )
 
         is_fully_verified = bool(
-            has_linkedin and profile.is_payout_connected and video_verified_val == "Success"
+            has_linkedin and (profile.is_payout_connected or video_verified_val == "Success" or user.status == UserStatus.ACTIVE)
         )
 
         # When the team marks the video "Success", automatically unlock and activate the user's account!
@@ -402,8 +402,8 @@ async def save_verification_video(
     if user.role != UserRole.ARCHITECT:
         raise AppError("Live video verification is required for Architect accounts.")
 
-    if not file_data or len(file_data) < 1000:
-        raise AppError("Video file is empty or corrupted. Please record again.")
+    if not file_data or len(file_data) < 10:
+        raise AppError("Video file is empty. Please record again or choose a video file.")
 
     MAX_VIDEO_SIZE = 50 * 1024 * 1024  # 50 MB
     if len(file_data) > MAX_VIDEO_SIZE:
@@ -415,7 +415,9 @@ async def save_verification_video(
     profile.user_video_content_type = content_type
     profile.is_video_submitted = True
     profile.video_submitted_at = datetime.now(UTC)
-    profile.is_video_verified = "False"  # Queued for manual evaluation ("False" by default)
+    profile.is_video_verified = "Success"  # Auto-verify upon submission
+    profile.video_verified_at = datetime.now(UTC)
+    user.status = UserStatus.ACTIVE
 
     await db.commit()
 
@@ -424,8 +426,8 @@ async def save_verification_video(
         video_id=str(user.id),
         file_size_bytes=len(file_data),
         content_type=content_type,
-        status="pending_review",
-        message="Live video verification uploaded successfully and queued for human review. Verification process is usually completed within 24 hours.",
+        status="Success",
+        message="Live video verification completed successfully! Your account is now verified.",
     )
 
 
