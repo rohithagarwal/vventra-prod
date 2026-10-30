@@ -109,5 +109,11 @@ test.describe('Live Opportunity Listing and Dashboard Stats Synchronization', ()
     await expect(page.locator('.listing-main-title')).toHaveText('AI Logistics Routing Engine');
     await expect(page.locator('aside')).toContainText('$4,500');
     await expect(page.locator('text=Cross-border trucking carriers lack dynamic load-matching')).toBeVisible();
+
+    // 8. Clean up created test listing so test artifacts don't persist into production state
+    await page.evaluate(() => {
+      localStorage.removeItem('vve-opportunities');
+      localStorage.removeItem('vve-composed-listing');
+    });
   });
 });

@@ -122,8 +122,8 @@ export async function syncOpportunitiesWithBackend(): Promise<OpportunityItem[]>
     const res = await fetch(`${backendUrl}/api/v1/opportunities`).catch(() => null);
     if (res && res.ok) {
       const data = await res.json().catch(() => null);
-      if (data && Array.isArray(data.items) && data.items.length > 0) {
-        const mapped: OpportunityItem[] = data.items.map((b: any) => ({
+      if (data && Array.isArray(data.items)) {
+        const backendItems: OpportunityItem[] = data.items.map((b: any) => ({
           id: b.id,
           industry: b.sector || "saas",
           stage: "validated",
@@ -142,13 +142,22 @@ export async function syncOpportunitiesWithBackend(): Promise<OpportunityItem[]>
           thesis: b.summary,
           problem: b.problem_statement,
         }));
-        const current = getStoredOpportunities();
-        const merged = [...current];
-        for (const m of mapped) {
-          if (!merged.find((item) => item.id === m.id)) {
-            merged.push(m);
-          }
+
+        // Keep local listings composed in the current session
+        const composedRaw = localStorage.getItem(COMPOSED_KEY);
+        let locallyComposed: OpportunityItem | null = null;
+        if (composedRaw) {
+          try {
+            locallyComposed = JSON.parse(composedRaw);
+          } catch {}
         }
+
+        const merged: OpportunityItem[] = [...backendItems];
+        if (locallyComposed && !merged.some((i) => i.id === locallyComposed?.id)) {
+          merged.unshift(locallyComposed);
+        }
+
+        // Set authoritative opportunities list in storage
         localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
         window.dispatchEvent(new CustomEvent("vve-opportunities-updated", { detail: merged }));
         return merged;
