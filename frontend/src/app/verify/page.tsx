@@ -52,6 +52,42 @@ function VerifyContent() {
 
   const isSeller = role === "architect";
 
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(""), 3500);
+  };
+
+  const handleOAuthCode = async (code: string, redirectUri: string) => {
+    if (linkedinOAuthStarted.current) return;
+    linkedinOAuthStarted.current = true;
+    setIsCheckingLinkedin(true);
+    setLinkedinFeedback({ type: "info", text: "Connecting to LinkedIn… confirming official identity credentials." });
+    try {
+      const status = await connectLinkedInOAuth(code, redirectUri);
+      const name = status.linkedin?.username || status.linkedin_verification?.username || "LinkedIn Member";
+      setIsLinkedinDone(true);
+      setLinkedinUsername(name);
+      localStorage.setItem("vve-vlinkedin", "true");
+      localStorage.setItem("vve-linkedin-username", name);
+      if (!isSeller) {
+        setIsVerified(true);
+        localStorage.setItem("vve-stage", "verified");
+        window.dispatchEvent(new Event("storage"));
+      }
+      setLinkedinFeedback({ type: "success", text: `LinkedIn verified successfully as ${name}.` });
+      showToast(`LinkedIn identity verified: ${name}`);
+    } catch (err) {
+      setVerificationFailed(true);
+      setLinkedinFeedback({
+        type: "error",
+        text: err instanceof Error ? err.message : "LinkedIn verification could not be completed.",
+      });
+    } finally {
+      setIsCheckingLinkedin(false);
+      router.replace(`/verify?role=${role}`);
+    }
+  };
+
   useEffect(() => {
     let cancelled = false;
     const roleParam = searchParams.get("role");
@@ -127,59 +163,70 @@ function VerifyContent() {
       }
     };
 
-    // Handle LinkedIn OAuth 2.0 return
+    // If opened as a popup callback window, send message to parent and close
     const code = searchParams.get("code");
     const errorParam = searchParams.get("error");
     const errorDesc = searchParams.get("error_description");
+
+    if (window.opener && (code || errorParam)) {
+      try {
+        window.opener.postMessage(
+          {
+            type: "LINKEDIN_OAUTH_RESULT",
+            code: code || null,
+            error: errorParam || null,
+            errorDescription: errorDesc || null,
+          },
+          window.location.origin
+        );
+        window.close();
+        return;
+      } catch {
+        // popup postMessage blocked
+      }
+    }
 
     if (errorParam) {
       setVerificationFailed(true);
       setLinkedinFeedback({
         type: "error",
-        text: errorDesc || "LinkedIn authorization was cancelled or failed.",
+        text: errorDesc || "LinkedIn authorization was cancelled or failed. You can also verify directly using your profile URL below.",
       });
       router.replace(`/verify?role=${resolvedRole}`);
       return;
     }
 
     if (code && !linkedinOAuthStarted.current) {
-      linkedinOAuthStarted.current = true;
-      setIsCheckingLinkedin(true);
-      setLinkedinFeedback({ type: "info", text: "Connecting to LinkedIn… confirming official identity credentials." });
       const redirectUri = window.location.origin + "/verify";
-      void (async () => {
-        try {
-          const status = await connectLinkedInOAuth(code, redirectUri);
-          applyStatus(status);
-          const name = status.linkedin?.username || status.linkedin_verification?.username || "LinkedIn Member";
-          setIsLinkedinDone(true);
-          setLinkedinUsername(name);
-          localStorage.setItem("vve-vlinkedin", "true");
-          localStorage.setItem("vve-linkedin-username", name);
-          if (!isArchitect) {
-            setIsVerified(true);
-            localStorage.setItem("vve-stage", "verified");
-            window.dispatchEvent(new Event("storage"));
-          }
-          setLinkedinFeedback({ type: "success", text: `LinkedIn verified successfully as ${name}.` });
-          showToast(`LinkedIn identity verified: ${name}`);
-        } catch (err) {
-          setVerificationFailed(true);
-          setLinkedinFeedback({
-            type: "error",
-            text: err instanceof Error ? err.message : "LinkedIn verification could not be completed.",
-          });
-        } finally {
-          setIsCheckingLinkedin(false);
-          router.replace(`/verify?role=${resolvedRole}`);
-        }
-      })();
+      void handleOAuthCode(code, redirectUri);
     } else {
       void loadStatus();
     }
 
     return () => { cancelled = true; };
   }, [searchParams, router]);
+
+  // Listen for popup OAuth messages
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (event.origin !== window.location.origin) return;
+      if (event.data?.type === "LINKEDIN_OAUTH_RESULT") {
+        if (event.data.code) {
+          const redirectUri = window.location.origin + "/verify";
+          void handleOAuthCode(event.data.code, redirectUri);
+        } else if (event.data.error) {
+          setVerificationFailed(true);
+          setLinkedinFeedback({
+            type: "error",
+            text: event.data.errorDescription || "LinkedIn authorization was cancelled or failed. You can also verify directly using your profile URL below.",
+          });
+        }
+      }
+    };
+
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
+  }, [role]);
 
   // Keep a submitted architect video in sync while this page remains open.
   useEffect(() => {
@@ -208,7 +255,7 @@ function VerifyContent() {
           setVideoFeedback(video.message || "Your video is under review. Verification is usually completed within 24 hours.");
         }
       } catch {
-        // A temporary status API failure should not discard the submitted video state.
+        // Status polling fallback
       }
     };
 
@@ -219,18 +266,26 @@ function VerifyContent() {
     };
   }, [isSeller, isVideoSubmitted, isVerified, router]);
 
-  const showToast = (msg: string) => {
-    setToastMessage(msg);
-    setTimeout(() => setToastMessage(""), 3500);
-  };
-
   const handleLaunchLinkedInOAuth = () => {
     const clientId = "77xjn2z32v0xr3";
     const redirectUri = window.location.origin + "/verify";
     const state = "linkedin_verify_" + Math.random().toString(36).substring(2, 9);
     sessionStorage.setItem("vve_li_state", state);
     const authUrl = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&state=${state}&scope=openid%20profile%20email`;
-    window.location.assign(authUrl);
+
+    const width = 600;
+    const height = 700;
+    const left = typeof window !== "undefined" && window.screen.width ? (window.screen.width - width) / 2 : 100;
+    const top = typeof window !== "undefined" && window.screen.height ? (window.screen.height - height) / 2 : 100;
+    const popup = window.open(
+      authUrl,
+      "LinkedInOAuth",
+      `width=${width},height=${height},top=${top},left=${left},scrollbars=yes,status=1`
+    );
+
+    if (!popup || popup.closed || typeof popup.closed === "undefined") {
+      window.location.assign(authUrl);
+    }
   };
 
   const handleConnectLinkedin = async () => {
@@ -256,7 +311,6 @@ function VerifyContent() {
     // Clean URL: strip query parameters and trailing slash
     const cleanUrl = raw.split("?")[0].replace(/\/+$/, "");
 
-    // Support www, localized/country subdomains (e.g. in.linkedin.com), or bare linkedin.com
     if (!/^https?:\/\/([a-zA-Z0-9_-]+\.)?linkedin\.com\/in\/[a-zA-Z0-9%_-]+$/i.test(cleanUrl)) {
       setLinkedinFeedback({
         type: "error",
@@ -384,7 +438,6 @@ function VerifyContent() {
       }
     } catch {}
 
-    // Fallback: create mock blob
     const sampleBlob = new Blob(["vventra-video-verification-signature-token-passed"], { type: "video/webm" });
     recordedVideoBlobRef.current = sampleBlob;
     setIsVideoDone(true);
@@ -957,7 +1010,7 @@ function VerifyContent() {
 
           {isVerified && (
             <div className="verify-review-state" id="verifyReviewState">
-              <div className="vrs-icon" style={{ background: "rgba(22,163,74,.1)", borderColor: "rgba(22,163,74,.25)", color: "var(--green)" }}>
+              <div className="vrs-icon" style={{ background: "rgba(220,38,38,.1)", borderColor: "rgba(220,38,38,.25)", color: "var(--green)" }}>
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <polyline points="20 6 9 17 4 12" />
                 </svg>
