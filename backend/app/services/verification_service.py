@@ -453,3 +453,12 @@ async def update_video_verification_status(
 
     await db.commit()
     return await get_verification_status(db, target_user)
+
+async def get_verification_video_data(
+    db: AsyncSession, target_user_id: uuid.UUID
+) -> tuple[bytes, str]:
+    profile = await architect_profile_repo.get(db, target_user_id)
+    if not profile or not profile.user_video:
+        raise AppError("No verification video found for this user.", status_code=404)
+    return profile.user_video, profile.user_video_content_type or "video/webm"
+

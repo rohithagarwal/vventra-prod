@@ -1,7 +1,7 @@
 import uuid
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, File, UploadFile
+from fastapi import APIRouter, Depends, File, Response, UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.v1.deps import CurrentUser, get_db
@@ -117,5 +117,39 @@ async def update_video_status(
     """Reviewer updates video verification status to 'Success', 'Invalid', or 'False'."""
     return await verification_service.update_video_verification_status(
         db, target_user_id=target_user_id, status=body.status
+    )
+
+@router.get("/video")
+@router.get("/video/stream")
+async def stream_my_verification_video(
+    user: CurrentUser,
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> Response:
+    """Streams the current user's uploaded verification video."""
+    file_bytes, content_type = await verification_service.get_verification_video_data(
+        db, target_user_id=user.id
+    )
+    return Response(
+        content=file_bytes,
+        media_type=content_type,
+        headers={"Content-Disposition": f'inline; filename="video_{user.id}.webm"'},
+    )
+
+
+@router.get("/video/{target_user_id}")
+@router.get("/video/{target_user_id}/stream")
+async def stream_target_verification_video(
+    target_user_id: uuid.UUID,
+    user: CurrentUser,
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> Response:
+    """Streams the recorded verification video for reviewer evaluation."""
+    file_bytes, content_type = await verification_service.get_verification_video_data(
+        db, target_user_id=target_user_id
+    )
+    return Response(
+        content=file_bytes,
+        media_type=content_type,
+        headers={"Content-Disposition": f'inline; filename="video_{target_user_id}.webm"'},
     )
 

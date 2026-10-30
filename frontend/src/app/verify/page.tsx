@@ -711,14 +711,14 @@ function VerifyContent() {
                         <video
                           ref={videoElementRef}
                           className="vv-camera-video"
-                          autoPlay
-                          muted
+                          autoPlay={!isVideoSubmitted}
+                          muted={isVideoRecording}
                           playsInline
-                          controls={Boolean(recordedVideoUrl)}
-                          src={recordedVideoUrl ?? undefined}
-                          aria-label={recordedVideoUrl ? "Recorded verification video" : "Camera preview"}
+                          controls={Boolean(recordedVideoUrl || isVideoSubmitted)}
+                          src={recordedVideoUrl || (isVideoSubmitted ? "/api/backend/api/v1/verification/video" : undefined)}
+                          aria-label={recordedVideoUrl || isVideoSubmitted ? "Recorded verification video" : "Camera preview"}
                         />
-                        {!isVideoRecording && !recordedVideoUrl && (
+                        {!isVideoRecording && !recordedVideoUrl && !isVideoSubmitted && (
                           <div className="vv-placeholder" id="vvPlaceholder">
                             <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.3">
                               <path d="M23 7l-7 5 7 5V7z" />
