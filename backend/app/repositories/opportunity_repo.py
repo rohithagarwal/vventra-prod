@@ -24,7 +24,10 @@ class OpportunityRepo:
         query = select(Opportunity)
 
         if status and status != "all":
-            query = query.where(Opportunity.status == status)
+            if status in ("active", "available"):
+                query = query.where(Opportunity.status.in_(["active", "available"]))
+            else:
+                query = query.where(Opportunity.status == status)
 
         if sector and sector != "all":
             query = query.where(Opportunity.sector.ilike(f"%{sector}%"))

@@ -274,7 +274,7 @@ export default function ListOpportunityPage() {
           summary: deepTexts.thesis,
           problem_statement: deepTexts.problem,
           is_featured: false,
-          status: "available",
+          status: "active",
         }).catch(() => {});
       } catch {}
 
