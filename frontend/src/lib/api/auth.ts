@@ -145,10 +145,17 @@ export interface ResetPasswordPayload {
   email: string;
   new_password: string;
   code?: string;
+  token?: string;
 }
 
-export async function requestPasswordReset(payload: ForgotPasswordPayload): Promise<ApiResponse<{ message: string }>> {
-  return postAuth<{ message: string }>(
+export interface ForgotPasswordResponse {
+  message: string;
+  provider?: string;
+  dev_link?: string;
+}
+
+export async function requestPasswordReset(payload: ForgotPasswordPayload): Promise<ApiResponse<ForgotPasswordResponse>> {
+  return postAuth<ForgotPasswordResponse>(
     "/api/v1/auth/forgot-password",
     payload,
     "Could not send reset instructions. Please check your email."

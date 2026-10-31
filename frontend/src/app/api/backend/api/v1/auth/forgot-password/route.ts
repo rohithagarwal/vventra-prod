@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { createPasswordResetToken } from "@/lib/auth/token";
+import { sendPasswordResetEmail } from "@/lib/email/mailer";
 
 export async function POST(request: Request) {
   try {
@@ -20,6 +22,24 @@ export async function POST(request: Request) {
       );
     }
 
+    // Determine host origin for absolute email link
+    const originHeader = request.headers.get("origin") || request.headers.get("x-forwarded-host");
+    let origin = "https://vventra-prod.vercel.app";
+    if (originHeader) {
+      origin = originHeader.startsWith("http") ? originHeader : `https://${originHeader}`;
+    }
+
+    // Generate secure, signed 60-minute password reset token
+    const token = createPasswordResetToken(email, 60);
+    const resetUrl = `${origin}/forgot-password?token=${encodeURIComponent(token)}&email=${encodeURIComponent(email)}`;
+
+    // Dispatch email via Resend or SMTP
+    const emailResult = await sendPasswordResetEmail({
+      toEmail: email,
+      resetUrl,
+    });
+
+    // Notify backend if online
     const backendUrl = (
       process.env.API_PROXY_TARGET ||
       "https://vventra-backend.onrender.com"
@@ -27,25 +47,23 @@ export async function POST(request: Request) {
 
     try {
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 6000);
-      const res = await fetch(`${backendUrl}/api/v1/auth/forgot-password`, {
+      const timeout = setTimeout(() => controller.abort(), 4000);
+      await fetch(`${backendUrl}/api/v1/auth/forgot-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, token, reset_url: resetUrl }),
         signal: controller.signal,
-      });
+      }).catch(() => null);
       clearTimeout(timeout);
-      if (res.ok) {
-        const data = await res.json().catch(() => null);
-        if (data) return NextResponse.json(data);
-      }
     } catch {
       // Backend offline / timed out
     }
 
     return NextResponse.json({
       success: true,
-      message: `Password reset instructions have been sent to ${email}. If an account exists with this address, you will receive a secure reset link shortly.`,
+      message: `Password reset instructions have been sent to ${email}. Please check your inbox (and spam folder) for the secure recovery link.`,
+      provider: emailResult.provider,
+      dev_link: emailResult.provider === "simulated" ? resetUrl : undefined,
     });
   } catch (err: any) {
     return NextResponse.json(

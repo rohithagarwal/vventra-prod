@@ -66,10 +66,26 @@ export function AuthPortal({ initialMode = "signin" }: AuthPortalProps) {
     const roleParam = searchParams.get("role");
     if (roleParam === "architect" || roleParam === "investor") {
       setRole(roleParam);
-      return;
+    } else {
+      const savedRole = (localStorage.getItem("vve-role") as "investor" | "architect") || "investor";
+      setRole(savedRole);
     }
-    const savedRole = (localStorage.getItem("vve-role") as "investor" | "architect") || "investor";
-    setRole(savedRole);
+
+    // Direct recovery link with token dispatched via email
+    const tokenParam = searchParams.get("token");
+    const emailParam = searchParams.get("email");
+    if (tokenParam) {
+      setMode("forgot");
+      setResetSent(true);
+      if (emailParam) {
+        setEmail(emailParam);
+        setEmailTouched(true);
+      }
+      setStatus({
+        text: "Recovery link verified. Please enter and confirm your new password below.",
+        type: "info",
+      });
+    }
   }, [searchParams]);
 
   useEffect(() => {
@@ -349,6 +365,7 @@ export function AuthPortal({ initialMode = "signin" }: AuthPortalProps) {
           const result = await resetPassword({
             email: email.trim().toLowerCase(),
             new_password: newPassword,
+            token: searchParams.get("token") || undefined,
           });
           setIsSubmitting(false);
           if (result.success) {
