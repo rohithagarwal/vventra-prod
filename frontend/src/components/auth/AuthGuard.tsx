@@ -5,7 +5,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 
 // Routes accessible to unauthenticated visitors
-const PUBLIC_AUTH_PATHS = ["/login", "/register", "/signup"];
+const PUBLIC_AUTH_PATHS = ["/login", "/register", "/signup", "/forgot-password"];
 
 // Routes accessible during registration/onboarding flow
 const ONBOARDING_PATHS = ["/onboarding", "/verify"];

@@ -137,6 +137,32 @@ export async function authenticateWithGoogle(payload: GoogleAuthPayload): Promis
   return result;
 }
 
+export interface ForgotPasswordPayload {
+  email: string;
+}
+
+export interface ResetPasswordPayload {
+  email: string;
+  new_password: string;
+  code?: string;
+}
+
+export async function requestPasswordReset(payload: ForgotPasswordPayload): Promise<ApiResponse<{ message: string }>> {
+  return postAuth<{ message: string }>(
+    "/api/v1/auth/forgot-password",
+    payload,
+    "Could not send reset instructions. Please check your email."
+  );
+}
+
+export async function resetPassword(payload: ResetPasswordPayload): Promise<ApiResponse<{ message: string }>> {
+  return postAuth<{ message: string }>(
+    "/api/v1/auth/reset-password",
+    payload,
+    "Could not reset password. Please check your details."
+  );
+}
+
 /** Returns the authenticated user's backend-authoritative role and account status. */
 export async function getCurrentUser(): Promise<CurrentUserInfo> {
   const response = await fetchWithAuth("/api/v1/users/me", { method: "GET", headers: { Accept: "application/json" } });
