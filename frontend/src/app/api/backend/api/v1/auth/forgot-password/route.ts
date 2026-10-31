@@ -22,10 +22,12 @@ export async function POST(request: Request) {
       );
     }
 
-    // Determine host origin for absolute email link
+    // Determine host origin for absolute email link.
+    // Prefer production domain (or NEXT_PUBLIC_APP_URL) so emails can be opened on mobile devices & external clients.
+    const configuredUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL;
+    let origin = configuredUrl || "https://vventra-prod.vercel.app";
     const originHeader = request.headers.get("origin") || request.headers.get("x-forwarded-host");
-    let origin = "https://vventra-prod.vercel.app";
-    if (originHeader) {
+    if (originHeader && !originHeader.includes("localhost") && !originHeader.includes("127.0.0.1")) {
       origin = originHeader.startsWith("http") ? originHeader : `https://${originHeader}`;
     }
 
