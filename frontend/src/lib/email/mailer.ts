@@ -123,7 +123,7 @@ export async function sendPasswordResetEmail({
   toEmail,
   resetUrl,
 }: SendResetEmailOptions): Promise<SendResetEmailResult> {
-  const fromAddress = process.env.EMAIL_FROM || "vvEntra Security <security@vventra.com>";
+  const fromAddress = process.env.EMAIL_FROM || "vvEntra Security <onboarding@resend.dev>";
   const html = buildHtmlTemplate(toEmail, resetUrl);
   const text = `Reset your vvEntra password\n\nWe received a request to reset your password for ${toEmail}.\n\nClick the link below to set a new password:\n${resetUrl}\n\nThis link is valid for 60 minutes.\n\nIf you did not request this reset, you can safely ignore this email.`;
 
