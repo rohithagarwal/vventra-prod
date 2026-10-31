@@ -482,11 +482,16 @@ html[data-theme="dark"] .brand-logo-dark {
   --role-ghost: rgba(226,87,27,.10);
   min-height: 100vh;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: clamp(5rem, 8vw, 7rem) 0 clamp(2rem, 5vw, 4rem);
+  justify-content: flex-start;
+  padding-top: calc(76px + 2.5rem);
+  padding-bottom: clamp(2rem, 5vw, 4rem);
+  padding-left: clamp(1rem, 3vw, 2rem);
+  padding-right: clamp(1rem, 3vw, 2rem);
   background: radial-gradient(circle at 88% 7%, var(--role-ghost), transparent 28%), var(--bg);
   transition: background .28s var(--ease);
+  box-sizing: border-box;
 }
 
 .login-page[data-login-role="architect"] {
@@ -591,7 +596,7 @@ html[data-theme="dark"] .brand-logo-dark {
 }
 
 .login-card {
-  padding: clamp(2rem, 5vw, 4.5rem);
+  padding: clamp(1.75rem, 3.5vw, 3rem);
 }
 
 .login-card-head {

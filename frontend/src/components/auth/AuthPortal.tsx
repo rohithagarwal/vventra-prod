@@ -501,9 +501,19 @@ export function AuthPortal({ initialMode = "signin" }: AuthPortalProps) {
           {/* ================= LEFT COLUMN: INTRO ================= */}
           <section className="login-intro">
             <div>
-              <span className="login-kicker">Member access</span>
+              <span className="login-kicker">
+                {mode === "forgot" ? "Account recovery" : "Member access"}
+              </span>
               <h1>
-                Enter the <em>right</em> side of vvEntra.
+                {mode === "forgot" ? (
+                  <>
+                    Secure <em>access</em> recovery.
+                  </>
+                ) : (
+                  <>
+                    Enter the <em>right</em> side of vvEntra.
+                  </>
+                )}
               </h1>
               <p className="login-copy" id="loginIntroCopy">
                 {mode === "signup"
@@ -519,18 +529,37 @@ export function AuthPortal({ initialMode = "signin" }: AuthPortalProps) {
             </div>
 
             <div className="login-trust-list">
-              <div className="login-trust-item">
-                <span className="login-trust-icon">✓</span>
-                <span>Every member is reviewed before their access is activated.</span>
-              </div>
-              <div className="login-trust-item">
-                <span className="login-trust-icon">✓</span>
-                <span>Your role keeps investor and opportunity-creator tools separate.</span>
-              </div>
-              <div className="login-trust-item">
-                <span className="login-trust-icon">✓</span>
-                <span>Private information is only visible to approved members.</span>
-              </div>
+              {mode === "forgot" ? (
+                <>
+                  <div className="login-trust-item">
+                    <span className="login-trust-icon">✓</span>
+                    <span>Password reset tokens expire securely after 60 minutes.</span>
+                  </div>
+                  <div className="login-trust-item">
+                    <span className="login-trust-icon">✓</span>
+                    <span>End-to-end encrypted session and credential transfer.</span>
+                  </div>
+                  <div className="login-trust-item">
+                    <span className="login-trust-icon">✓</span>
+                    <span>Your private deal activity and data remain fully protected.</span>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="login-trust-item">
+                    <span className="login-trust-icon">✓</span>
+                    <span>Every member is reviewed before their access is activated.</span>
+                  </div>
+                  <div className="login-trust-item">
+                    <span className="login-trust-icon">✓</span>
+                    <span>Your role keeps investor and opportunity-creator tools separate.</span>
+                  </div>
+                  <div className="login-trust-item">
+                    <span className="login-trust-icon">✓</span>
+                    <span>Private information is only visible to approved members.</span>
+                  </div>
+                </>
+              )}
             </div>
           </section>
 
@@ -558,7 +587,7 @@ export function AuthPortal({ initialMode = "signin" }: AuthPortalProps) {
             </div>
 
             {/* Active Session Notice with 1-click logout button */}
-            {savedStage && savedStage !== "guest" && (
+            {savedStage && savedStage !== "guest" && mode !== "forgot" && (
               <div
                 id="loginSessionBanner"
                 style={{
@@ -606,31 +635,33 @@ export function AuthPortal({ initialMode = "signin" }: AuthPortalProps) {
             )}
 
             {/* Role Switcher Tabs */}
-            <div className="login-role-toggle" role="tablist" aria-label="Choose account type">
-              <button
-                className={`login-role-btn ${role === "investor" ? "active" : ""}`}
-                type="button"
-                data-login-role="investor"
-                role="tab"
-                aria-selected={role === "investor"}
-                onClick={() => handleRoleToggle("investor")}
-              >
-                <span className="login-role-name">Investor / Buyer</span>
-                <span className="login-role-note">Review opportunities and access requests</span>
-              </button>
+            {mode !== "forgot" && (
+              <div className="login-role-toggle" role="tablist" aria-label="Choose account type">
+                <button
+                  className={`login-role-btn ${role === "investor" ? "active" : ""}`}
+                  type="button"
+                  data-login-role="investor"
+                  role="tab"
+                  aria-selected={role === "investor"}
+                  onClick={() => handleRoleToggle("investor")}
+                >
+                  <span className="login-role-name">Investor / Buyer</span>
+                  <span className="login-role-note">Review opportunities and access requests</span>
+                </button>
 
-              <button
-                className={`login-role-btn ${role === "architect" ? "active" : ""}`}
-                type="button"
-                data-login-role="architect"
-                role="tab"
-                aria-selected={role === "architect"}
-                onClick={() => handleRoleToggle("architect")}
-              >
-                <span className="login-role-name">Architect / Creator</span>
-                <span className="login-role-note">Create and manage opportunities</span>
-              </button>
-            </div>
+                <button
+                  className={`login-role-btn ${role === "architect" ? "active" : ""}`}
+                  type="button"
+                  data-login-role="architect"
+                  role="tab"
+                  aria-selected={role === "architect"}
+                  onClick={() => handleRoleToggle("architect")}
+                >
+                  <span className="login-role-name">Architect / Creator</span>
+                  <span className="login-role-note">Create and manage opportunities</span>
+                </button>
+              </div>
+            )}
 
             {mode !== "forgot" && (
               <>
