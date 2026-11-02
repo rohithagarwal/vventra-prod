@@ -19,6 +19,9 @@ export interface OpportunityItem {
   submittedAt?: string;
   thesis?: string;
   problem?: string;
+  thesisSummary?: string;
+  problemSummary?: string;
+  aiSummaries?: Record<string, string>;
   geography?: string;
   monetisation?: string;
   docs?: string[];
@@ -39,6 +42,65 @@ export interface LiveMarketStats {
 
 const STORAGE_KEY = "vve-opportunities";
 const COMPOSED_KEY = "vve-composed-listing";
+const UNLOCKED_KEY = "vve-unlocked-opps";
+
+export function simulateSummary(fieldLabel: string, text: string): string {
+  if (!text || !text.trim()) return "Proprietary architectural details available upon unlocking the confidential dossier.";
+  const clean = text.replace(/\s+/g, " ").trim();
+  const sentences = clean.split(/(?<=[.!?])\s+/).map((s) => s.trim()).filter(Boolean);
+  const wordCount = clean.split(/\s+/).length;
+
+  const dataRe = /(\$[\d,.]+\s?[KMB]?|\b\d+[\d,.]*\s?%|\b\d+[\d,.]*\s?(x|months?|days?|weeks?|years?|hours?)\b|\b\d{2,}[\d,.]*\b)/i;
+  const signalRe = /\b(market|customers?|segment|target|revenue|margin|pricing|charge|cost|save|reduce|grow|demand|competitor|incumbent|because|driver|trend|why now|moat|defensible|retention|churn|acquisition)\b/i;
+
+  const dataSentences = sentences.filter((s) => dataRe.test(s));
+  const signalSentences = sentences.filter((s) => signalRe.test(s) && !dataRe.test(s));
+
+  const trim = (s: string, max = 80) => (s.length <= max ? s : s.slice(0, max).replace(/\s+\S*$/, "") + "…");
+
+  const points: string[] = [];
+  dataSentences.slice(0, 2).forEach((s) => points.push(trim(s)));
+  if (points.length < 2) {
+    signalSentences.slice(0, 2 - points.length).forEach((s) => points.push(trim(s)));
+  }
+
+  const depthNote =
+    wordCount > 200 ? "The full write-up runs deep" :
+    wordCount > 80 ? "The full write-up is detailed" :
+    "The full architectural write-up continues";
+
+  let out = `Executive focus: Strategic venture analysis addressing commercial opportunity and target deployment.\n\n`;
+  if (points.length) {
+    out += "Public highlights:\n" + points.map((p) => "• " + p).join("\n") + "\n\n";
+  }
+  out += depthNote + ", including proprietary metrics, customer diligence, and full data models, in the locked confidential section.";
+  return out.trim();
+}
+
+export function getUnlockedOpportunities(): string[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem(UNLOCKED_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+export function unlockOpportunity(oppId: string): void {
+  if (typeof window === "undefined" || !oppId) return;
+  try {
+    const current = getUnlockedOpportunities();
+    if (!current.includes(oppId)) {
+      current.push(oppId);
+      localStorage.setItem(UNLOCKED_KEY, JSON.stringify(current));
+      window.dispatchEvent(new CustomEvent("vve-opportunity-unlocked", { detail: { id: oppId } }));
+      window.dispatchEvent(new Event("storage"));
+    }
+  } catch {}
+}
 
 export function getStoredOpportunities(): OpportunityItem[] {
   if (typeof window === "undefined") return [];
@@ -168,6 +230,8 @@ export async function syncOpportunitiesWithBackend(): Promise<OpportunityItem[]>
             unlockPrice: b.unlock_fee ? `$${b.unlock_fee.toLocaleString()}` : "$450",
             thesis: b.summary,
             problem: b.problem_statement,
+            thesisSummary: simulateSummary("Investment thesis", b.summary || ""),
+            problemSummary: simulateSummary("The problem", b.problem_statement || ""),
           }));
 
         // Keep local listings composed in the current session ONLY if they are available

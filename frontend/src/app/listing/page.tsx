@@ -5,7 +5,13 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
-import { getStoredOpportunities, OpportunityItem } from "@/lib/storage/opportunities";
+import {
+  getStoredOpportunities,
+  getUnlockedOpportunities,
+  unlockOpportunity,
+  simulateSummary,
+  OpportunityItem,
+} from "@/lib/storage/opportunities";
 
 function ListingDetailContent() {
   const searchParams = useSearchParams();
@@ -34,6 +40,40 @@ function ListingDetailContent() {
     }
     return found;
   }, [idParam, isClient]);
+
+  // Sync unlock state with persistent store
+  useEffect(() => {
+    if (typeof window !== "undefined" && opp?.id) {
+      const unlockedList = getUnlockedOpportunities();
+      if (unlockedList.includes(opp.id)) {
+        setUnlocked(true);
+      }
+    }
+  }, [opp?.id]);
+
+  const handleUnlock = () => {
+    if (!opp) return;
+    setUnlocked(true);
+    unlockOpportunity(opp.id);
+  };
+
+  const thesisSummary = useMemo(() => {
+    if (!opp) return "";
+    return (
+      opp.thesisSummary ||
+      opp.aiSummaries?.thesis ||
+      simulateSummary("Investment thesis", opp.thesis || "")
+    );
+  }, [opp]);
+
+  const problemSummary = useMemo(() => {
+    if (!opp) return "";
+    return (
+      opp.problemSummary ||
+      opp.aiSummaries?.problem ||
+      simulateSummary("The problem", opp.problem || "")
+    );
+  }, [opp]);
 
   // When still hydrating on client and idParam is present, render clean loader
   if (!isClient && idParam) {
@@ -122,17 +162,133 @@ function ListingDetailContent() {
               </div>
             </div>
 
+            {/* INVESTMENT THESIS */}
             <section style={{ marginBottom: "2.5rem" }}>
-              <h2 style={{ fontSize: "1.2rem", marginBottom: "0.75rem" }}>Investment Thesis</h2>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.75rem", flexWrap: "wrap", gap: "0.5rem" }}>
+                <h2 style={{ fontSize: "1.2rem", margin: 0 }}>Investment Thesis</h2>
+                <span
+                  style={{
+                    fontSize: "0.75rem",
+                    padding: "0.2rem 0.55rem",
+                    borderRadius: "4px",
+                    background: unlocked ? "rgba(22, 163, 74, 0.1)" : "rgba(245, 158, 11, 0.12)",
+                    color: unlocked ? "var(--green)" : "#d97706",
+                    fontWeight: 600,
+                  }}
+                >
+                  {unlocked ? "✓ Unlocked · Full Specification" : "Public AI Summary · Full Text Locked"}
+                </span>
+              </div>
+
               <div style={{ padding: "1.25rem", background: "var(--bg-paper)", borderRadius: "8px", border: "1px solid var(--line)", lineHeight: 1.6 }}>
-                {opp.thesis || "High margin whitespace with enterprise demand and pilot validations ready to deploy."}
+                {unlocked ? (
+                  <div style={{ whiteSpace: "pre-line", fontSize: "0.95rem", color: "var(--text)" }}>
+                    {opp.thesis || "High margin whitespace with enterprise demand and pilot validations ready to deploy."}
+                  </div>
+                ) : (
+                  <div>
+                    <div style={{ fontSize: "0.92rem", color: "var(--text)", lineHeight: 1.6 }}>
+                      {thesisSummary.split("\n").filter(Boolean).map((line, idx) =>
+                        line.trim().startsWith("•") ? (
+                          <div key={idx} style={{ paddingLeft: "1rem", margin: "0.25rem 0", color: "var(--text)" }}>
+                            {line}
+                          </div>
+                        ) : (
+                          <p key={idx} style={{ margin: "0.35rem 0" }}>{line}</p>
+                        )
+                      )}
+                    </div>
+
+                    <div style={{ marginTop: "1.25rem", paddingTop: "1rem", borderTop: "1px dashed var(--line)" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", fontSize: "0.75rem", textTransform: "uppercase", color: "var(--role)", fontWeight: 600, marginBottom: "0.4rem" }}>
+                        <span>Architect&apos;s Full Write-up</span>
+                        <span>•</span>
+                        <span>Confidential (Locked)</span>
+                      </div>
+                      <div style={{ position: "relative", overflow: "hidden", borderRadius: "6px", background: "rgba(0,0,0,0.03)", padding: "1rem" }}>
+                        <div style={{ filter: "blur(5px)", userSelect: "none", pointerEvents: "none", color: "var(--text-muted)", fontSize: "0.88rem", lineHeight: 1.6 }}>
+                          Proprietary architectural operational framework, unit economics, defensible IP boundaries, validation datasets, and confidential roadmap specifications remain locked behind the investor unlock fee. Complete architectural documentation, code schemas, and financial sensitivities unlock immediately upon access authorization.
+                        </div>
+                        <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(255, 255, 255, 0.45)" }}>
+                          <button
+                            type="button"
+                            className="btn btn-outline"
+                            id="unlockThesisBtn"
+                            style={{ fontSize: "0.8rem", padding: "0.4rem 0.85rem", background: "var(--bg-paper)", boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}
+                            onClick={handleUnlock}
+                          >
+                            🔒 Unlock full thesis ({opp.unlockPrice})
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </section>
 
+            {/* THE PROBLEM */}
             <section style={{ marginBottom: "2.5rem" }}>
-              <h2 style={{ fontSize: "1.2rem", marginBottom: "0.75rem" }}>The Problem</h2>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.75rem", flexWrap: "wrap", gap: "0.5rem" }}>
+                <h2 style={{ fontSize: "1.2rem", margin: 0 }}>The Problem</h2>
+                <span
+                  style={{
+                    fontSize: "0.75rem",
+                    padding: "0.2rem 0.55rem",
+                    borderRadius: "4px",
+                    background: unlocked ? "rgba(22, 163, 74, 0.1)" : "rgba(245, 158, 11, 0.12)",
+                    color: unlocked ? "var(--green)" : "#d97706",
+                    fontWeight: 600,
+                  }}
+                >
+                  {unlocked ? "✓ Unlocked · Full Specification" : "Public AI Summary · Full Text Locked"}
+                </span>
+              </div>
+
               <div style={{ padding: "1.25rem", background: "var(--bg-paper)", borderRadius: "8px", border: "1px solid var(--line)", lineHeight: 1.6 }}>
-                {opp.problem || "Inefficient manual processes costing businesses substantial time and operational overhead."}
+                {unlocked ? (
+                  <div style={{ whiteSpace: "pre-line", fontSize: "0.95rem", color: "var(--text)" }}>
+                    {opp.problem || "Inefficient manual processes costing businesses substantial time and operational overhead."}
+                  </div>
+                ) : (
+                  <div>
+                    <div style={{ fontSize: "0.92rem", color: "var(--text)", lineHeight: 1.6 }}>
+                      {problemSummary.split("\n").filter(Boolean).map((line, idx) =>
+                        line.trim().startsWith("•") ? (
+                          <div key={idx} style={{ paddingLeft: "1rem", margin: "0.25rem 0", color: "var(--text)" }}>
+                            {line}
+                          </div>
+                        ) : (
+                          <p key={idx} style={{ margin: "0.35rem 0" }}>{line}</p>
+                        )
+                      )}
+                    </div>
+
+                    <div style={{ marginTop: "1.25rem", paddingTop: "1rem", borderTop: "1px dashed var(--line)" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", fontSize: "0.75rem", textTransform: "uppercase", color: "var(--role)", fontWeight: 600, marginBottom: "0.4rem" }}>
+                        <span>Architect&apos;s Full Write-up</span>
+                        <span>•</span>
+                        <span>Confidential (Locked)</span>
+                      </div>
+                      <div style={{ position: "relative", overflow: "hidden", borderRadius: "6px", background: "rgba(0,0,0,0.03)", padding: "1rem" }}>
+                        <div style={{ filter: "blur(5px)", userSelect: "none", pointerEvents: "none", color: "var(--text-muted)", fontSize: "0.88rem", lineHeight: 1.6 }}>
+                          Detailed root-cause analysis, workflow friction breakdowns, operational bottleneck figures, customer interview transcripts, and legacy software limitations remain locked behind the unlock fee. Complete architectural problem dossier and cost model unlock immediately upon access authorization.
+                        </div>
+                        <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(255, 255, 255, 0.45)" }}>
+                          <button
+                            type="button"
+                            className="btn btn-outline"
+                            id="unlockProblemBtn"
+                            style={{ fontSize: "0.8rem", padding: "0.4rem 0.85rem", background: "var(--bg-paper)", boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}
+                            onClick={handleUnlock}
+                          >
+                            🔒 Unlock full problem ({opp.unlockPrice})
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </section>
           </div>
@@ -151,10 +307,11 @@ function ListingDetailContent() {
             <button
               type="button"
               className="btn btn-primary"
+              id="sidebarUnlockBtn"
               style={{ width: "100%", justifyContent: "center" }}
-              onClick={() => setUnlocked(true)}
+              onClick={handleUnlock}
             >
-              {unlocked ? "Unlocked · Access Granted" : `Unlock dossier (${opp.unlockPrice})`}
+              {unlocked ? "✓ Unlocked · Access Granted" : `Unlock dossier (${opp.unlockPrice})`}
             </button>
 
             {unlocked && (
