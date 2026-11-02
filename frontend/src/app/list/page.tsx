@@ -135,12 +135,17 @@ export default function ListOpportunityPage() {
   const [aiEdited, setAiEdited] = useState<Record<string, boolean>>({});
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [userRole, setUserRole] = useState<string>("investor");
+  const [isVerified, setIsVerified] = useState<boolean>(false);
 
   // Authentication Route Guard
   useEffect(() => {
     const stage = localStorage.getItem("vve-stage") || "guest";
     const token = localStorage.getItem("vve-access-token");
     const user = localStorage.getItem("vve-user");
+    const role = localStorage.getItem("vve-role") || "investor";
+    setUserRole(role);
+    setIsVerified(stage === "verified");
     const isAuth = stage === "applied" || stage === "verified" || Boolean(token || user);
 
     if (!isAuth) {
@@ -239,20 +244,30 @@ export default function ListOpportunityPage() {
         ? "ecommerce"
         : "saas";
 
+      const isUserVerified = typeof window !== "undefined" && localStorage.getItem("vve-stage") === "verified";
+      const currentRole = typeof window !== "undefined" ? localStorage.getItem("vve-role") || "investor" : "investor";
+      const isArchitectVerified = isUserVerified && currentRole === "architect";
+
       const oppId = "opp-" + Date.now();
       const newOpp: OpportunityItem = {
         id: oppId,
         industry,
         stage,
         stageLabel: formData.stage || "Validated Concept",
-        status: "available",
-        statusLabel: "Available",
+        status: "review",
+        statusLabel: "In Review",
         tags: tagList.length > 0 ? tagList : ["B2B SaaS", "Automation"],
         title: formData.title,
         hook: formData.hook,
         capital: formData.capital || "$50k - $100k",
         timeToLaunch: formData.timeline || "30 days",
-        trustScore: 94,
+        trustScore: 0,
+        architectVerified: isArchitectVerified,
+        architectName: isArchitectVerified
+          ? "Verified Architect"
+          : currentRole === "architect"
+          ? "Pending Verification"
+          : "Unverified Investor",
         listedDaysAgo: 0,
         priceNum: numericPrice,
         unlockPrice: unlockFee || "$450",
@@ -278,7 +293,8 @@ export default function ListOpportunityPage() {
           summary: deepTexts.thesis,
           problem_statement: deepTexts.problem,
           is_featured: false,
-          status: "active",
+          status: "pending_review",
+          readiness_score: 0,
         }).catch(() => {});
       } catch {}
 
@@ -341,6 +357,46 @@ export default function ListOpportunityPage() {
             </div>
           </div>
         </header>
+
+        {/* UNVERIFIED NOTICE */}
+        {(!isVerified || userRole !== "architect") && (
+          <div className="container-wide" style={{ marginBottom: "1.75rem" }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: "1rem",
+                padding: "1rem 1.25rem",
+                borderRadius: "8px",
+                background: "rgba(245, 158, 11, 0.08)",
+                border: "1px solid rgba(245, 158, 11, 0.3)",
+                fontSize: "0.88rem",
+                color: "var(--text)",
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+                <span style={{ color: "#d97706", display: "flex", flexShrink: 0 }}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="12" y1="8" x2="12" y2="12" />
+                    <line x1="12" y1="16" x2="12.01" y2="16" />
+                  </svg>
+                </span>
+                <span>
+                  <strong>Architect Verification Required:</strong> Your submission will enter our review queue with status <em>In Review</em>. All marketplace listings require verified architect standing (LinkedIn + live check) before publication to buyers.
+                </span>
+              </div>
+              <Link
+                href="/verify"
+                className="btn btn-primary"
+                style={{ fontSize: "0.8rem", padding: "0.45rem 0.9rem", whiteSpace: "nowrap" }}
+              >
+                Verify Identity →
+              </Link>
+            </div>
+          </div>
+        )}
 
         {/* ================= SPLIT COMPOSER & PREVIEW ================= */}
         <div className="container-wide list-split">
@@ -725,10 +781,71 @@ export default function ListOpportunityPage() {
                 </svg>
               </div>
               <h2 className="lsub-title">Listing submitted for review</h2>
+              <div
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "0.6rem",
+                  padding: "0.35rem 0.85rem",
+                  borderRadius: "999px",
+                  background: "rgba(245, 158, 11, 0.12)",
+                  color: "#d97706",
+                  fontSize: "0.85rem",
+                  fontWeight: 600,
+                  margin: "0.5rem auto 1rem",
+                }}
+              >
+                <span>Status: In Review</span>
+                <span>•</span>
+                <span>Trust Score: Pending Review</span>
+              </div>
               <p className="lsub-desc">
                 Your opportunity has entered vvEntra’s review queue. We verify documentation depth, check for duplicates, and confirm your architect standing before it goes live. This usually takes 2 to 3 working days.
               </p>
-              <p className="lsuccess-prompt">Want to see how a buyer will experience your listing right now?</p>
+
+              {(!isVerified || userRole !== "architect") && (
+                <div
+                  style={{
+                    margin: "1.5rem auto",
+                    maxWidth: "500px",
+                    padding: "1.25rem",
+                    borderRadius: "8px",
+                    background: "rgba(245, 158, 11, 0.08)",
+                    border: "1px solid rgba(245, 158, 11, 0.3)",
+                    textAlign: "left",
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "0.5rem",
+                      fontWeight: 600,
+                      color: "#b45309",
+                      marginBottom: "0.35rem",
+                    }}
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <circle cx="12" cy="12" r="10" />
+                      <line x1="12" y1="8" x2="12" y2="12" />
+                      <line x1="12" y1="16" x2="12.01" y2="16" />
+                    </svg>
+                    Identity Verification Required
+                  </div>
+                  <p style={{ fontSize: "0.88rem", color: "var(--text-muted)", margin: "0 0 1rem", lineHeight: 1.5 }}>
+                    Your account is currently <strong>Unverified</strong>. All marketplace listings require architect identity verification (LinkedIn + live check) before they can be approved and published to capital partners.
+                  </p>
+                  <Link
+                    href="/verify"
+                    className="btn btn-primary"
+                    style={{ display: "inline-flex", fontSize: "0.85rem", padding: "0.5rem 1rem" }}
+                  >
+                    Complete Identity Verification →
+                  </Link>
+                </div>
+              )}
+
+              <p className="lsuccess-prompt">Want to see how your submission will appear in the marketplace once approved?</p>
               <div className="lsub-actions">
                 <Link href="/dashboard" className="lsub-btn-primary" id="lsubPreviewBtn">
                   Market Dashboard →

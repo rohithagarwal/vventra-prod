@@ -14,6 +14,8 @@ export interface OpportunityItem {
   listedDaysAgo: number;
   priceNum: number;
   unlockPrice: string;
+  architectVerified?: boolean;
+  architectName?: string;
   submittedAt?: string;
   thesis?: string;
   problem?: string;
@@ -44,19 +46,38 @@ export function getStoredOpportunities(): OpportunityItem[] {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return [];
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
+    if (!Array.isArray(parsed)) return [];
+    // Only available/approved opportunities should appear in the public marketplace
+    return parsed.filter((item: OpportunityItem) => item && (item.status === "available" || item.status === undefined));
   } catch {
     return [];
+  }
+}
+
+export function getComposedOpportunity(): OpportunityItem | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem(COMPOSED_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch {
+    return null;
   }
 }
 
 export function saveNewOpportunity(opp: OpportunityItem): OpportunityItem[] {
   if (typeof window === "undefined") return [opp];
   try {
-    const current = getStoredOpportunities();
-    const updated = [opp, ...current.filter((item) => item.id !== opp.id)];
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    // Save composer snapshot for the current user
     localStorage.setItem(COMPOSED_KEY, JSON.stringify(opp));
+
+    // Only add to public marketplace listings cache if approved/available
+    const current = getStoredOpportunities();
+    let updated = current;
+    if (opp.status === "available") {
+      updated = [opp, ...current.filter((item) => item.id !== opp.id)];
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    }
     
     // Dispatch events for immediate live stats update in current tab and across tabs
     window.dispatchEvent(new CustomEvent("vve-opportunity-listed", { detail: opp }));
@@ -79,7 +100,8 @@ export function clearAllOpportunities(): void {
 }
 
 export function calculateLiveStats(opportunities: OpportunityItem[]): LiveMarketStats {
-  const count = opportunities.length;
+  const activeOpportunities = opportunities.filter((o) => !o.status || o.status === "available");
+  const count = activeOpportunities.length;
   if (count === 0) {
     return {
       totalListings: 0,
@@ -95,7 +117,7 @@ export function calculateLiveStats(opportunities: OpportunityItem[]): LiveMarket
     };
   }
 
-  const totalUnlock = opportunities.reduce(
+  const totalUnlock = activeOpportunities.reduce(
     (acc, curr) => acc + (curr.priceNum ? Math.max(450, Math.round(curr.priceNum * 0.015)) : 450),
     0
   );
@@ -123,27 +145,32 @@ export async function syncOpportunitiesWithBackend(): Promise<OpportunityItem[]>
     if (res && res.ok) {
       const data = await res.json().catch(() => null);
       if (data && Array.isArray(data.items)) {
-        const backendItems: OpportunityItem[] = data.items.map((b: any) => ({
-          id: b.id,
-          industry: b.sector || "saas",
-          stage: "validated",
-          stageLabel: b.category || "Validated Concept",
-          status: "available",
-          statusLabel: "Available",
-          tags: [b.sector?.toUpperCase() || "B2B SAAS", "Verified"],
-          title: b.title,
-          hook: b.headline || b.summary || "",
-          capital: b.deal_size ? `$${b.deal_size.toLocaleString()}` : "$50,000",
-          timeToLaunch: b.timeline || "30 days",
-          trustScore: b.readiness_score || 94,
-          listedDaysAgo: 0,
-          priceNum: b.deal_size || 50000,
-          unlockPrice: b.unlock_fee ? `$${b.unlock_fee.toLocaleString()}` : "$450",
-          thesis: b.summary,
-          problem: b.problem_statement,
-        }));
+        // Only active/available opportunities belong in the public marketplace
+        const backendItems: OpportunityItem[] = data.items
+          .filter((b: any) => b.status === "active" || b.status === "available")
+          .map((b: any) => ({
+            id: b.id,
+            industry: b.sector || "saas",
+            stage: "validated",
+            stageLabel: b.category || "Validated Concept",
+            status: "available" as const,
+            statusLabel: "Available",
+            tags: [b.sector?.toUpperCase() || "B2B SAAS", "Verified"],
+            title: b.title,
+            hook: b.headline || b.summary || "",
+            capital: b.deal_size ? `$${b.deal_size.toLocaleString()}` : "$50,000",
+            timeToLaunch: b.timeline || "30 days",
+            trustScore: b.readiness_score || 0,
+            architectVerified: (b.readiness_score || 0) >= 80,
+            architectName: (b.readiness_score || 0) >= 80 ? "Verified Architect" : "Pending Verification",
+            listedDaysAgo: 0,
+            priceNum: b.deal_size || 50000,
+            unlockPrice: b.unlock_fee ? `$${b.unlock_fee.toLocaleString()}` : "$450",
+            thesis: b.summary,
+            problem: b.problem_statement,
+          }));
 
-        // Keep local listings composed in the current session
+        // Keep local listings composed in the current session ONLY if they are available
         const composedRaw = localStorage.getItem(COMPOSED_KEY);
         let locallyComposed: OpportunityItem | null = null;
         if (composedRaw) {
@@ -153,7 +180,11 @@ export async function syncOpportunitiesWithBackend(): Promise<OpportunityItem[]>
         }
 
         const merged: OpportunityItem[] = [...backendItems];
-        if (locallyComposed && !merged.some((i) => i.id === locallyComposed?.id)) {
+        if (
+          locallyComposed &&
+          locallyComposed.status === "available" &&
+          !merged.some((i) => i.id === locallyComposed?.id)
+        ) {
           merged.unshift(locallyComposed);
         }
 

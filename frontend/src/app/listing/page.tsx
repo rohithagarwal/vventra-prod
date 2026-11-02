@@ -20,7 +20,19 @@ function ListingDetailContent() {
   const opp = useMemo(() => {
     if (typeof window === "undefined" || !idParam) return null;
     const all = getStoredOpportunities();
-    return all.find((item) => item.id === idParam) || null;
+    let found = all.find((item) => item.id === idParam) || null;
+    if (!found) {
+      try {
+        const composedRaw = localStorage.getItem("vve-composed-listing");
+        if (composedRaw) {
+          const parsed = JSON.parse(composedRaw);
+          if (parsed && parsed.id === idParam) {
+            found = parsed;
+          }
+        }
+      } catch {}
+    }
+    return found;
   }, [idParam, isClient]);
 
   // When still hydrating on client and idParam is present, render clean loader
@@ -67,7 +79,16 @@ function ListingDetailContent() {
               <span className={`opp-stage ${opp.stage}`} style={{ fontSize: "0.75rem", padding: "0.2rem 0.6rem", borderRadius: "4px", background: "var(--role-ghost)", color: "var(--role)" }}>
                 {opp.stageLabel}
               </span>
-              <span style={{ fontSize: "0.75rem", padding: "0.2rem 0.6rem", borderRadius: "4px", background: "rgba(22, 163, 74, 0.1)", color: "var(--green)" }}>
+              <span
+                style={{
+                  fontSize: "0.75rem",
+                  padding: "0.2rem 0.6rem",
+                  borderRadius: "4px",
+                  background: opp.status === "review" ? "rgba(245, 158, 11, 0.12)" : "rgba(22, 163, 74, 0.1)",
+                  color: opp.status === "review" ? "#d97706" : "var(--green)",
+                  fontWeight: 500,
+                }}
+              >
                 {opp.statusLabel}
               </span>
               {(opp.tags || []).map((t) => (
@@ -95,7 +116,9 @@ function ListingDetailContent() {
               </div>
               <div>
                 <span style={{ display: "block", fontSize: "0.75rem", color: "var(--text-faint)", textTransform: "uppercase" }}>Trust Score</span>
-                <span style={{ fontSize: "1.25rem", fontWeight: 600, color: "var(--green)" }}>{opp.trustScore} / 100</span>
+                <span style={{ fontSize: "1.25rem", fontWeight: 600, color: opp.trustScore && opp.trustScore > 0 ? "var(--green)" : "var(--text-muted)" }}>
+                  {opp.trustScore && opp.trustScore > 0 ? `${opp.trustScore} / 100` : "Pending Review"}
+                </span>
               </div>
             </div>
 

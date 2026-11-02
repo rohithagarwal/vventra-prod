@@ -19,14 +19,15 @@ function DashboardContent() {
 
   useEffect(() => {
     const syncOpps = () => {
-      const opps = getStoredOpportunities();
+      const opps = getStoredOpportunities().filter((o) => !o.status || o.status === "available");
       setOpportunities(opps);
       setStats(calculateLiveStats(opps));
     };
     syncOpps();
     void syncOpportunitiesWithBackend().then((opps) => {
-      setOpportunities(opps);
-      setStats(calculateLiveStats(opps));
+      const activeOpps = opps.filter((o) => !o.status || o.status === "available");
+      setOpportunities(activeOpps);
+      setStats(calculateLiveStats(activeOpps));
     });
 
     window.addEventListener("vve-opportunities-updated", syncOpps);

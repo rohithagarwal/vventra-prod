@@ -75,9 +75,11 @@ export default function BrowsePage() {
 
   const filtered = useMemo(() => {
     let result = opportunities.filter((item) => {
+      // Strictly enforce that only available listings are shown in the public marketplace
+      if (item.status && item.status !== "available") return false;
       if (activeFilter === "all") return true;
       if (activeFilter === "ai") {
-        return item.tags.some((t) => t.toLowerCase().includes("ai")) || item.industry === "ai";
+        return item.tags?.some((t) => t.toLowerCase().includes("ai")) || item.industry === "ai";
       }
       return item.industry === activeFilter;
     });
@@ -197,10 +199,14 @@ export default function BrowsePage() {
 
                 <div className="opp-card-foot">
                   <div className="opp-architect">
-                    <span className="oa-avatar">A</span>
+                    <span className="oa-avatar">{opp.architectVerified ? "A" : "?"}</span>
                     <div className="oa-info">
-                      <span className="oa-name">Verified Architect</span>
-                      <span className="oa-trust">Trust {opp.trustScore}</span>
+                      <span className="oa-name">
+                        {opp.architectName || (opp.architectVerified ? "Verified Architect" : "Pending Verification")}
+                      </span>
+                      <span className="oa-trust">
+                        {opp.trustScore && opp.trustScore > 0 ? `Trust ${opp.trustScore}` : "Trust Pending"}
+                      </span>
                     </div>
                   </div>
                   <div className="opp-price">
