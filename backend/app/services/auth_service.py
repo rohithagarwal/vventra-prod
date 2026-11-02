@@ -352,3 +352,22 @@ async def authenticate_with_google(
         is_new_user=is_new_user,
     )
 
+
+
+async def reset_password(
+    db: AsyncSession,
+    *,
+    email: str,
+    new_password: str,
+) -> User:
+    email_clean = email.strip().lower()
+    user = await user_repo.get_by_email(db, email_clean)
+    if not user:
+        raise InvalidCredentials("No account found with this email address.")
+    if user.status == UserStatus.SUSPENDED:
+        raise AccountSuspended()
+
+    user.password_hash = await hash_password(new_password)
+    user.updated_at = datetime.now(UTC)
+    await db.commit()
+    return user

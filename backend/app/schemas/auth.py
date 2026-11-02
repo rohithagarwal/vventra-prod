@@ -30,6 +30,14 @@ class LoginRequest(BaseModel):
     _normalize = field_validator("email", mode="before")(_normalize_email)
 
 
+class ResetPasswordRequest(BaseModel):
+    email: EmailStr
+    new_password: str = Field(min_length=8, max_length=128)
+    token: str | None = None
+
+    _normalize = field_validator("email", mode="before")(_normalize_email)
+
+
 class AuthResponse(BaseModel):
     access_token: str
     token_type: Literal["bearer"] = "bearer"
@@ -49,4 +57,3 @@ class GoogleAuthResponse(BaseModel):
     expires_in: int
     user: UserOut
     is_new_user: bool
-

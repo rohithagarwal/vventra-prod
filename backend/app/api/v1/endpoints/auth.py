@@ -1,3 +1,4 @@
+from typing import Any
 
 from fastapi import APIRouter, Depends, Request, Response
 
@@ -10,6 +11,7 @@ from app.schemas.auth import (
     GoogleAuthResponse,
     LoginRequest,
     RegisterRequest,
+    ResetPasswordRequest,
 )
 from app.schemas.user import UserOut
 from app.services import auth_service
@@ -66,6 +68,22 @@ async def login(
         **_client_info(request),
     )
     return _session_response(result, response)
+
+
+@router.post("/reset-password")
+async def reset_password(
+    body: ResetPasswordRequest, db: DbSession
+) -> dict[str, Any]:
+    """Updates the user's password in the PostgreSQL database with secure Argon2 hashing."""
+    user = await auth_service.reset_password(
+        db, email=body.email, new_password=body.new_password
+    )
+    return {
+        "success": True,
+        "message": "Your password has been successfully updated in the database. You can now sign in.",
+        "user_id": str(user.id),
+        "email": user.email,
+    }
 
 
 @router.post("/google", response_model=GoogleAuthResponse)

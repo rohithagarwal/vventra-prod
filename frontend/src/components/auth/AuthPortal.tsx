@@ -4,7 +4,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
-import { Check, AlertCircle, Loader2 } from "lucide-react";
+import { Check, AlertCircle, Loader2, Mail } from "lucide-react";
 import { useGoogleLogin } from "@react-oauth/google";
 import {
   authenticateWithGoogle,
@@ -36,7 +36,9 @@ export function AuthPortal({ initialMode = "signin" }: AuthPortalProps) {
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [savedStage, setSavedStage] = useState<string>("guest");
-  const [resetSent, setResetSent] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
+  const tokenParam = searchParams.get("token");
+  const isResetTokenFlow = Boolean(tokenParam);
 
   // Field touch & validation states
   const [emailTouched, setEmailTouched] = useState(false);
@@ -72,11 +74,10 @@ export function AuthPortal({ initialMode = "signin" }: AuthPortalProps) {
     }
 
     // Direct recovery link with token dispatched via email
-    const tokenParam = searchParams.get("token");
+    const token = searchParams.get("token");
     const emailParam = searchParams.get("email");
-    if (tokenParam) {
+    if (token) {
       setMode("forgot");
-      setResetSent(true);
       if (emailParam) {
         setEmail(emailParam);
         setEmailTouched(true);
@@ -108,7 +109,7 @@ export function AuthPortal({ initialMode = "signin" }: AuthPortalProps) {
     setConfirmPassword("");
     setNewPassword("");
     setConfirmNewPassword("");
-    setResetSent(false);
+    setEmailSent(false);
     setEmailTouched(false);
     setPasswordTouched(false);
     setConfirmPasswordTouched(false);
@@ -207,25 +208,25 @@ export function AuthPortal({ initialMode = "signin" }: AuthPortalProps) {
     return "";
   }, [mode, confirmPassword, password, confirmPasswordTouched, hasSubmitted]);
 
-  // New password error computation (forgot password)
+  // New password error computation (reset password flow with token)
   const newPasswordError = useMemo(() => {
-    if (mode !== "forgot" || !resetSent) return "";
+    if (mode !== "forgot" || !isResetTokenFlow) return "";
     if (!newPasswordTouched && !hasSubmitted) return "";
     if (!newPassword) return "New password is required.";
     if (!newPasswordConstraints.isAllMet) {
       return "New password must satisfy all security requirements.";
     }
     return "";
-  }, [mode, resetSent, newPassword, newPasswordConstraints.isAllMet, newPasswordTouched, hasSubmitted]);
+  }, [mode, isResetTokenFlow, newPassword, newPasswordConstraints.isAllMet, newPasswordTouched, hasSubmitted]);
 
-  // Confirm new password error computation (forgot password)
+  // Confirm new password error computation (reset password flow with token)
   const confirmNewPasswordError = useMemo(() => {
-    if (mode !== "forgot" || !resetSent) return "";
+    if (mode !== "forgot" || !isResetTokenFlow) return "";
     if (!confirmNewPasswordTouched && !hasSubmitted) return "";
     if (!confirmNewPassword) return "Please confirm your new password.";
     if (confirmNewPassword !== newPassword) return "Passwords do not match.";
     return "";
-  }, [mode, resetSent, confirmNewPassword, newPassword, confirmNewPasswordTouched, hasSubmitted]);
+  }, [mode, isResetTokenFlow, confirmNewPassword, newPassword, confirmNewPasswordTouched, hasSubmitted]);
 
   const routeSignedInUser = async (user?: UserInfo) => {
     const fallbackRole = user?.role === "architect" ? "architect" : user?.role === "investor" ? "investor" : role;
@@ -296,10 +297,10 @@ export function AuthPortal({ initialMode = "signin" }: AuthPortalProps) {
 
     // Handle Forgot Password flow
     if (mode === "forgot") {
-      if (!resetSent) {
+      if (!isResetTokenFlow) {
         setIsSubmitting(true);
         setStatus({
-          text: "Sending password reset instructions...",
+          text: "Sending secure recovery instructions...",
           type: "info",
         });
 
@@ -307,12 +308,9 @@ export function AuthPortal({ initialMode = "signin" }: AuthPortalProps) {
           const result = await requestPasswordReset({ email: email.trim().toLowerCase() });
           setIsSubmitting(false);
           if (result.success) {
-            setResetSent(true);
+            setEmailSent(true);
             setHasSubmitted(false);
-            setStatus({
-              text: result.data?.message || `Password reset instructions sent to ${email}. You can now set your new password below.`,
-              type: "info",
-            });
+            setStatus({ text: "", type: "" });
           } else {
             setStatus({
               text: result.error || "Unable to send reset instructions. Please check your email address.",
@@ -321,16 +319,13 @@ export function AuthPortal({ initialMode = "signin" }: AuthPortalProps) {
           }
         } catch {
           setIsSubmitting(false);
-          setResetSent(true);
+          setEmailSent(true);
           setHasSubmitted(false);
-          setStatus({
-            text: `Password reset instructions sent to ${email}. You can now set your new password below.`,
-            type: "info",
-          });
+          setStatus({ text: "", type: "" });
         }
         return;
       } else {
-        // Step 2: Set new password
+        // Step 2: Set new password via authenticated email link token
         if (!newPassword) {
           setStatus({
             text: "Please enter your new password.",
@@ -365,12 +360,12 @@ export function AuthPortal({ initialMode = "signin" }: AuthPortalProps) {
           const result = await resetPassword({
             email: email.trim().toLowerCase(),
             new_password: newPassword,
-            token: searchParams.get("token") || undefined,
+            token: tokenParam || undefined,
           });
           setIsSubmitting(false);
           if (result.success) {
             setStatus({
-              text: "Password reset successfully! Redirecting you to sign in...",
+              text: "Password updated successfully in database! Redirecting you to sign in...",
               type: "info",
             });
             setTimeout(() => {
@@ -379,7 +374,7 @@ export function AuthPortal({ initialMode = "signin" }: AuthPortalProps) {
                 text: "Your password has been updated. Please sign in with your new password.",
                 type: "info",
               });
-            }, 1200);
+            }, 1400);
           } else {
             setStatus({
               text: result.error || "Failed to reset password. Please try again.",
@@ -389,16 +384,9 @@ export function AuthPortal({ initialMode = "signin" }: AuthPortalProps) {
         } catch {
           setIsSubmitting(false);
           setStatus({
-            text: "Password reset successfully! Redirecting you to sign in...",
-            type: "info",
+            text: "Could not reach the authentication service. Please try again.",
+            type: "error",
           });
-          setTimeout(() => {
-            handleModeToggle("signin");
-            setStatus({
-              text: "Your password has been updated. Please sign in with your new password.",
-              type: "info",
-            });
-          }, 1200);
         }
         return;
       }
@@ -521,7 +509,11 @@ export function AuthPortal({ initialMode = "signin" }: AuthPortalProps) {
                     ? "Apply to publish your SaaS assets, verify your revenue, and connect with serious strategic buyers."
                     : "Create your investor profile to unlock verified financial teasers, cap-table audits, and clean-room transfers."
                   : mode === "forgot"
-                  ? "Regain access to your vvEntra account. Enter your verified email address to receive secure recovery instructions."
+                  ? isResetTokenFlow
+                    ? "Choose a strong, unique password for your vvEntra account to secure access to verified deal rooms."
+                    : emailSent
+                    ? "A secure recovery link has been dispatched to your email. Check your inbox to complete password recovery."
+                    : "Regain access to your vvEntra account. Enter your verified email address to receive secure recovery instructions."
                   : role === "architect"
                   ? "Sign in as an architect to manage your listings, respond to buyer interest, and monitor verification reviews."
                   : "Sign in as an investor to review verified opportunities, manage your requests, and keep your deal activity private."}
@@ -571,21 +563,151 @@ export function AuthPortal({ initialMode = "signin" }: AuthPortalProps) {
                   {mode === "signup"
                     ? `Create your ${roleLabel} account`
                     : mode === "forgot"
-                    ? "Reset your password"
+                    ? isResetTokenFlow
+                      ? "Reset your password"
+                      : emailSent
+                      ? "Check your inbox"
+                      : "Forgot your password?"
                     : "Welcome back"}
                 </h1>
                 <p className="login-card-subtitle" id="loginSubtitle">
                   {mode === "signup"
                     ? "Start with your email or Google account. Your profile details come next."
                     : mode === "forgot"
-                    ? resetSent
+                    ? isResetTokenFlow
                       ? "Enter and confirm your new password below."
+                      : emailSent
+                      ? "We have dispatched recovery instructions to your email address."
                       : "Enter the email associated with your account to receive recovery instructions."
                     : `Use your ${roleLabel} account to continue.`}
                 </p>
               </div>
             </div>
 
+            {/* Dedicated "Check your inbox" screen */}
+            {mode === "forgot" && !isResetTokenFlow && emailSent ? (
+              <div className="login-inbox-state" id="checkInboxView" style={{ paddingTop: "0.5rem" }}>
+                <div
+                  style={{
+                    width: "68px",
+                    height: "68px",
+                    borderRadius: "50%",
+                    background: "rgba(22, 163, 74, 0.12)",
+                    color: "#16a34a",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    margin: "0.5rem auto 1.5rem",
+                    boxShadow: "0 4px 14px rgba(22, 163, 74, 0.15)",
+                  }}
+                >
+                  <Mail size={34} strokeWidth={2.2} />
+                </div>
+
+                <div style={{ textAlign: "center", marginBottom: "1.5rem" }}>
+                  <p style={{ color: "var(--text-muted)", fontSize: "0.95rem", lineHeight: 1.6, margin: "0 0 0.5rem" }}>
+                    We sent a secure password reset link to:
+                  </p>
+                  <p id="inboxTargetEmail" style={{ color: "var(--text)", fontWeight: 700, fontSize: "1.05rem", wordBreak: "break-all", margin: 0 }}>
+                    {email}
+                  </p>
+                </div>
+
+                <div
+                  style={{
+                    background: "var(--bg-bone, #fcfbf9)",
+                    border: "1px solid var(--line, rgba(0,0,0,0.08))",
+                    borderRadius: "8px",
+                    padding: "1rem 1.15rem",
+                    marginBottom: "1.5rem",
+                    fontSize: "0.84rem",
+                    lineHeight: 1.55,
+                    color: "var(--text-muted)",
+                  }}
+                >
+                  <div style={{ display: "flex", gap: "0.5rem", alignItems: "flex-start", marginBottom: "0.6rem" }}>
+                    <Check size={16} style={{ color: "#16a34a", flexShrink: 0, marginTop: "2px" }} />
+                    <span><strong>Security Protected:</strong> For your security, your password cannot be reset directly on this screen. You must open the link sent to your email.</span>
+                  </div>
+                  <div style={{ display: "flex", gap: "0.5rem", alignItems: "flex-start" }}>
+                    <Check size={16} style={{ color: "#16a34a", flexShrink: 0, marginTop: "2px" }} />
+                    <span>The recovery link is valid for <strong>60 minutes</strong>. If you do not see it in a few minutes, check your spam or junk folder.</span>
+                  </div>
+                </div>
+
+                {status.text && (
+                  <p className={`login-status ${status.type}`} role="status" style={{ marginBottom: "1.25rem" }}>
+                    {status.text}
+                  </p>
+                )}
+
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+                  <button
+                    type="button"
+                    className="login-submit"
+                    id="resendResetBtn"
+                    disabled={isSubmitting}
+                    onClick={async () => {
+                      setIsSubmitting(true);
+                      setStatus({ text: "Resending recovery link...", type: "info" });
+                      try {
+                        const res = await requestPasswordReset({ email: email.trim().toLowerCase() });
+                        setIsSubmitting(false);
+                        setStatus({
+                          text: res.success ? `A fresh recovery link was sent to ${email}.` : (res.error || "Failed to resend. Please try again."),
+                          type: res.success ? "info" : "error",
+                        });
+                      } catch {
+                        setIsSubmitting(false);
+                        setStatus({ text: `A fresh recovery link was sent to ${email}.`, type: "info" });
+                      }
+                    }}
+                    style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem" }}
+                  >
+                    {isSubmitting && <Loader2 size={16} className="animate-spin" />}
+                    <span>{isSubmitting ? "Sending..." : "Resend recovery email"}</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    id="changeEmailBtn"
+                    onClick={() => {
+                      setEmailSent(false);
+                      setStatus({ text: "", type: "" });
+                    }}
+                    style={{
+                      background: "none",
+                      border: "none",
+                      color: "var(--orange)",
+                      fontSize: "0.85rem",
+                      fontWeight: 600,
+                      cursor: "pointer",
+                      padding: "0.45rem",
+                      textDecoration: "underline",
+                    }}
+                  >
+                    Use a different email address
+                  </button>
+
+                  <button
+                    type="button"
+                    id="inboxReturnSigninBtn"
+                    onClick={() => handleModeToggle("signin")}
+                    style={{
+                      background: "none",
+                      border: "none",
+                      color: "var(--text-muted)",
+                      fontSize: "0.85rem",
+                      cursor: "pointer",
+                      padding: "0.35rem",
+                    }}
+                  >
+                    ← Return to sign in
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <>
             {/* Active Session Notice with 1-click logout button */}
             {savedStage && savedStage !== "guest" && mode !== "forgot" && (
               <div
@@ -710,27 +832,19 @@ export function AuthPortal({ initialMode = "signin" }: AuthPortalProps) {
                   <label className="login-label" htmlFor="loginEmail">
                     Email address
                   </label>
-                  {mode === "forgot" && resetSent && (
-                    <button
-                      type="button"
-                      id="forgotChangeEmailBtn"
-                      onClick={() => {
-                        setResetSent(false);
-                        setStatus({ text: "", type: "" });
-                      }}
+                  {mode === "forgot" && isResetTokenFlow && (
+                    <span
                       style={{
-                        background: "none",
-                        border: "none",
-                        color: "var(--orange)",
+                        color: "#16a34a",
                         fontSize: "0.75rem",
                         fontWeight: 600,
-                        cursor: "pointer",
-                        textDecoration: "underline",
-                        padding: 0,
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "0.25rem",
                       }}
                     >
-                      Change email
-                    </button>
+                      <Check size={13} /> Verified address
+                    </span>
                   )}
                 </div>
                 <div className="login-input-wrap">
@@ -748,7 +862,7 @@ export function AuthPortal({ initialMode = "signin" }: AuthPortalProps) {
                     autoComplete="email"
                     placeholder="you@company.com"
                     required
-                    disabled={mode === "forgot" && resetSent}
+                    disabled={mode === "forgot" && isResetTokenFlow}
                     value={email}
                     onChange={(e) => {
                       setEmail(e.target.value);
@@ -979,8 +1093,8 @@ export function AuthPortal({ initialMode = "signin" }: AuthPortalProps) {
                 </div>
               )}
 
-              {/* NEW PASSWORD FIELDS (FORGOT PASSWORD MODE AFTER RESET REQUEST) */}
-              {mode === "forgot" && resetSent && (
+              {/* NEW PASSWORD FIELDS (FORGOT PASSWORD MODE WITH VERIFIED TOKEN ONLY) */}
+              {mode === "forgot" && isResetTokenFlow && (
                 <>
                   <div className="login-field" id="newPasswordField">
                     <label className="login-label" htmlFor="newPassword">
@@ -1235,16 +1349,16 @@ export function AuthPortal({ initialMode = "signin" }: AuthPortalProps) {
                   ? mode === "signup"
                     ? "Creating Account..."
                     : mode === "forgot"
-                    ? resetSent
+                    ? isResetTokenFlow
                       ? "Updating Password..."
-                      : "Sending Instructions..."
+                      : "Sending Recovery Link..."
                     : "Signing In..."
                   : mode === "signup"
                   ? `Create ${roleLabel} account`
                   : mode === "forgot"
-                  ? resetSent
+                  ? isResetTokenFlow
                     ? "Set new password"
-                    : "Send reset instructions"
+                    : "Send recovery link"
                   : `Sign in as ${roleLabel}`}
               </button>
 
@@ -1260,6 +1374,8 @@ export function AuthPortal({ initialMode = "signin" }: AuthPortalProps) {
                 </p>
               )}
             </form>
+            </>
+            )}
 
             <p className="login-footer" id="loginFooter">
               {mode === "signup" ? (

@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { sql } from "@/lib/db";
+import { verify } from "@node-rs/argon2";
 
 export async function POST(request: Request) {
   try {
@@ -65,6 +67,40 @@ export async function POST(request: Request) {
         { status: res.status || 401 }
       );
     } catch {
+      // Backend timed out or unreachable: fallback to direct Neon PostgreSQL verification
+      try {
+        const rows = await sql`
+          SELECT id, email, role, status, password_hash
+          FROM users
+          WHERE lower(email) = lower(${email})
+          LIMIT 1;
+        `;
+        if (rows && rows.length > 0 && rows[0].password_hash) {
+          const userRow = rows[0];
+          const isMatch = await verify(userRow.password_hash, password);
+          if (isMatch) {
+            return NextResponse.json({
+              access_token: "vve_token_" + Buffer.from(email).toString("base64") + "_" + Date.now(),
+              token_type: "bearer",
+              expires_in: 86400,
+              user: {
+                id: userRow.id,
+                email: userRow.email,
+                role: userRow.role || role,
+                status: userRow.status || "active",
+              },
+            });
+          } else {
+            return NextResponse.json(
+              { detail: "Invalid email or password. Please check your credentials." },
+              { status: 401 }
+            );
+          }
+        }
+      } catch (dbErr) {
+        console.error("Neon DB login fallback error:", dbErr);
+      }
+
       return NextResponse.json(
         { detail: "Authentication service is currently unreachable. Please try again in a moment." },
         { status: 503 }
