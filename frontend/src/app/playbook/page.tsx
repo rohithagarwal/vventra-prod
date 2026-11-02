@@ -32,12 +32,14 @@ export default function PlaybookPage() {
     });
 
     const handleScroll = () => {
-      const chapters = document.querySelectorAll(".chapter");
+      const activeContainer = document.querySelector(`.role-show[data-show="${role}"]`);
+      if (!activeContainer) return;
+      const chapters = activeContainer.querySelectorAll(".chapter");
       let current: string | null = null;
       chapters.forEach((ch) => {
         const r = ch.getBoundingClientRect();
         if (r.top <= 220) {
-          current = ch.id;
+          current = ch.getAttribute("data-chapter") || ch.id.replace(/^(buyer|architect)-/, "");
         }
       });
       if (current) {
@@ -63,9 +65,12 @@ export default function PlaybookPage() {
 
   const scrollToChapter = (chapterId: string) => {
     setActiveChapter(chapterId);
-    const target = document.getElementById(chapterId);
+    const targetId = `${role === "investor" ? "buyer" : "architect"}-${chapterId}`;
+    const target = document.getElementById(targetId) || document.getElementById(chapterId);
     if (target) {
-      target.scrollIntoView({ behavior: "smooth", block: "start" });
+      const navOffset = 130;
+      const targetTop = target.getBoundingClientRect().top + window.pageYOffset - navOffset;
+      window.scrollTo({ top: Math.max(0, targetTop), behavior: "smooth" });
     }
   };
 
@@ -169,7 +174,7 @@ export default function PlaybookPage() {
 
 
   {/*  CH 01 · MINDSET  */}
-  <section className="chapter" id="ch-01">
+  <section className="chapter" id="buyer-ch-01" data-chapter="ch-01">
     <div className="container-narrow">
       <div className="chapter-head reveal">
         <div className="chapter-marker"><span className="num">01</span><span className="line"></span><span className="name">Mindset</span></div>
@@ -203,7 +208,7 @@ export default function PlaybookPage() {
   </section>
 
   {/*  CH 02 · PREPARATION  */}
-  <section className="chapter" id="ch-02">
+  <section className="chapter" id="buyer-ch-02" data-chapter="ch-02">
     <div className="container-narrow">
       <div className="chapter-head reveal">
         <div className="chapter-marker"><span className="num">02</span><span className="line"></span><span className="name">Preparation</span></div>
@@ -277,7 +282,7 @@ export default function PlaybookPage() {
   </section>
 
   {/*  CH 03 · EXECUTION  */}
-  <section className="chapter" id="ch-03">
+  <section className="chapter" id="buyer-ch-03" data-chapter="ch-03">
     <div className="container-narrow">
       <div className="chapter-head reveal">
         <div className="chapter-marker"><span className="num">03</span><span className="line"></span><span className="name">Execution</span></div>
@@ -321,7 +326,7 @@ export default function PlaybookPage() {
   </section>
 
   {/*  CH 04 · RED FLAGS  */}
-  <section className="chapter" id="ch-04">
+  <section className="chapter" id="buyer-ch-04" data-chapter="ch-04">
     <div className="container-narrow">
       <div className="chapter-head reveal">
         <div className="chapter-marker"><span className="num">04</span><span className="line"></span><span className="name">Red flags</span></div>
@@ -359,7 +364,7 @@ export default function PlaybookPage() {
   </section>
 
   {/*  CH 05 · SUCCESS PATTERNS  */}
-  <section className="chapter" id="ch-05">
+  <section className="chapter" id="buyer-ch-05" data-chapter="ch-05">
     <div className="container-narrow">
       <div className="chapter-head reveal">
         <div className="chapter-marker"><span className="num">05</span><span className="line"></span><span className="name">Success patterns</span></div>
@@ -391,7 +396,7 @@ export default function PlaybookPage() {
   </section>
 
   {/*  CH 06 · COMMON MISTAKES  */}
-  <section className="chapter" id="ch-06">
+  <section className="chapter" id="buyer-ch-06" data-chapter="ch-06">
     <div className="container-narrow">
       <div className="chapter-head reveal">
         <div className="chapter-marker"><span className="num">06</span><span className="line"></span><span className="name">Common mistakes</span></div>
@@ -457,7 +462,7 @@ export default function PlaybookPage() {
 
 
   {/*  CH 01 · MINDSET  */}
-  <section className="chapter" id="ch-01">
+  <section className="chapter" id="architect-ch-01" data-chapter="ch-01">
     <div className="container-narrow">
       <div className="chapter-head reveal">
         <div className="chapter-marker"><span className="num">01</span><span className="line"></span><span className="name">Mindset</span></div>
@@ -473,7 +478,7 @@ export default function PlaybookPage() {
         </div>
         <div className="principle reveal delay-1" data-num="2">
           <h3>Your <em>first listing</em> sets your tier</h3>
-          <p>Reviews compound. Your first 3 listings determine whether you become a senior architect (90/10 commission, premium placement) or stay standard (88/12, regular placement). <strong>Invest disproportionately in the first one.</strong></p>
+          <p>Reviews compound. Your first 3 listings determine whether you become a senior architect (90/10 commission, premium placement) or stay standard (flat 10% platform fee with verified senior badge & priority placement). <strong>Invest disproportionately in the first one.</strong></p>
           <span className="key-tag">→ Front-load quality</span>
         </div>
         <div className="principle reveal" data-num="3">
@@ -491,7 +496,7 @@ export default function PlaybookPage() {
   </section>
 
   {/*  CH 02 · PREPARATION  */}
-  <section className="chapter" id="ch-02">
+  <section className="chapter" id="architect-ch-02" data-chapter="ch-02">
     <div className="container-narrow">
       <div className="chapter-head reveal">
         <div className="chapter-marker"><span className="num">02</span><span className="line"></span><span className="name">Preparation</span></div>
@@ -573,7 +578,7 @@ export default function PlaybookPage() {
   </section>
 
   {/*  CH 03 · EXECUTION  */}
-  <section className="chapter" id="ch-03">
+  <section className="chapter" id="architect-ch-03" data-chapter="ch-03">
     <div className="container-narrow">
       <div className="chapter-head reveal">
         <div className="chapter-marker"><span className="num">03</span><span className="line"></span><span className="name">Execution</span></div>
@@ -617,7 +622,7 @@ export default function PlaybookPage() {
   </section>
 
   {/*  CH 04 · RED FLAGS  */}
-  <section className="chapter" id="ch-04">
+  <section className="chapter" id="architect-ch-04" data-chapter="ch-04">
     <div className="container-narrow">
       <div className="chapter-head reveal">
         <div className="chapter-marker"><span className="num">04</span><span className="line"></span><span className="name">Red flags</span></div>
@@ -655,7 +660,7 @@ export default function PlaybookPage() {
   </section>
 
   {/*  CH 05 · SUCCESS PATTERNS  */}
-  <section className="chapter" id="ch-05">
+  <section className="chapter" id="architect-ch-05" data-chapter="ch-05">
     <div className="container-narrow">
       <div className="chapter-head reveal">
         <div className="chapter-marker"><span className="num">05</span><span className="line"></span><span className="name">Success patterns</span></div>
@@ -687,7 +692,7 @@ export default function PlaybookPage() {
   </section>
 
   {/*  CH 06 · COMMON MISTAKES  */}
-  <section className="chapter" id="ch-06">
+  <section className="chapter" id="architect-ch-06" data-chapter="ch-06">
     <div className="container-narrow">
       <div className="chapter-head reveal">
         <div className="chapter-marker"><span className="num">06</span><span className="line"></span><span className="name">Common mistakes</span></div>

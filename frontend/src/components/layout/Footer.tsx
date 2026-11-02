@@ -13,8 +13,8 @@ export function Footer() {
             <Link href="/faq" data-route="faq">FAQ</Link>
             <Link href="/pricing" data-route="pricing">Pricing</Link>
             <Link href="/" data-route="home">Home</Link>
-            <Link href="/#about" data-route="about">About</Link>
-            <Link href="/#browse" data-route="browse">Opportunities</Link>
+            <Link href="/about" data-route="about">About</Link>
+            <Link href="/browse" data-route="browse">Opportunities</Link>
             <Link href="/signup" data-route="list">Apply as an architect</Link>
             <Link href="/login" data-route="login">Log in</Link>
             <Link href="/signup" data-route="apply">Apply for access</Link>

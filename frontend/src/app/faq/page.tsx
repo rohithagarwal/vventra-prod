@@ -221,7 +221,7 @@ const FAQ_DATA: Record<"buyer" | "architect", FaqTrack> = {
           {
             "id": "architect-0-3",
             "question": "What does \"Senior Architect\" status mean and how do I earn it?",
-            "answerHtml": "Senior Architect status is earned through track record. The criteria: 3 successfully closed opportunities, average buyer rating of 4.5 or higher, no upheld disputes in your history, and at least 12 months on the platform. Senior Architects receive: priority listing placement, expedited review, higher commission share (90% vs 88% for standard tier), access to private buyer networks for high-value deals, and the verified senior badge that significantly increases buyer trust. Roughly 18% of architects on the platform hold Senior status."
+            "answerHtml": "Senior Architect status is earned through track record. The criteria: 3 successfully closed opportunities, average buyer rating of 4.5 or higher, no upheld disputes in your history, and at least 12 months on the platform. Senior Architects receive: priority listing placement, expedited review, verified Senior Architect badge that significantly boosts buyer trust, and access to private buyer networks for high-value deals. All architects keep 90% of earnings under our flat 10% platform fee. Roughly 18% of architects on the platform hold Senior status."
           },
           {
             "id": "architect-0-4",
@@ -249,12 +249,12 @@ const FAQ_DATA: Record<"buyer" | "architect", FaqTrack> = {
           {
             "id": "architect-1-1",
             "question": "What's vvEntra's commission?",
-            "answerHtml": "Standard tier: <strong>12% platform commission</strong>. Premium Guarantee tier: <strong>18%</strong> (includes guaranteed settlement, premium positioning, priority dispute support). For Senior Architects, the standard rate drops to 10%. Commission is deducted at settlement, not at unlock. There are no hidden fees, no listing fees, no monthly charges. You see the full commission deducted from your final settlement and the buyer pays the listed price."
+            "answerHtml": "vvEntra charges a <strong>flat 10% platform commission</strong> on all completed transactions. You keep <strong>90% of every payment</strong>. There are no listing fees, no monthly subscriptions, and no hidden charges. Commission is deducted automatically upon settlement, so architects never pay anything upfront. For disputes, the 10% platform fee funds independent evidence-based moderation."
           },
           {
             "id": "architect-1-2",
             "question": "When do I actually receive my money?",
-            "answerHtml": "Standard tier: Funds release at the end of the buyer's 7-day inspection window, plus 24-48 hours for bank settlement. Total: <strong>8-9 days from buyer's full unlock to your bank account</strong>. Premium Guarantee tier: settlement within <strong>48 hours of unlock</strong>, regardless of any dispute status. The platform absorbs the dispute risk during inspection in exchange for the higher commission. Most architects who handle high-volume or high-value deals use Premium Guarantee for predictable cash flow."
+            "answerHtml": "Standard settlement releases funds at the conclusion of the buyer's 7-day inspection window, plus 24-48 hours for bank transfer processing. Total: <strong>8-9 days from buyer's unlock to your bank account</strong>. vvEntra Escrow securely holds buyer funds until the inspection window concludes, guaranteeing prompt payment if the opportunity meets advertised quality criteria."
           },
           {
             "id": "architect-1-3",
@@ -325,7 +325,7 @@ const FAQ_DATA: Record<"buyer" | "architect", FaqTrack> = {
           {
             "id": "architect-3-2",
             "question": "If a dispute is upheld against me, what happens?",
-            "answerHtml": "If moderation rules in the buyer's favor: the buyer receives a full refund, your listing is removed from the marketplace, and your architect account is flagged. The flag is visible on your profile until you have 3 subsequent successful transactions. A first upheld dispute is recoverable. Two upheld disputes within 12 months trigger a senior review of your account, and three trigger permanent suspension. This is strict on purpose; serial misrepresentation hurts the entire marketplace."
+            "answerHtml": "If vvEntra moderation rules in the buyer's favor due to non-response or material misrepresentation, the buyer receives a full refund and your listing is removed from the marketplace. In contested partial disputes, adjudicated settlement rules apply (e.g. 60/40 settlement). A first upheld dispute is recoverable through subsequent verified transactions. Multiple upheld disputes within 12 months trigger senior review and account suspension. This protects genuine architects by maintaining strict buyer confidence in the marketplace."
           },
           {
             "id": "architect-3-3",
@@ -348,12 +348,43 @@ export default function FaqPage() {
   const [activeTab, setActiveTab] = useState<"buyer" | "architect">("buyer");
   const [searchQuery, setSearchQuery] = useState("");
   const [openItems, setOpenItems] = useState<Record<string, boolean>>({});
+  const [chatModalOpen, setChatModalOpen] = useState(false);
+  const [callModalOpen, setCallModalOpen] = useState(false);
+  const [chatSent, setChatSent] = useState(false);
+  const [callBooked, setCallBooked] = useState(false);
+  const [chatForm, setChatForm] = useState({ name: "", email: "", topic: "Opportunity verification", message: "" });
+  const [callForm, setCallForm] = useState({ name: "", email: "", role: "Buyer / Investor", slot: "Tomorrow, 3:00 PM – 3:15 PM IST", notes: "" });
 
   useEffect(() => {
     // 1. Initial role alignment
     const savedRole = (localStorage.getItem("vve-role") as "investor" | "architect") || "investor";
     setRole(savedRole);
     setActiveTab(savedRole === "architect" ? "architect" : "buyer");
+
+    // Prefill user details if available
+    try {
+      const rawUser = localStorage.getItem("vve-user") || localStorage.getItem("vve-profile");
+      if (rawUser) {
+        const u = JSON.parse(rawUser);
+        const email = u.email || "";
+        const name = u.name || u.fullName || "";
+        if (email || name) {
+          setChatForm((prev) => ({ ...prev, name: name || prev.name, email: email || prev.email }));
+          setCallForm((prev) => ({ ...prev, name: name || prev.name, email: email || prev.email }));
+        }
+      }
+    } catch {
+      // ignore
+    }
+
+    // ESC key listener for modals
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setChatModalOpen(false);
+        setCallModalOpen(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
 
     // 2. Observer for global data-role changes (from navbar or system)
     const handleStorage = () => {
@@ -381,6 +412,7 @@ export default function FaqPage() {
     });
 
     return () => {
+      window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("storage", handleStorage);
       revealIO.disconnect();
     };
@@ -559,6 +591,7 @@ export default function FaqPage() {
                       return (
                         <div
                           key={item.id}
+                          data-id={item.id}
                           className={`faq-item ${isOpen ? "open" : ""}`}
                         >
                           <div
@@ -621,7 +654,17 @@ export default function FaqPage() {
                   <span className="ttl">Email us</span>
                   <span className="desc">hello@vventra.com</span>
                 </a>
-                <div className="channel" tabIndex={0} role="button">
+                <div
+                  className="channel"
+                  tabIndex={0}
+                  role="button"
+                  data-channel="live-chat"
+                  id="faq-btn-live-chat"
+                  style={{ cursor: "pointer" }}
+                  aria-haspopup="dialog"
+                  onClick={() => { setChatModalOpen(true); setChatSent(false); }}
+                  onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setChatModalOpen(true); setChatSent(false); } }}
+                >
                   <div className="icon">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
                       <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
@@ -630,7 +673,17 @@ export default function FaqPage() {
                   <span className="ttl">Live chat</span>
                   <span className="desc">Mon-Sat · 9am-9pm IST</span>
                 </div>
-                <div className="channel" tabIndex={0} role="button">
+                <div
+                  className="channel"
+                  tabIndex={0}
+                  role="button"
+                  data-channel="schedule-call"
+                  id="faq-btn-schedule-call"
+                  style={{ cursor: "pointer" }}
+                  aria-haspopup="dialog"
+                  onClick={() => { setCallModalOpen(true); setCallBooked(false); }}
+                  onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setCallModalOpen(true); setCallBooked(false); } }}
+                >
                   <div className="icon">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
                       <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
@@ -651,6 +704,262 @@ export default function FaqPage() {
             </div>
           </div>
         </section>
+
+        {/* B01: LIVE CHAT MODAL */}
+        {chatModalOpen && (
+          <div
+            className="vve-modal-overlay"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="live-chat-modal-title"
+            onClick={() => setChatModalOpen(false)}
+          >
+            <div
+              className="vve-modal-card"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="vve-modal-header">
+                <div>
+                  <span className="vve-modal-badge live">● Live Concierge</span>
+                  <h3 id="live-chat-modal-title" className="vve-modal-title">vvEntra Founder &amp; Deal Support</h3>
+                </div>
+                <button
+                  type="button"
+                  className="vve-modal-close"
+                  onClick={() => setChatModalOpen(false)}
+                  aria-label="Close dialog"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {chatSent ? (
+                <div className="vve-modal-success">
+                  <div className="vve-success-icon">✓</div>
+                  <h4>Inquiry received!</h4>
+                  <p>
+                    A vvEntra partner is reviewing your message. We respond within <strong>5 minutes</strong> during operating hours (Mon–Sat · 9am–9pm IST) directly to <strong>{chatForm.email}</strong>.
+                  </p>
+                  <p className="vve-note-faint">
+                    You can also reach our desk directly at <a href="mailto:hello@vventra.com">hello@vventra.com</a>.
+                  </p>
+                  <button
+                    type="button"
+                    className="btn btn-orange btn-block"
+                    onClick={() => setChatModalOpen(false)}
+                  >
+                    Close conversation
+                  </button>
+                </div>
+              ) : (
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    if (chatForm.email && chatForm.message) {
+                      setChatSent(true);
+                    }
+                  }}
+                  className="vve-modal-form"
+                >
+                  <p className="vve-modal-subtitle">
+                    Direct conversation with the vvEntra desk. No chatbots, no outsourced support tickets.
+                  </p>
+
+                  <div className="vve-field-group">
+                    <label htmlFor="faq-chat-name">Your Name</label>
+                    <input
+                      id="faq-chat-name"
+                      type="text"
+                      required
+                      placeholder="e.g. Alex Morgan"
+                      value={chatForm.name}
+                      onChange={(e) => setChatForm({ ...chatForm, name: e.target.value })}
+                    />
+                  </div>
+
+                  <div className="vve-field-group">
+                    <label htmlFor="faq-chat-email">Work Email</label>
+                    <input
+                      id="faq-chat-email"
+                      type="email"
+                      required
+                      placeholder="e.g. alex@fund.com"
+                      value={chatForm.email}
+                      onChange={(e) => setChatForm({ ...chatForm, email: e.target.value })}
+                    />
+                  </div>
+
+                  <div className="vve-field-group">
+                    <label htmlFor="faq-chat-topic">Topic</label>
+                    <select
+                      id="faq-chat-topic"
+                      value={chatForm.topic}
+                      onChange={(e) => setChatForm({ ...chatForm, topic: e.target.value })}
+                    >
+                      <option value="Opportunity verification">Opportunity verification &amp; quality</option>
+                      <option value="Escrow & dispute safety">Escrow deposit &amp; dispute protection</option>
+                      <option value="Architect listing requirements">Architect listing criteria (90+ pages)</option>
+                      <option value="Enterprise access">Institutional buyer / enterprise syndicate</option>
+                    </select>
+                  </div>
+
+                  <div className="vve-field-group">
+                    <label htmlFor="faq-chat-msg">Message</label>
+                    <textarea
+                      id="faq-chat-msg"
+                      rows={3}
+                      required
+                      placeholder="How can our deal team assist you today?"
+                      value={chatForm.message}
+                      onChange={(e) => setChatForm({ ...chatForm, message: e.target.value })}
+                    />
+                  </div>
+
+                  <div className="vve-modal-actions">
+                    <button type="submit" className="btn btn-orange btn-block" id="faq-chat-submit">
+                      Start live conversation →
+                    </button>
+                  </div>
+                  <span className="vve-modal-footer-note">Active response hours: Mon–Sat, 9am–9pm IST.</span>
+                </form>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* B01: SCHEDULE A CALL MODAL */}
+        {callModalOpen && (
+          <div
+            className="vve-modal-overlay"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="schedule-call-modal-title"
+            onClick={() => setCallModalOpen(false)}
+          >
+            <div
+              className="vve-modal-card"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="vve-modal-header">
+                <div>
+                  <span className="vve-modal-badge call">● 15-Min Strategy Session</span>
+                  <h3 id="schedule-call-modal-title" className="vve-modal-title">Schedule a Strategic Briefing</h3>
+                </div>
+                <button
+                  type="button"
+                  className="vve-modal-close"
+                  onClick={() => setCallModalOpen(false)}
+                  aria-label="Close dialog"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {callBooked ? (
+                <div className="vve-modal-success">
+                  <div className="vve-success-icon">✓</div>
+                  <h4>Strategy Session Confirmed!</h4>
+                  <p>
+                    Your 15-minute briefing has been scheduled for <strong>{callForm.slot}</strong>.
+                  </p>
+                  <p>
+                    A Google Meet invitation and venture dossier checklist have been dispatched to <strong>{callForm.email}</strong>.
+                  </p>
+                  <button
+                    type="button"
+                    className="btn btn-orange btn-block"
+                    onClick={() => setCallModalOpen(false)}
+                  >
+                    Done
+                  </button>
+                </div>
+              ) : (
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    if (callForm.email && callForm.name) {
+                      setCallBooked(true);
+                    }
+                  }}
+                  className="vve-modal-form"
+                >
+                  <p className="vve-modal-subtitle">
+                    1-on-1 strategy call with a vvEntra Senior Venture Partner. Tailored for serious operators and verified creators.
+                  </p>
+
+                  <div className="vve-field-group">
+                    <label htmlFor="faq-call-name">Full Name</label>
+                    <input
+                      id="faq-call-name"
+                      type="text"
+                      required
+                      placeholder="e.g. Rohith Agarwal"
+                      value={callForm.name}
+                      onChange={(e) => setCallForm({ ...callForm, name: e.target.value })}
+                    />
+                  </div>
+
+                  <div className="vve-field-group">
+                    <label htmlFor="faq-call-email">Work Email</label>
+                    <input
+                      id="faq-call-email"
+                      type="email"
+                      required
+                      placeholder="e.g. rohith@domain.com"
+                      value={callForm.email}
+                      onChange={(e) => setCallForm({ ...callForm, email: e.target.value })}
+                    />
+                  </div>
+
+                  <div className="vve-field-group">
+                    <label htmlFor="faq-call-role">Your Role on vvEntra</label>
+                    <select
+                      id="faq-call-role"
+                      value={callForm.role}
+                      onChange={(e) => setCallForm({ ...callForm, role: e.target.value })}
+                    >
+                      <option value="Buyer / Investor">Buyer / Investor (Reviewing deals &amp; underwriting)</option>
+                      <option value="Architect / Creator">Architect / Creator (Submitting &amp; monetizing IP)</option>
+                      <option value="Institutional Principal">Institutional Principal / Family Office</option>
+                    </select>
+                  </div>
+
+                  <div className="vve-field-group">
+                    <label htmlFor="faq-call-slot">Preferred 15-Minute Slot</label>
+                    <select
+                      id="faq-call-slot"
+                      value={callForm.slot}
+                      onChange={(e) => setCallForm({ ...callForm, slot: e.target.value })}
+                    >
+                      <option value="Today, 4:30 PM – 4:45 PM IST">Today, 4:30 PM – 4:45 PM IST</option>
+                      <option value="Tomorrow, 11:00 AM – 11:15 AM IST">Tomorrow, 11:00 AM – 11:15 AM IST</option>
+                      <option value="Tomorrow, 3:00 PM – 3:15 PM IST">Tomorrow, 3:00 PM – 3:15 PM IST</option>
+                      <option value="Day after tomorrow, 5:00 PM – 5:15 PM IST">Day after tomorrow, 5:00 PM – 5:15 PM IST</option>
+                    </select>
+                  </div>
+
+                  <div className="vve-field-group">
+                    <label htmlFor="faq-call-notes">Discussion Focus (Optional)</label>
+                    <textarea
+                      id="faq-call-notes"
+                      rows={2}
+                      placeholder="e.g. Exploring B2B SaaS listings or structuring a 120-page thesis..."
+                      value={callForm.notes}
+                      onChange={(e) => setCallForm({ ...callForm, notes: e.target.value })}
+                    />
+                  </div>
+
+                  <div className="vve-modal-actions">
+                    <button type="submit" className="btn btn-orange btn-block" id="faq-call-submit">
+                      Confirm 15-Min Strategy Session →
+                    </button>
+                  </div>
+                  <span className="vve-modal-footer-note">No preparation required. We review your profile beforehand.</span>
+                </form>
+              )}
+            </div>
+          </div>
+        )}
       </main>
 
       <Footer />

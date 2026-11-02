@@ -1394,10 +1394,10 @@ export default function PricingPage() {
                 <Link href={role === "architect" ? "/signup?role=architect" : "/signup"} className="btn btn-role btn-lg">
                   <span className="cta-text" /> <span className="arrow">→</span>
                 </Link>
-                <Link href="/#trust" className="btn btn-outline">
+                <Link href="/trust" className="btn btn-outline">
                   Read trust policy
                 </Link>
-                <Link href="/#faq" className="btn btn-outline">
+                <Link href="/faq" className="btn btn-outline">
                   View FAQ
                 </Link>
               </div>

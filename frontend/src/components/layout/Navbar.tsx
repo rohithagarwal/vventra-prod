@@ -20,7 +20,12 @@ export function Navbar({
   const [fullName, setFullName] = useState<string>("");
   const [activeHash, setActiveHash] = useState<string>("");
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const accountMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [pathname]);
 
   useEffect(() => {
     const syncState = () => {
@@ -269,6 +274,28 @@ export function Navbar({
               </svg>
             </button>
 
+            <button
+              type="button"
+              className="mobile-nav-toggle"
+              id="mobileNavToggle"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label={mobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
+              aria-expanded={mobileMenuOpen}
+            >
+              {mobileMenuOpen ? (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              ) : (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="3" y1="12" x2="21" y2="12" />
+                  <line x1="3" y1="6" x2="21" y2="6" />
+                  <line x1="3" y1="18" x2="21" y2="18" />
+                </svg>
+              )}
+            </button>
+
             {isVerified ? (
               <div style={{ position: "relative" }}>
                 <button
@@ -351,6 +378,255 @@ export function Navbar({
           </div>
         </div>
       </nav>
+
+      {/* B08: RESPONSIVE MOBILE NAVIGATION DRAWER */}
+      {mobileMenuOpen && (
+        <div
+          className="mobile-nav-backdrop"
+          onClick={() => setMobileMenuOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
+      <aside
+        className={`mobile-nav-drawer ${mobileMenuOpen ? "open" : ""}`}
+        aria-label="Mobile navigation"
+        id="mobileNavDrawer"
+      >
+        <div className="mnd-header">
+          <Link href="/" className="brand" onClick={() => setMobileMenuOpen(false)}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              className="brand-logo-img brand-logo-light"
+              src="/brand-logo-light.png"
+              alt="vvEntra"
+              style={{ height: "32px" }}
+            />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              className="brand-logo-img brand-logo-dark"
+              src="/brand-logo-dark.png"
+              alt="vvEntra"
+              style={{ height: "32px" }}
+            />
+          </Link>
+          <button
+            type="button"
+            className="mnd-close-btn"
+            onClick={() => setMobileMenuOpen(false)}
+            aria-label="Close menu"
+          >
+            ✕
+          </button>
+        </div>
+
+        <div className="mnd-role-section">
+          <span className="mnd-role-label">Platform Role</span>
+          <div className="mnd-role-pill-group">
+            <button
+              type="button"
+              className={`mnd-role-option ${role === "investor" ? "active" : ""}`}
+              onClick={() => {
+                handleSetRole("investor");
+              }}
+              id="mnd-role-investor"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" width="14" height="14">
+                <circle cx="12" cy="8" r="4" />
+                <path d="M4 21v-1a8 8 0 0 1 16 0v1" />
+              </svg>
+              <span>Investor</span>
+            </button>
+            <button
+              type="button"
+              className={`mnd-role-option ${role === "architect" ? "active" : ""}`}
+              onClick={() => {
+                handleSetRole("architect");
+              }}
+              id="mnd-role-architect"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" width="14" height="14">
+                <path d="M3 3h18M5 3v10a7 7 0 0 0 14 0V3" />
+                <circle cx="12" cy="20" r="1.5" />
+              </svg>
+              <span>Architect</span>
+            </button>
+          </div>
+        </div>
+
+        <nav className="mnd-nav-links">
+          <Link
+            href="/dashboard"
+            className={`mnd-link ${pathname === "/dashboard" ? "active" : ""}`}
+            onClick={() => setMobileMenuOpen(false)}
+            id="mnd-link-dashboard"
+          >
+            <span>Dashboard</span>
+            <span className="arrow">→</span>
+          </Link>
+          <Link
+            href="/browse"
+            className={`mnd-link ${pathname === "/browse" ? "active" : ""}`}
+            onClick={() => setMobileMenuOpen(false)}
+            id="mnd-link-browse"
+          >
+            <span>Opportunities</span>
+            <span className="arrow">→</span>
+          </Link>
+          {role === "architect" && (
+            <Link
+              href="/list"
+              className={`mnd-link ${pathname === "/list" ? "active" : ""}`}
+              onClick={() => setMobileMenuOpen(false)}
+              id="mnd-link-list"
+            >
+              <span>List an opportunity</span>
+              <span className="arrow">→</span>
+            </Link>
+          )}
+          <Link
+            href="/trust"
+            className={`mnd-link ${pathname === "/trust" ? "active" : ""}`}
+            onClick={() => setMobileMenuOpen(false)}
+            id="mnd-link-trust"
+          >
+            <span>Trust Policy</span>
+            <span className="arrow">→</span>
+          </Link>
+          <Link
+            href="/playbook"
+            className={`mnd-link ${pathname === "/playbook" ? "active" : ""}`}
+            onClick={() => setMobileMenuOpen(false)}
+            id="mnd-link-playbook"
+          >
+            <span>Playbook</span>
+            <span className="arrow">→</span>
+          </Link>
+          <Link
+            href="/faq"
+            className={`mnd-link ${pathname === "/faq" ? "active" : ""}`}
+            onClick={() => setMobileMenuOpen(false)}
+            id="mnd-link-faq"
+          >
+            <span>FAQ</span>
+            <span className="arrow">→</span>
+          </Link>
+          <Link
+            href="/pricing"
+            className={`mnd-link ${pathname === "/pricing" ? "active" : ""}`}
+            onClick={() => setMobileMenuOpen(false)}
+            id="mnd-link-pricing"
+          >
+            <span>Pricing</span>
+            <span className="arrow">→</span>
+          </Link>
+          <Link
+            href="/about"
+            className={`mnd-link ${pathname === "/about" ? "active" : ""}`}
+            onClick={() => setMobileMenuOpen(false)}
+            id="mnd-link-about"
+          >
+            <span>About vvEntra</span>
+            <span className="arrow">→</span>
+          </Link>
+          <Link
+            href="/terms"
+            className={`mnd-link ${pathname === "/terms" ? "active" : ""}`}
+            onClick={() => setMobileMenuOpen(false)}
+            id="mnd-link-terms"
+          >
+            <span>Terms</span>
+            <span className="arrow">→</span>
+          </Link>
+        </nav>
+
+        <div className="mnd-account-section">
+          {isVerified ? (
+            <>
+              <div className="mnd-user-info">
+                <span className="mnd-user-name">{fullName || userName}</span>
+                <span className="nav-account-pill verified" style={{ fontSize: "0.75rem", padding: "0.2rem 0.5rem" }}>
+                  Verified
+                </span>
+              </div>
+              <Link
+                href="/verify"
+                className="mnd-link"
+                onClick={() => setMobileMenuOpen(false)}
+                id="mnd-link-profile"
+              >
+                <span>My Profile &amp; Verification</span>
+                <span className="arrow">→</span>
+              </Link>
+              <button
+                type="button"
+                className="mnd-btn-logout"
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  handleLogout();
+                }}
+                id="mndLogoutBtn"
+              >
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                  <polyline points="16 17 21 12 16 7" />
+                  <line x1="21" y1="12" x2="9" y2="12" />
+                </svg>
+                <span>Log out</span>
+              </button>
+            </>
+          ) : isApplied ? (
+            <>
+              <Link
+                href="/verify"
+                className="btn btn-orange btn-block"
+                onClick={() => setMobileMenuOpen(false)}
+                id="mnd-btn-verify"
+                style={{ textDecoration: "none" }}
+              >
+                Verify identity
+              </Link>
+              <button
+                type="button"
+                className="mnd-btn-logout"
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  handleLogout();
+                }}
+                id="mndLogoutBtn"
+              >
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                  <polyline points="16 17 21 12 16 7" />
+                  <line x1="21" y1="12" x2="9" y2="12" />
+                </svg>
+                <span>Log out</span>
+              </button>
+            </>
+          ) : (
+            <>
+              <Link
+                href="/login"
+                className="btn btn-outline btn-block"
+                onClick={() => setMobileMenuOpen(false)}
+                id="mnd-btn-login"
+                style={{ textDecoration: "none" }}
+              >
+                Log in
+              </Link>
+              <Link
+                href="/signup"
+                className="btn btn-orange btn-block"
+                onClick={() => setMobileMenuOpen(false)}
+                id="mnd-btn-signup"
+                style={{ textDecoration: "none" }}
+              >
+                Apply for access
+              </Link>
+            </>
+          )}
+        </div>
+      </aside>
     </>
   );
 }
