@@ -177,27 +177,31 @@ export default function ListOpportunityPage() {
     setAiSummaries((prev) => ({ ...prev, [id]: generated }));
   };
 
-  // Calculations
-  const numericPrice = parseFloat(formData.price) || 0;
-  const unlockFee = numericPrice ? fmtMoney(numericPrice * 0.1) : "$0";
+  // Calculations & Validation
+  const numericPrice = parseFloat(formData.price);
+  const isPriceValid = !isNaN(numericPrice) && numericPrice > 0;
+  const unlockFee = isPriceValid ? fmtMoney(numericPrice * 0.1) : "$0";
 
   // Readiness Tracking
-  const REQUIRED = [
-    { id: "title", label: "Opportunity title", val: formData.title },
-    { id: "hook", label: "One-line hook", val: formData.hook },
-    { id: "price", label: "Listed price", val: formData.price },
-    { id: "thesis", label: "Investment thesis (full text)", val: deepTexts.thesis },
-    { id: "problem", label: "The problem (full text)", val: deepTexts.problem },
-  ];
+  const REQUIRED = useMemo(
+    () => [
+      { id: "title", label: "Opportunity title", isDone: formData.title.trim().length > 0 },
+      { id: "hook", label: "One-line hook", isDone: formData.hook.trim().length > 0 },
+      { id: "price", label: "Listed price (must be greater than $0)", isDone: isPriceValid },
+      { id: "thesis", label: "Investment thesis (full text)", isDone: deepTexts.thesis.trim().length > 0 },
+      { id: "problem", label: "The problem (full text)", isDone: deepTexts.problem.trim().length > 0 },
+    ],
+    [formData.title, formData.hook, isPriceValid, deepTexts.thesis, deepTexts.problem]
+  );
 
   const completedCount = useMemo(() => {
-    return REQUIRED.filter((r) => r.val.trim().length > 0).length;
+    return REQUIRED.filter((r) => r.isDone).length;
   }, [REQUIRED]);
 
   const isAllRequiredDone = completedCount === REQUIRED.length;
 
   const handleSubmit = () => {
-    if (!isAllRequiredDone) return;
+    if (!isAllRequiredDone || !isPriceValid) return;
     setIsSubmitting(true);
 
     setTimeout(() => {
@@ -388,13 +392,37 @@ export default function ListOpportunityPage() {
                   <div key={f.id} className="cfield">
                     <label className="cfield-label">{f.label}</label>
                     <input
-                      className="cfield-input"
+                      className={`cfield-input ${f.id === "price" && formData.price.trim().length > 0 && !isPriceValid ? "is-invalid" : ""}`}
                       type={f.type}
                       data-fid={f.id}
                       placeholder={f.ph}
+                      min={f.id === "price" ? "1" : undefined}
+                      step={f.id === "price" ? "any" : undefined}
                       value={formData[f.id]}
                       onChange={(e) => handleFreeChange(f.id, e.target.value)}
                     />
+                    {f.id === "price" && formData.price.trim().length > 0 && !isPriceValid && (
+                      <div
+                        className="cfield-error-msg"
+                        id="priceErrorMsg"
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "0.4rem",
+                          marginTop: "0.4rem",
+                          fontSize: "0.8rem",
+                          color: "#dc2626",
+                          fontWeight: 500,
+                        }}
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                          <circle cx="12" cy="12" r="10" />
+                          <line x1="12" y1="8" x2="12" y2="12" />
+                          <line x1="12" y1="16" x2="12.01" y2="16" />
+                        </svg>
+                        <span>Listed price must be a positive amount greater than $0.</span>
+                      </div>
+                    )}
                     {f.id === "price" && (
                       <div className="unlock-calc">
                         <span className="unlock-calc-label">Buyer pays to unlock (10%)</span>
@@ -649,7 +677,7 @@ export default function ListOpportunityPage() {
 
               <div className="lsub-readiness" id="lsubReadiness">
                 {REQUIRED.map((r, idx) => {
-                  const filled = r.val.trim().length > 0;
+                  const filled = r.isDone;
                   return (
                     <div key={idx} className={`lready-row ${filled ? "done" : "miss"}`}>
                       {filled ? (

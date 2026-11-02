@@ -56,7 +56,7 @@ html { scroll-behavior: smooth; }
   --section-dark-line: rgba(250, 250, 247, 0.10);
   --section-dark-line-strong: rgba(250, 250, 247, 0.22);
   --orange-flash: var(--role);
-  --nav-bg: rgba(250, 250, 247, 0.86);
+  --nav-bg: rgba(250, 250, 247, 0.98);
   --grain-opacity: 0.035;
   --grain-blend: multiply;
 
@@ -100,7 +100,7 @@ html { scroll-behavior: smooth; }
   --section-dark-text-faint: rgba(242, 237, 228, 0.48);
   --section-dark-line: rgba(242, 237, 228, 0.10);
   --section-dark-line-strong: rgba(242, 237, 228, 0.22);
-  --nav-bg: rgba(11, 9, 8, 0.82);
+  --nav-bg: rgba(11, 9, 8, 0.96);
   --grain-opacity: 0.06;
   --grain-blend: overlay;
 
@@ -4308,6 +4308,11 @@ body.is-capped .calc-card .currency {
   border-color: var(--role);
 }
 
+.cfield-input.is-invalid, .cfield-textarea.is-invalid, .cfield-select.is-invalid {
+  border-color: #dc2626 !important;
+  background-color: rgba(220, 38, 38, 0.04) !important;
+}
+
 .cfield-textarea {
   resize: vertical;
   min-height: 90px;
@@ -7189,7 +7194,7 @@ footer { border-top: 1px solid var(--line); padding: 3rem 0 2rem; background: va
   --text: #0A0908; --text-muted: rgba(10,9,8,.70); --text-faint: rgba(10,9,8,.48); --text-ghost: rgba(10,9,8,.28);
   --line: rgba(10,9,8,.10); --line-strong: rgba(10,9,8,.22);
   --grain-opacity: 0.035; --grain-blend: multiply;
-  --nav-bg: rgba(250,250,247,.86);
+  --nav-bg: rgba(250,250,247,.98);
   --warn-bg: rgba(220,38,38,.06); --warn-border: rgba(220,38,38,.25);
   --good-bg: rgba(22,163,74,.06); --good-border: rgba(22,163,74,.25);
 }
@@ -7199,7 +7204,7 @@ footer { border-top: 1px solid var(--line); padding: 3rem 0 2rem; background: va
   --text: #F2EDE4; --text-muted: rgba(242,237,228,.72); --text-faint: rgba(242,237,228,.48); --text-ghost: rgba(242,237,228,.28);
   --line: rgba(242,237,228,.10); --line-strong: rgba(242,237,228,.22);
   --grain-opacity: 0.06; --grain-blend: overlay;
-  --nav-bg: rgba(11,9,8,.82);
+  --nav-bg: rgba(11,9,8,.96);
   --warn-bg: rgba(220,38,38,.10); --warn-border: rgba(220,38,38,.35);
   --good-bg: rgba(22,163,74,.10); --good-border: rgba(22,163,74,.35);
 }

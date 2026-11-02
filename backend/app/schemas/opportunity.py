@@ -10,8 +10,8 @@ class OpportunityBase(BaseModel):
     title: str = Field(..., min_length=3, max_length=255)
     sector: str = Field(..., max_length=100)
     category: str | None = None
-    deal_size: Decimal = Field(default=Decimal("0.00"), ge=0)
-    unlock_fee: Decimal = Field(default=Decimal("0.00"), ge=0)
+    deal_size: Decimal = Field(default=Decimal("1.00"), gt=0, description="Listed deal size must be greater than $0")
+    unlock_fee: Decimal = Field(default=Decimal("1.00"), gt=0, description="Unlock fee must be greater than $0")
     target_return: str | None = None
     timeline: str | None = None
     headline: str | None = None
@@ -36,8 +36,8 @@ class OpportunityUpdate(BaseModel):
     sector: str | None = None
     category: str | None = None
     status: str | None = None
-    deal_size: Decimal | None = None
-    unlock_fee: Decimal | None = None
+    deal_size: Decimal | None = Field(default=None, gt=0)
+    unlock_fee: Decimal | None = Field(default=None, gt=0)
     target_return: str | None = None
     timeline: str | None = None
     headline: str | None = None
